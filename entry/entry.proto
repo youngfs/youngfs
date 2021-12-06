@@ -13,5 +13,6 @@ message Attribute{
 
 message Entry{
   string full_path = 1;
-  Attribute attribute = 2;
+  bool is_directory = 2;
+  Attribute attribute = 3;
 }

@@ -48,8 +48,9 @@ func (entry *Entry) ToPb() *entry_pb.Entry {
 		return nil
 	}
 	return &entry_pb.Entry{
-		FullPath:  string(entry.FullPath),
-		Attribute: entry.Attribute.ToPb(),
+		FullPath:    string(entry.FullPath),
+		IsDirectory: entry.IsDirectory(),
+		Attribute:   entry.Attribute.ToPb(),
 	}
 }
 
