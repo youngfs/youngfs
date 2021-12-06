@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"icesos/storageEngine"
+	"icesos/storage_engine"
 	"net/http"
 	"os"
 )
@@ -33,7 +33,7 @@ func PutObjectHandler(c *gin.Context) {
 
 	_, _ = fmt.Fprintf(os.Stdout, "%#v\n", putObjectInfo)
 
-	assignFileInfo, err := storageEngine.AssignFileHandler()
+	assignFileInfo, err := storage_engine.AssignFileHandler()
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
