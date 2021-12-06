@@ -1,4 +1,4 @@
-module object-storage-server
+module icesos
 
 go 1.17
 

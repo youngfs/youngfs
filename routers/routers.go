@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"object-storage-server/api"
+	"icesos/api"
 )
 
 func InitRouter() *gin.Engine {

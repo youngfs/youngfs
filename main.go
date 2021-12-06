@@ -1,9 +1,9 @@
 package main
 
 import (
+	"icesos/command"
+	"icesos/routers"
 	"log"
-	"object-storage-server/command"
-	"object-storage-server/routers"
 )
 
 func main() {

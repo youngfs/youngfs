@@ -1,1 +1,1 @@
-# object-storage-server
+# icesos

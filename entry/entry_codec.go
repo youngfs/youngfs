@@ -2,7 +2,7 @@ package entry
 
 import (
 	"github.com/golang/protobuf/proto"
-	"object-storage-server/entry/entry_pb"
+	"icesos/entry/entry_pb"
 )
 
 func (entry *Entry) EncodeProto() ([]byte, error) {

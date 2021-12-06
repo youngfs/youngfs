@@ -2,9 +2,9 @@ package storageEngine
 
 import (
 	jsoniter "github.com/json-iterator/go"
+	"icesos/command"
 	"io/ioutil"
 	"net/http"
-	"object-storage-server/command"
 )
 
 type AssignFileInfo struct {

@@ -1,8 +1,8 @@
 package entry
 
 import (
-	"object-storage-server/entry/entry_pb"
-	"object-storage-server/util"
+	"icesos/entry/entry_pb"
+	"icesos/util"
 	"os"
 	"time"
 )

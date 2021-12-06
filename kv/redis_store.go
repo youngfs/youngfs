@@ -3,7 +3,7 @@ package kv
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"object-storage-server/entry"
+	"icesos/entry"
 )
 
 type Redis3Store struct {
