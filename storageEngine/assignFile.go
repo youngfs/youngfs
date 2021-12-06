@@ -14,22 +14,22 @@ type AssignFileInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func AssignFileHandler() (assignFileInfo *AssignFileInfo, err error) {
+func AssignFileHandler() (*AssignFileInfo, error) {
 	resp, err := http.Get("http://" + command.MasterServer + "/dir/assign")
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	assignFileInfo = &AssignFileInfo{}
+	assignFileInfo := &AssignFileInfo{}
 	err = jsoniter.Unmarshal(httpBody, assignFileInfo)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return assignFileInfo, err
 }

@@ -5,9 +5,9 @@ import (
 	"object-storage-server/api"
 )
 
-func InitRouter() (r *gin.Engine) {
-	r = gin.Default()
+func InitRouter() *gin.Engine {
+	r := gin.Default()
 	r.GET("/putObject", api.PutObjectHandler)
 	r.GET("/getObject", api.GetObjectHandler)
-	return
+	return r
 }
