@@ -3,6 +3,7 @@ package iam
 import (
 	"crypto/md5"
 	"icesos/iam/iam_pb"
+	"icesos/util"
 )
 
 type UserIAM struct {
@@ -19,14 +20,9 @@ func (userIam *UserIAM) toPb() *iam_pb.UserIAM {
 		return nil
 	}
 
-	skMd5 := make([]byte, 16)
-	for i, b := range userIam.SecretKey {
-		skMd5[i] = b
-	}
-
 	return &iam_pb.UserIAM{
 		User:      string(userIam.User),
-		SecretKey: skMd5,
+		SecretKey: util.Md5ToBytes(userIam.SecretKey),
 	}
 }
 
@@ -35,13 +31,8 @@ func userIAMPbToInstance(pb *iam_pb.UserIAM) *UserIAM {
 		return nil
 	}
 
-	var skMd5 [md5.Size]byte
-	for i, b := range pb.SecretKey {
-		skMd5[i] = b
-	}
-
 	return &UserIAM{
 		User:      User(pb.User),
-		SecretKey: skMd5,
+		SecretKey: util.BytesToMd5(pb.SecretKey),
 	}
 }
