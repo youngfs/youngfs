@@ -8,11 +8,11 @@ import (
 type User string
 
 func (user User) userIAMKey() string {
-	return string(user) + userIAMKey
+	return string(user) + userIAMKv
 }
 
 func (user User) setIAMKey() string {
-	return string(user) + setIAMKey
+	return string(user) + setIAMKv
 }
 
 func (user User) IsOwnSet(set Set) bool {

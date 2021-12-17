@@ -1,6 +1,6 @@
 package iam
 
 const (
-	userIAMKey = "_UserIAM"
-	setIAMKey  = "_SetIAM"
+	userIAMKv = "_UserIAM"
+	setIAMKv  = "_SetIAM"
 )
