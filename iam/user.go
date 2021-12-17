@@ -26,7 +26,7 @@ func (user User) IsOwnSet(set Set) bool {
 		return false
 	}
 
-	ret, _ := kv.Client.SIsMember(user.SetIAMKey(), member)
+	ret, _ := kv.Client.SIsMember(setIAM.Key(), member)
 	return ret
 }
 
@@ -41,7 +41,7 @@ func (user User) AddSet(set Set) error {
 		return err
 	}
 
-	return kv.Client.SAdd(user.SetIAMKey(), member)
+	return kv.Client.SAdd(setIAM.Key(), member)
 }
 
 func (user User) Identify(sk string) bool {
@@ -69,7 +69,7 @@ func (user User) CreateUser(sk string) error {
 		return err
 	}
 
-	return kv.Client.KvPut(user.UserIAMKey(), b)
+	return kv.Client.KvPut(userIAM.Key(), b)
 }
 
 func (user User) DeleteUser() (bool, error) {
