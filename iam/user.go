@@ -7,21 +7,21 @@ import (
 
 type User string
 
-func (user User) UserIAMKey() string {
+func (user User) userIAMKey() string {
 	return string(user) + userIAMKey
 }
 
-func (user User) SetIAMKey() string {
+func (user User) setIAMKey() string {
 	return string(user) + setIAMKey
 }
 
 func (user User) IsOwnSet(set Set) bool {
-	setIAM := SetIAM{
+	setIAM := setIAM{
 		User: user,
 		Set:  set,
 	}
 
-	member, err := setIAM.EncodeProto()
+	member, err := setIAM.encodeProto()
 	if err != nil {
 		return false
 	}
@@ -31,12 +31,12 @@ func (user User) IsOwnSet(set Set) bool {
 }
 
 func (user User) AddSet(set Set) error {
-	setIAM := SetIAM{
+	setIAM := setIAM{
 		User: user,
 		Set:  set,
 	}
 
-	member, err := setIAM.EncodeProto()
+	member, err := setIAM.encodeProto()
 	if err != nil {
 		return err
 	}
@@ -45,12 +45,12 @@ func (user User) AddSet(set Set) error {
 }
 
 func (user User) Identify(sk string) bool {
-	val, err := kv.Client.KvGet(user.UserIAMKey())
+	val, err := kv.Client.KvGet(user.userIAMKey())
 	if err != nil {
 		return false
 	}
 
-	userIAM, err := DecodeUserIAMProto(val)
+	userIAM, err := decodeUserIAMProto(val)
 	if err != nil {
 		return false
 	}
@@ -59,25 +59,25 @@ func (user User) Identify(sk string) bool {
 }
 
 func (user User) CreateUser(sk string) error {
-	userIAM := UserIAM{
+	userIAM := userIAM{
 		User:      user,
 		SecretKey: md5.Sum([]byte(sk)),
 	}
 
-	b, err := userIAM.EncodeProto()
+	b, err := userIAM.encodeProto()
 	if err != nil {
 		return err
 	}
 
-	return kv.Client.KvPut(userIAM.Key(), b)
+	return kv.Client.KvPut(userIAM.key(), b)
 }
 
 func (user User) DeleteUser() (bool, error) {
-	ret, err := kv.Client.KvDelete(user.UserIAMKey())
+	ret, err := kv.Client.KvDelete(user.userIAMKey())
 	if err != nil || ret == false {
 		return false, err
 	}
 
-	_, err = kv.Client.SDelete(user.SetIAMKey())
+	_, err = kv.Client.SDelete(user.setIAMKey())
 	return true, err
 }

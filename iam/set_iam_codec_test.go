@@ -6,15 +6,15 @@ import (
 )
 
 func TestSetIAM_EnDecodeProto(t *testing.T) {
-	val := &SetIAM{
+	val := &setIAM{
 		User: "test1",
 		Set:  "test2",
 	}
 
-	b, err := val.EncodeProto()
+	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeSetIAMProto(b)
+	val2, err := decodeSetIAMProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

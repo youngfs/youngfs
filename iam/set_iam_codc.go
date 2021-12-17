@@ -5,12 +5,32 @@ import (
 	"icesos/iam/iam_pb"
 )
 
-func (setIam *SetIAM) EncodeProto() ([]byte, error) {
+func (setIam *setIAM) toPb() *iam_pb.SetIAM {
+	if setIam == nil {
+		return nil
+	}
+	return &iam_pb.SetIAM{
+		User: string(setIam.User),
+		Set:  string(setIam.Set),
+	}
+}
+
+func setIAMPbToInstance(pb *iam_pb.SetIAM) *setIAM {
+	if pb == nil {
+		return nil
+	}
+	return &setIAM{
+		User: User(pb.User),
+		Set:  Set(pb.Set),
+	}
+}
+
+func (setIam *setIAM) encodeProto() ([]byte, error) {
 	message := setIam.toPb()
 	return proto.Marshal(message)
 }
 
-func DecodeSetIAMProto(b []byte) (*SetIAM, error) {
+func decodeSetIAMProto(b []byte) (*setIAM, error) {
 	message := &iam_pb.SetIAM{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		return nil, err

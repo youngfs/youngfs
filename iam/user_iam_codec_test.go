@@ -7,15 +7,15 @@ import (
 )
 
 func TestUserIAM_EnDecodeProto(t *testing.T) {
-	val := &UserIAM{
+	val := &userIAM{
 		User:      "test",
 		SecretKey: md5.Sum([]byte("password")),
 	}
 
-	b, err := val.EncodeProto()
+	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeUserIAMProto(b)
+	val2, err := decodeUserIAMProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }
