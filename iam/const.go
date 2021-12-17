@@ -1,4 +1,4 @@
-package set_iam
+package iam
 
 const (
 	userIAMKey = "_UserIAM"

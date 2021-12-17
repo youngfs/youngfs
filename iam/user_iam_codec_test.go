@@ -1,4 +1,4 @@
-package set_iam
+package iam
 
 import (
 	"github.com/go-playground/assert/v2"
