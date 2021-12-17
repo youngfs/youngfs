@@ -10,7 +10,7 @@ import (
 
 type Object struct {
 	full_path.FullPath             // file full full_path
-	set_iam.Set                    // own set_iam
+	iam.Set                        // own set_iam
 	Time               time.Time   // time of creation
 	Mode               os.FileMode // file mode
 	Mime               string      // MIME type
@@ -51,7 +51,7 @@ func objectPbToInstance(pb *object_pb.Object) *Object {
 	}
 	return &Object{
 		FullPath: full_path.FullPath(pb.FullPath),
-		Set:      set_iam.Set(pb.Set),
+		Set:      iam.Set(pb.Set),
 		Time:     time.Unix(pb.Time, 0),
 		Mode:     os.FileMode(pb.Mode),
 		Mime:     pb.Mine,

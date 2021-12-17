@@ -10,7 +10,7 @@ import (
 
 type Inode struct {
 	full_path.FullPath             //full full_path
-	set_iam.Set                    //own set_iam
+	iam.Set                        //own set_iam
 	Time               time.Time   //time of creation
 	Mode               os.FileMode //file mode
 }
@@ -45,7 +45,7 @@ func inodePbToInstance(pb *directory_pb.Inode) *Inode {
 	}
 	return &Inode{
 		FullPath: full_path.FullPath(pb.FullPath),
-		Set:      set_iam.Set(pb.Set),
+		Set:      iam.Set(pb.Set),
 		Time:     time.Unix(pb.Time, 0),
 		Mode:     os.FileMode(pb.Mode),
 	}

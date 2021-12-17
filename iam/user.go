@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"crypto/md5"
 	"icesos/kv"
 )
 
@@ -29,6 +30,20 @@ func (user User) IsOwnSet(set Set) bool {
 	return ret
 }
 
+func (user User) AddSet(set Set) error {
+	setIAM := SetIAM{
+		User: user,
+		Set:  set,
+	}
+
+	member, err := setIAM.EncodeProto()
+	if err != nil {
+		return err
+	}
+
+	return kv.Client.SAdd(user.SetIAMKey(), member)
+}
+
 func (user User) Identify(sk string) bool {
 	val, err := kv.Client.KvGet(user.UserIAMKey())
 	if err != nil {
@@ -40,13 +55,13 @@ func (user User) Identify(sk string) bool {
 		return false
 	}
 
-	return userIAM.SecretKey == sk
+	return userIAM.SecretKey == md5.Sum([]byte(sk))
 }
 
 func (user User) CreateUser(sk string) error {
 	userIAM := UserIAM{
 		User:      user,
-		SecretKey: sk,
+		SecretKey: md5.Sum([]byte(sk)),
 	}
 
 	b, err := userIAM.EncodeProto()
@@ -57,12 +72,12 @@ func (user User) CreateUser(sk string) error {
 	return kv.Client.KvPut(user.UserIAMKey(), b)
 }
 
-func (user User) DeleteUser() error {
-	_, err := kv.Client.KvDelete(user.UserIAMKey())
-	if err != nil {
-		return err
+func (user User) DeleteUser() (bool, error) {
+	ret, err := kv.Client.KvDelete(user.UserIAMKey())
+	if err != nil || ret == false {
+		return false, err
 	}
 
 	_, err = kv.Client.SDelete(user.SetIAMKey())
-	return err
+	return true, err
 }

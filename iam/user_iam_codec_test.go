@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"crypto/md5"
 	"github.com/go-playground/assert/v2"
 	"testing"
 )
@@ -8,7 +9,7 @@ import (
 func TestUserIAM_EnDecodeProto(t *testing.T) {
 	val := &UserIAM{
 		User:      "test",
-		SecretKey: "password",
+		SecretKey: md5.Sum([]byte("password")),
 	}
 
 	b, err := val.EncodeProto()

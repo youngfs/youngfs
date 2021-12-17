@@ -4,5 +4,5 @@ option go_package = "./iam_pb";
 
 message UserIAM{
   string user = 1;
-  string secret_key = 2;
+  bytes secret_key = 2;
 }
