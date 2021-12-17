@@ -12,7 +12,7 @@ func Md5ToBytes(b [16]byte) []byte {
 	return ret
 }
 
-// use before check
+// use before check md5 size
 func BytesToMd5(b []byte) [16]byte {
 	var md5b [md5.Size]byte
 

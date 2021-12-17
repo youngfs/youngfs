@@ -1,63 +1,46 @@
 package object
 
 import (
+	"crypto/md5"
 	"icesos/full_path"
 	"icesos/iam"
-	"icesos/object/object_pb"
+	"icesos/kv"
 	"os"
 	"time"
 )
 
 type Object struct {
-	full_path.FullPath             // file full full_path
-	iam.Set                        // own set_iam
-	Time               time.Time   // time of creation
-	Mode               os.FileMode // file mode
-	Mime               string      // MIME type
-	Md5                []byte      // MD5
-	FileSize           uint64      // file size
-	VolumeId           uint64      // volume id
-	Fid                string      // fid
+	full_path.FullPath                // file full full_path
+	iam.Set                           // own set_iam
+	Time               time.Time      // time of creation
+	Mode               os.FileMode    // file mode
+	Mime               string         // MIME type
+	Md5                [md5.Size]byte // MD5
+	FileSize           uint64         // file size
+	VolumeId           uint64         // volume id
+	Fid                string         // fid
 }
 
-func (ob *Object) Key() string {
-	return string(ob.Set) + "_" + string(ob.FullPath) + "_object"
+func (ob *Object) key() string {
+	return string(ob.Set) + "_" + string(ob.FullPath) + objectKv
 }
 
-func (ob *Object) TimeUnix() int64 {
-	return ob.Time.Unix()
+func objectKey(fp full_path.FullPath, set iam.Set) string {
+	return string(set) + "_" + string(fp) + objectKv
 }
 
-func (ob *Object) toPb() *object_pb.Object {
-	if ob == nil {
-		return nil
-	}
-	return &object_pb.Object{
-		FullPath: string(ob.FullPath),
-		Set:      string(ob.Set),
-		Time:     ob.Time.Unix(),
-		Mode:     uint32(ob.Mode),
-		Mine:     ob.Mime,
-		Md5:      ob.Md5,
-		FileSize: ob.FileSize,
-		VolumeId: ob.VolumeId,
-		Fid:      ob.Fid,
-	}
+func PutObject(ob *Object) error {
+
+	return nil
 }
 
-func objectPbToInstance(pb *object_pb.Object) *Object {
-	if pb == nil {
-		return nil
+func GetObject(fp full_path.FullPath, set iam.Set) (*Object, error) {
+	key := objectKey(fp, set)
+
+	b, err := kv.Client.KvGet(key)
+	if err != nil {
+		return nil, err
 	}
-	return &Object{
-		FullPath: full_path.FullPath(pb.FullPath),
-		Set:      iam.Set(pb.Set),
-		Time:     time.Unix(pb.Time, 0),
-		Mode:     os.FileMode(pb.Mode),
-		Mime:     pb.Mine,
-		Md5:      pb.Md5,
-		FileSize: pb.FileSize,
-		VolumeId: pb.VolumeId,
-		Fid:      pb.Fid,
-	}
+
+	return decodeObjectProto(b)
 }

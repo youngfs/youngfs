@@ -11,24 +11,23 @@ import (
 )
 
 func TestObject_EnDecodeProto(t *testing.T) {
-	b := util.RandByte(16)
-
 	val := &Object{
 		FullPath: "aa/bb/cc",
 		Set:      "test",
 		Time:     time.Now(),
 		Mode:     os.ModeDir,
 		Mime:     "",
-		Md5:      b,
+		Md5:      util.RandMd5(),
 		FileSize: uint64(rand2.Int63()),
 		VolumeId: uint64(rand2.Int63()),
 		Fid:      strconv.Itoa(rand2.Int()),
 	}
-	val.Time = time.Unix(val.TimeUnix(), 0) // windows: precision to s
-	b, err := val.EncodeProto()
+	val.Time = time.Unix(val.Time.Unix(), 0) // windows: precision to s
+
+	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeObjectProto(b)
+	val2, err := decodeObjectProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }
