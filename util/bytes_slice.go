@@ -12,7 +12,7 @@ func (b BytesSlice) Swap(i, j int) {
 
 func (b BytesSlice) Less(i, j int) bool {
 	lenI, lenJ := len(b[i]), len(b[j])
-	mn := Min(lenI, lenJ)
+	mn := MinInt(lenI, lenJ)
 	for k := 0; k < mn; k++ {
 		if b[i][k] < b[j][k] {
 			return true

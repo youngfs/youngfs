@@ -1,13 +1,13 @@
 package util
 
-func Min(x, y int) int {
+func MinInt(x, y int) int {
 	if x < y {
 		return x
 	}
 	return y
 }
 
-func Max(x, y int) int {
+func MaxInt(x, y int) int {
 	if x < y {
 		return y
 	}
