@@ -1,0 +1,15 @@
+syntax = "proto3";
+package object_pb;
+option go_package = "./object_pb";
+
+message Object{
+  string full_path = 1;
+  string set = 2;
+  int64 time = 3;
+  uint32 mode = 4;
+  string mine = 5;
+  bytes md5 = 6;
+  uint64 file_size = 7;
+  uint64 volume_id = 8;
+  string fid = 9;
+}

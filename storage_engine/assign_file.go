@@ -2,7 +2,7 @@ package storage_engine
 
 import (
 	jsoniter "github.com/json-iterator/go"
-	"icesos/command"
+	"icesos/command/vars"
 	"io/ioutil"
 	"net/http"
 )
@@ -15,7 +15,7 @@ type AssignFileInfo struct {
 }
 
 func AssignFileHandler() (*AssignFileInfo, error) {
-	resp, err := http.Get("http://" + command.MasterServer + "/dir/assign")
+	resp, err := http.Get("http://" + vars.MasterServer + "/dir/assign")
 	if err != nil {
 		return nil, err
 	}

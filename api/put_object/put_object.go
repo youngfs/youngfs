@@ -1,4 +1,4 @@
-package api
+package put_object
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package api
+package get_object
 
 import (
 	"fmt"

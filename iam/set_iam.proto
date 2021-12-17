@@ -1,0 +1,8 @@
+syntax = "proto3";
+package iam_pb;
+option go_package = "./iam_pb";
+
+message SetIAM{
+  string user = 1;
+  string set = 2;
+}

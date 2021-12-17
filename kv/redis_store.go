@@ -1,17 +1,17 @@
 package kv
 
 import (
-	"context"
 	"github.com/go-redis/redis/v8"
-	"icesos/entry"
 )
 
-type Redis3Store struct {
-	Client redis.UniversalClient
+type redisStore struct {
+	client *redis.Client
 }
 
-func (store *Redis3Store) Initialize(hostPort, password string, database int) {
-	store.Client = redis.NewClient(
+var Client redisStore
+
+func (store *redisStore) Initialize(hostPort, password string, database int) {
+	store.client = redis.NewClient(
 		&redis.Options{
 			Addr:     hostPort,
 			Password: password,
@@ -20,6 +20,19 @@ func (store *Redis3Store) Initialize(hostPort, password string, database int) {
 	)
 }
 
-func (store *Redis3Store) InsertEntry(ctx context.Context, entry *entry.Entry) error {
-	return nil
-}
+//func (store *Redis3Store) InsertEntry(ctx context.Context, entry *object.Entry) error {
+//
+//	value, err := entry.EncodeProto()
+//	if err != nil {
+//		return fmt.Errorf("encoding %s %+v: %v", entry.FullPath, entry.Attribute, err)
+//	}
+//
+//	err = store.KvPut(ctx, string(entry.FullPath), value)
+//	if err != nil {
+//		return fmt.Errorf("put %s: %v", entry.FullPath, err)
+//	}
+//
+//	//dir, fileName := object.FullPath.DirAndName()
+//
+//	return nil
+//}
