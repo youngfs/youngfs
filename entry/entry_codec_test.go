@@ -1,4 +1,4 @@
-package object
+package entry
 
 import (
 	"github.com/go-playground/assert/v2"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestObject_EnDecodeProto(t *testing.T) {
-	val := &Object{
+	val := &Entry{
 		FullPath: "aa/bb/cc",
 		Set:      "test",
 		Time:     time.Now(),
@@ -27,7 +27,7 @@ func TestObject_EnDecodeProto(t *testing.T) {
 	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := decodeObjectProto(b)
+	val2, err := decodeEntryProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

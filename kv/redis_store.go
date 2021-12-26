@@ -19,20 +19,3 @@ func (store *redisStore) Initialize(hostPort, password string, database int) {
 		},
 	)
 }
-
-//func (store *Redis3Store) InsertEntry(ctx context.Context, entry *object.Entry) error {
-//
-//	value, err := entry.EncodeProto()
-//	if err != nil {
-//		return fmt.Errorf("encoding %s %+v: %v", entry.FullPath, entry.Attribute, err)
-//	}
-//
-//	err = store.KvPut(ctx, string(entry.FullPath), value)
-//	if err != nil {
-//		return fmt.Errorf("put %s: %v", entry.FullPath, err)
-//	}
-//
-//	//dir, fileName := object.FullPath.DirAndName()
-//
-//	return nil
-//}

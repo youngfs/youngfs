@@ -1,4 +1,4 @@
-package object
+package entry
 
 import (
 	"crypto/md5"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type Object struct {
+type Entry struct {
 	full_path.FullPath                // file full full_path
 	iam.Set                           // own set_iam
 	Time               time.Time      // time of creation
@@ -21,26 +21,25 @@ type Object struct {
 	Fid                string         // fid
 }
 
-func (ob *Object) key() string {
-	return string(ob.Set) + "_" + string(ob.FullPath) + objectKv
+func (entry *Entry) key() string {
+	return string(entry.Set) + "_" + string(entry.FullPath) + entryKv
 }
 
-func objectKey(fp full_path.FullPath, set iam.Set) string {
-	return string(set) + "_" + string(fp) + objectKv
+func entryKey(fp full_path.FullPath, set iam.Set) string {
+	return string(set) + "_" + string(fp) + entryKv
 }
 
-func PutObject(ob *Object) error {
-
+func InsertEntry(entry *Entry) error {
 	return nil
 }
 
-func GetObject(fp full_path.FullPath, set iam.Set) (*Object, error) {
-	key := objectKey(fp, set)
+func GetEntry(fp full_path.FullPath, set iam.Set) (*Entry, error) {
+	key := entryKey(fp, set)
 
 	b, err := kv.Client.KvGet(key)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeObjectProto(b)
+	return decodeEntryProto(b)
 }
