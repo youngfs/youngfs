@@ -5,6 +5,12 @@ type setIAM struct {
 	Set  // set_iam name
 }
 
-func (setIam *setIAM) Key() string {
-	return string(setIam.User) + setIAMKv
+// read permission
+func (iam *setIAM) ReadKey() string {
+	return string(iam.User) + setReadIAMKv
+}
+
+// write permission
+func (iam *setIAM) WriteKey() string {
+	return string(iam.User) + setWriteIAMKv
 }

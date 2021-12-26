@@ -11,11 +11,15 @@ func (user User) userIAMKey() string {
 	return string(user) + userIAMKv
 }
 
-func (user User) setIAMKey() string {
-	return string(user) + setIAMKv
+func (user User) setReadIAMKey() string {
+	return string(user) + setReadIAMKv
 }
 
-func (user User) IsOwnSet(set Set) bool {
+func (user User) setWriteIAMKey() string {
+	return string(user) + setWriteIAMKv
+}
+
+func (user User) ReadSetPermission(set Set) bool {
 	setIAM := setIAM{
 		User: user,
 		Set:  set,
@@ -26,11 +30,26 @@ func (user User) IsOwnSet(set Set) bool {
 		return false
 	}
 
-	ret, _ := kv.Client.SIsMember(setIAM.Key(), member)
+	ret, _ := kv.Client.SIsMember(setIAM.ReadKey(), member)
 	return ret
 }
 
-func (user User) AddSet(set Set) error {
+func (user User) WriteSetPermission(set Set) bool {
+	setIAM := setIAM{
+		User: user,
+		Set:  set,
+	}
+
+	member, err := setIAM.encodeProto()
+	if err != nil {
+		return false
+	}
+
+	ret, _ := kv.Client.SIsMember(setIAM.WriteKey(), member)
+	return ret
+}
+
+func (user User) AddReadSetPermission(set Set) error {
 	setIAM := setIAM{
 		User: user,
 		Set:  set,
@@ -41,7 +60,21 @@ func (user User) AddSet(set Set) error {
 		return err
 	}
 
-	return kv.Client.SAdd(setIAM.Key(), member)
+	return kv.Client.SAdd(setIAM.ReadKey(), member)
+}
+
+func (user User) AddWriteSetPermission(set Set) error {
+	setIAM := setIAM{
+		User: user,
+		Set:  set,
+	}
+
+	member, err := setIAM.encodeProto()
+	if err != nil {
+		return err
+	}
+
+	return kv.Client.SAdd(setIAM.WriteKey(), member)
 }
 
 func (user User) Identify(sk string) bool {
@@ -78,6 +111,15 @@ func (user User) DeleteUser() (bool, error) {
 		return false, err
 	}
 
-	_, err = kv.Client.SDelete(user.setIAMKey())
-	return true, err
+	_, err = kv.Client.SDelete(user.setReadIAMKey())
+	if err != nil {
+		return false, err
+	}
+
+	_, err = kv.Client.SDelete(user.setWriteIAMKey())
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

@@ -5,13 +5,13 @@ import (
 	"icesos/iam/iam_pb"
 )
 
-func (setIam *setIAM) toPb() *iam_pb.SetIAM {
-	if setIam == nil {
+func (iam *setIAM) toPb() *iam_pb.SetIAM {
+	if iam == nil {
 		return nil
 	}
 	return &iam_pb.SetIAM{
-		User: string(setIam.User),
-		Set:  string(setIam.Set),
+		User: string(iam.User),
+		Set:  string(iam.Set),
 	}
 }
 
@@ -25,8 +25,8 @@ func setIAMPbToInstance(pb *iam_pb.SetIAM) *setIAM {
 	}
 }
 
-func (setIam *setIAM) encodeProto() ([]byte, error) {
-	message := setIam.toPb()
+func (iam *setIAM) encodeProto() ([]byte, error) {
+	message := iam.toPb()
 	return proto.Marshal(message)
 }
 

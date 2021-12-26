@@ -37,18 +37,31 @@ func TestUser(t *testing.T) {
 
 	// set
 	for _, str := range set {
-		ret := user.IsOwnSet(Set(str))
+		ret := user.ReadSetPermission(Set(str))
+		assert.Equal(t, ret, false)
+		ret = user.WriteSetPermission(Set(str))
 		assert.Equal(t, ret, false)
 	}
 
 	for i := 0; i < 2; i++ {
-		err = user.AddSet(Set(set[i]))
+		err = user.AddReadSetPermission(Set(set[i]))
+		assert.Equal(t, err, nil)
+		err = user.AddReadSetPermission(Set(set[i]))
+		assert.Equal(t, err, nil)
+	}
+
+	for i := 1; i < 3; i++ {
+		err = user.AddWriteSetPermission(Set(set[i]))
+		assert.Equal(t, err, nil)
+		err = user.AddWriteSetPermission(Set(set[i]))
 		assert.Equal(t, err, nil)
 	}
 
 	for i, str := range set {
-		ret := user.IsOwnSet(Set(str))
+		ret := user.ReadSetPermission(Set(str))
 		assert.Equal(t, ret, i < 2)
+		ret = user.WriteSetPermission(Set(str))
+		assert.Equal(t, ret, i > 0)
 	}
 
 	// delete user
@@ -62,7 +75,9 @@ func TestUser(t *testing.T) {
 	}
 
 	for _, str := range set {
-		ret = user.IsOwnSet(Set(str))
+		ret := user.ReadSetPermission(Set(str))
+		assert.Equal(t, ret, false)
+		ret = user.WriteSetPermission(Set(str))
 		assert.Equal(t, ret, false)
 	}
 
