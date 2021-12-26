@@ -12,7 +12,7 @@ import (
 
 func TestObject_EnDecodeProto(t *testing.T) {
 	val := &Entry{
-		FullPath: "aa/bb/cc",
+		FullPath: "/aa/bb/cc",
 		Set:      "test",
 		Time:     time.Now(),
 		Mode:     os.ModeDir,

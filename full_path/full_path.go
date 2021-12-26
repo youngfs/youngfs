@@ -8,17 +8,21 @@ import (
 type FullPath string
 
 /*
-	example:	aa/bb/cc
-	dir:		aa/bb
+	example:	/aa/bb/cc
+	dir:		/aa/bb/
 	name:		cc
 
-	example:	aa
-	dir:
+	example:	/aa
+	dir:		/
 	name:		aa
 
-	example:	aa/bb/cc/../dd
-	dir:		aa/bb
+	example:	/aa/bb/cc/../dd
+	dir:		/aa/bb/
 	name:		dd
+
+	example:	/
+	dir:		/
+	name:
 
 	use IsLegal before other functions
 */
@@ -27,7 +31,10 @@ func (fp FullPath) IsLegal() bool {
 	if fp == "" {
 		return false
 	}
-	if fp[0] == '/' || fp[len(fp)-1] == '/' {
+	if fp == "/" {
+		return true
+	}
+	if fp[0] != '/' || fp[len(fp)-1] == '/' {
 		return false
 	}
 	set := make(map[int32]bool)
@@ -46,7 +53,7 @@ func (fp FullPath) IsLegal() bool {
 	for _, str := range strings.Split(string(fp), "/") {
 		if str == ".." {
 			cnt--
-		} else if str != "." {
+		} else if str != "." && str != "" {
 			cnt++
 		}
 		if cnt < 0 {
@@ -68,10 +75,7 @@ func (fp FullPath) DirAndName() (string, string) {
 	// fp = fp.Clean()
 	dir, name := filepath.Split(string(fp))
 	name = strings.ToValidUTF8(name, "?")
-	if len(dir) < 1 {
-		return "", name
-	}
-	return dir[:len(dir)-1], name
+	return dir, name
 }
 
 func (fp FullPath) Name() string {
@@ -81,8 +85,8 @@ func (fp FullPath) Name() string {
 }
 
 func (fp FullPath) Split() []string {
-	if fp == "" {
-		return []string{}
+	if fp == "/" {
+		return []string{""}
 	}
 	return strings.Split(string(fp), "/")
 }
@@ -92,5 +96,6 @@ func (fp FullPath) SplitList() []string {
 	for i := 1; i < len(list); i++ {
 		list[i] = list[i-1] + "/" + list[i]
 	}
+	list[0] = "/"
 	return list
 }

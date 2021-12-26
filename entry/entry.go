@@ -22,19 +22,20 @@ type Entry struct {
 }
 
 func (entry *Entry) key() string {
-	return string(entry.Set) + "_" + string(entry.FullPath) + entryKv
+	return string(entry.Set) + string(entry.FullPath) + entryKv
 }
 
-func entryKey(fp full_path.FullPath, set iam.Set) string {
-	return string(set) + "_" + string(fp) + entryKv
+func entryKey(set iam.Set, fp full_path.FullPath) string {
+	return string(set) + string(fp) + entryKv
 }
 
 func InsertEntry(entry *Entry) error {
+
 	return nil
 }
 
-func GetEntry(fp full_path.FullPath, set iam.Set) (*Entry, error) {
-	key := entryKey(fp, set)
+func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
+	key := entryKey(set, fp)
 
 	b, err := kv.Client.KvGet(key)
 	if err != nil {
