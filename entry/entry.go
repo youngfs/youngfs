@@ -61,5 +61,8 @@ func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 	key := entryKey(set, fp)
 
 	_, err := kv.Client.KvDelete(key)
+
+	//todo:  delete actual object
+
 	return err
 }
