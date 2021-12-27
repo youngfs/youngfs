@@ -92,7 +92,7 @@ func TestFullPath_Clean(t *testing.T) {
 func TestFullPath_DirAndName(t *testing.T) {
 	path := FullPath("/aa/bb/cc")
 	dir, name := path.DirAndName()
-	assert.Equal(t, dir, FullPath("/aa/bb/"))
+	assert.Equal(t, dir, FullPath("/aa/bb"))
 	assert.Equal(t, name, "cc")
 
 	path = FullPath("/aa")
@@ -104,6 +104,17 @@ func TestFullPath_DirAndName(t *testing.T) {
 	dir, name = path.DirAndName()
 	assert.Equal(t, dir, FullPath("/"))
 	assert.Equal(t, name, "")
+}
+
+func TestFullPath_Dir(t *testing.T) {
+	path := FullPath("/aa/bb/cc")
+	assert.Equal(t, path.Dir(), FullPath("/aa/bb"))
+
+	path = FullPath("/aa")
+	assert.Equal(t, path.Dir(), FullPath("/"))
+
+	path = FullPath("/")
+	assert.Equal(t, path.Dir(), FullPath("/"))
 }
 
 func TestFullPath_Name(t *testing.T) {

@@ -9,7 +9,7 @@ type FullPath string
 
 /*
 	example:	/aa/bb/cc
-	dir:		/aa/bb/
+	dir:		/aa/bb
 	name:		cc
 
 	example:	/aa
@@ -17,7 +17,7 @@ type FullPath string
 	name:		aa
 
 	example:	/aa/bb/cc/../dd
-	dir:		/aa/bb/
+	dir:		/aa/bb
 	name:		dd
 
 	example:	/
@@ -75,7 +75,19 @@ func (fp FullPath) DirAndName() (FullPath, string) {
 	// fp = fp.Clean()
 	dir, name := filepath.Split(string(fp))
 	name = strings.ToValidUTF8(name, "?")
+	if dir != "/" {
+		dir = dir[:len(dir)-1]
+	}
 	return FullPath(dir), name
+}
+
+func (fp FullPath) Dir() FullPath {
+	// fp = fp.Clean()
+	dir, _ := filepath.Split(string(fp))
+	if dir != "/" {
+		dir = dir[:len(dir)-1]
+	}
+	return FullPath(dir)
 }
 
 func (fp FullPath) Name() string {
