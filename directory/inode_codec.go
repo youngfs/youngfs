@@ -33,12 +33,12 @@ func inodePbToInstance(pb *directory_pb.Inode) *Inode {
 	}
 }
 
-func (inode *Inode) EncodeProto() ([]byte, error) {
+func (inode *Inode) encodeProto() ([]byte, error) {
 	message := inode.toPb()
 	return proto.Marshal(message)
 }
 
-func DecodeInodeProto(b []byte) (*Inode, error) {
+func decodeInodeProto(b []byte) (*Inode, error) {
 	message := &directory_pb.Inode{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		return nil, err

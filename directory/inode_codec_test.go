@@ -11,15 +11,14 @@ func TestInode_EnDecodeProto(t *testing.T) {
 	val := &Inode{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",
-		Time:     time.Now(),
+		Time:     time.Unix(time.Now().Unix(), 0), // windows: precision to s
 		Mode:     os.ModeDir,
 	}
-	val.Time = time.Unix(val.Time.Unix(), 0) // windows: precision to s
 
-	b, err := val.EncodeProto()
+	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeInodeProto(b)
+	val2, err := decodeInodeProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

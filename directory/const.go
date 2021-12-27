@@ -1,5 +1,6 @@
 package directory
 
 const (
-	inodeKv = "_inode"
+	inodeKv   = "_inode"
+	inodeRoot = "/"
 )
