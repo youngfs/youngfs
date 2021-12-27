@@ -71,11 +71,11 @@ func (fp FullPath) Clean() FullPath {
 	return FullPath(filepath.Clean(string(fp)))
 }
 
-func (fp FullPath) DirAndName() (string, string) {
+func (fp FullPath) DirAndName() (FullPath, string) {
 	// fp = fp.Clean()
 	dir, name := filepath.Split(string(fp))
 	name = strings.ToValidUTF8(name, "?")
-	return dir, name
+	return FullPath(dir), name
 }
 
 func (fp FullPath) Name() string {
@@ -84,14 +84,21 @@ func (fp FullPath) Name() string {
 	return strings.ToValidUTF8(name, "?")
 }
 
-func (fp FullPath) Split() []string {
+func (fp FullPath) Split() []FullPath {
 	if fp == "/" {
-		return []string{""}
+		return []FullPath{""}
 	}
-	return strings.Split(string(fp), "/")
+
+	list := strings.Split(string(fp), "/")
+
+	ret := make([]FullPath, len(list))
+	for i, v := range list {
+		ret[i] = FullPath(v)
+	}
+	return ret
 }
 
-func (fp FullPath) SplitList() []string {
+func (fp FullPath) SplitList() []FullPath {
 	list := fp.Split()
 	for i := 1; i < len(list); i++ {
 		list[i] = list[i-1] + "/" + list[i]

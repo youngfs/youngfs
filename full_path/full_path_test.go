@@ -92,17 +92,17 @@ func TestFullPath_Clean(t *testing.T) {
 func TestFullPath_DirAndName(t *testing.T) {
 	path := FullPath("/aa/bb/cc")
 	dir, name := path.DirAndName()
-	assert.Equal(t, dir, "/aa/bb/")
+	assert.Equal(t, dir, FullPath("/aa/bb/"))
 	assert.Equal(t, name, "cc")
 
 	path = FullPath("/aa")
 	dir, name = path.DirAndName()
-	assert.Equal(t, dir, "/")
+	assert.Equal(t, dir, FullPath("/"))
 	assert.Equal(t, name, "aa")
 
 	path = FullPath("/")
 	dir, name = path.DirAndName()
-	assert.Equal(t, dir, "/")
+	assert.Equal(t, dir, FullPath("/"))
 	assert.Equal(t, name, "")
 }
 
@@ -119,16 +119,16 @@ func TestFullPath_Name(t *testing.T) {
 
 func TestFullPath_Split(t *testing.T) {
 	path := FullPath("/aa/bb/cc")
-	assert.Equal(t, path.Split(), []string{"", "aa", "bb", "cc"})
+	assert.Equal(t, path.Split(), []FullPath{"", "aa", "bb", "cc"})
 
 	path = FullPath("/")
-	assert.Equal(t, path.Split(), []string{""})
+	assert.Equal(t, path.Split(), []FullPath{""})
 }
 
 func TestFullPath_SplitList(t *testing.T) {
 	path := FullPath("/aa/bb/cc")
-	assert.Equal(t, path.SplitList(), []string{"/", "/aa", "/aa/bb", "/aa/bb/cc"})
+	assert.Equal(t, path.SplitList(), []FullPath{"/", "/aa", "/aa/bb", "/aa/bb/cc"})
 
 	path = FullPath("/")
-	assert.Equal(t, path.SplitList(), []string{"/"})
+	assert.Equal(t, path.SplitList(), []FullPath{"/"})
 }
