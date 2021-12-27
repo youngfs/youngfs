@@ -3,7 +3,7 @@ package entry
 import (
 	"github.com/go-playground/assert/v2"
 	"icesos/util"
-	rand2 "math/rand"
+	"math/rand"
 	"os"
 	"strconv"
 	"testing"
@@ -14,15 +14,14 @@ func TestObject_EnDecodeProto(t *testing.T) {
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",
-		Time:     time.Now(),
-		Mode:     os.ModeDir,
+		Time:     time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Mode:     os.ModePerm,
 		Mime:     "",
 		Md5:      util.RandMd5(),
-		FileSize: uint64(rand2.Int63()),
-		VolumeId: uint64(rand2.Int63()),
-		Fid:      strconv.Itoa(rand2.Int()),
+		FileSize: uint64(rand.Int63()),
+		VolumeId: uint64(rand.Int63()),
+		Fid:      strconv.Itoa(rand.Int()),
 	}
-	val.Time = time.Unix(val.Time.Unix(), 0) // windows: precision to s
 
 	b, err := val.encodeProto()
 	assert.Equal(t, err, nil)

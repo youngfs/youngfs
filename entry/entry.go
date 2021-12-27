@@ -29,9 +29,21 @@ func entryKey(set iam.Set, fp full_path.FullPath) string {
 	return string(set) + string(fp) + entryKv
 }
 
-func InsertEntry(entry *Entry) error {
+func (entry *Entry) IsDirectory() bool {
+	return entry.Mode.IsDir()
+}
 
-	return nil
+func (entry *Entry) IsFile() bool {
+	return entry.Mode.IsRegular()
+}
+
+func InsertEntry(entry *Entry) error {
+	b, err := entry.encodeProto()
+	if err != nil {
+		return err
+	}
+
+	return kv.Client.KvPut(entry.key(), b)
 }
 
 func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
@@ -43,4 +55,11 @@ func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
 	}
 
 	return decodeEntryProto(b)
+}
+
+func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
+	key := entryKey(set, fp)
+
+	_, err := kv.Client.KvDelete(key)
+	return err
 }
