@@ -2,6 +2,7 @@ package iam
 
 import (
 	"github.com/golang/protobuf/proto"
+	"icesos/errors"
 	"icesos/iam/iam_pb"
 )
 
@@ -27,13 +28,17 @@ func setIAMPbToInstance(pb *iam_pb.SetIAM) *setIAM {
 
 func (iam *setIAM) encodeProto() ([]byte, error) {
 	message := iam.toPb()
-	return proto.Marshal(message)
+	b, err := proto.Marshal(message)
+	if err != nil {
+		err = errors.ErrorCodeResponse[errors.ErrProto]
+	}
+	return b, err
 }
 
 func decodeSetIAMProto(b []byte) (*setIAM, error) {
 	message := &iam_pb.SetIAM{}
 	if err := proto.Unmarshal(b, message); err != nil {
-		return nil, err
+		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return setIAMPbToInstance(message), nil
 }

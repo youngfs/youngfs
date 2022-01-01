@@ -22,6 +22,8 @@ const (
 	ErrCreated       ErrorCode = 2002
 	ErrInvalidPath   ErrorCode = 4001
 	ErrInvalidDelete ErrorCode = 4002
+	ErrKvSever       ErrorCode = 5001
+	ErrProto         ErrorCode = 5002
 )
 
 var ErrorCodeResponse = map[ErrorCode]APIError{
@@ -44,5 +46,15 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		ErrorCode:      ErrInvalidDelete,
 		Description:    "There are files in the folder and cannot be deleted recursively",
 		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrKvSever: {
+		ErrorCode:      ErrKvSever,
+		Description:    "Key-value database error",
+		HTTPStatusCode: http.StatusInternalServerError,
+	},
+	ErrProto: {
+		ErrorCode:      ErrProto,
+		Description:    "ProtoBuf error",
+		HTTPStatusCode: http.StatusInternalServerError,
 	},
 }

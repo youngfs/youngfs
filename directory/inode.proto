@@ -5,6 +5,7 @@ option go_package = "./directory_pb";
 message Inode{
   string full_path = 1;
   string set = 2;
-  int64 time = 3;
-  uint32 mode = 4;
+  int64 Mtime = 3;
+  int64 Ctime = 4;
+  uint32 mode = 5;
 }

@@ -11,12 +11,11 @@ import (
 	"time"
 )
 
-// Create / when server start
-
 type Inode struct {
 	full_path.FullPath             // full full_path
 	iam.Set                        // own set_iam
-	Time               time.Time   // time of creation
+	Mtime              time.Time   // time of last modification
+	Ctime              time.Time   // time of creation
 	Mode               os.FileMode // file mode
 }
 
@@ -36,28 +35,91 @@ func (inode *Inode) IsFile() bool {
 	return inode.Mode.IsRegular()
 }
 
+func updateMtime(set iam.Set, fp full_path.FullPath, mtime time.Time) error {
+	dirList := fp.SplitList()
+
+	for _, dir := range dirList {
+		dirEntry, err := entry.GetEntry(set, dir)
+		if err != nil {
+			return err
+		}
+
+		oldMtime := dirEntry.Mtime //Record the Mtime before modification
+		dirEntry.Mtime = mtime
+		err = entry.InsertEntry(dirEntry)
+		if err != nil {
+			return err
+		}
+
+		if dir != inodeRoot {
+			err := deleteInode(
+				&Inode{
+					FullPath: dir,
+					Set:      set,
+					Mtime:    oldMtime,
+					Ctime:    dirEntry.Ctime,
+					Mode:     os.ModeDir,
+				})
+			if err != nil {
+				return err
+			}
+
+			err = insertInode(
+				&Inode{
+					FullPath: dir,
+					Set:      set,
+					Mtime:    mtime,
+					Ctime:    dirEntry.Ctime,
+					Mode:     os.ModeDir,
+				})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func insertInode(inode *Inode) error {
+	b, err := inode.encodeProto()
+	if err != nil {
+		return err
+	}
+
+	err = kv.Client.SAdd(inode.Key(), b)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func InsertInode(inode *Inode, cover bool) error {
 	dirList := inode.SplitList()
 	for _, dir := range dirList {
 		dirEntry, err := entry.GetEntry(inode.Set, dir)
 		if err == redis.Nil {
-			err = entry.InsertEntry(
-				&entry.Entry{
-					FullPath: dir,
-					Set:      inode.Set,
-					Time:     inode.Time,
-					Mode:     os.ModeDir,
-				},
-			)
-			if err != nil {
-				return err
+			if dir != inode.FullPath {
+				err = entry.InsertEntry(
+					&entry.Entry{
+						FullPath: dir,
+						Set:      inode.Set,
+						Mtime:    inode.Mtime,
+						Ctime:    inode.Ctime,
+						Mode:     os.ModeDir,
+					},
+				)
+				if err != nil {
+					return err
+				}
 			}
 
 			if dir != inodeRoot {
 				dirInode := &Inode{
 					FullPath: dir,
 					Set:      inode.Set,
-					Time:     inode.Time,
+					Mtime:    inode.Mtime,
+					Ctime:    inode.Ctime,
 					Mode:     os.ModeDir,
 				}
 
@@ -65,33 +127,41 @@ func InsertInode(inode *Inode, cover bool) error {
 					dirInode.Mode = inode.Mode
 				}
 
-				b, err := dirInode.encodeProto()
+				err := insertInode(dirInode)
 				if err != nil {
-					return err
-				}
 
-				err = kv.Client.SAdd(dirInode.Key(), b)
-				if err != nil {
 					return err
 				}
 			}
-
-			continue
 		} else if err != nil {
-			return nil
-		}
-
-		if dirEntry.IsFile() {
+			return err
+		} else if dirEntry.IsFile() {
 			if cover {
-				err = DeleteInodeAndEntry(inode.Set, dir, true)
+				err = deleteInodeAndEntry(inode.Set, dir)
 				if err != nil {
 					return err
+				}
+
+				if dir != inode.FullPath {
+					err = entry.InsertEntry(
+						&entry.Entry{
+							FullPath: dir,
+							Set:      inode.Set,
+							Mtime:    inode.Mtime,
+							Ctime:    inode.Ctime,
+							Mode:     os.ModeDir,
+						},
+					)
+					if err != nil {
+						return err
+					}
 				}
 
 				dirInode := &Inode{
 					FullPath: dir,
 					Set:      inode.Set,
-					Time:     inode.Time,
+					Mtime:    inode.Mtime,
+					Ctime:    inode.Ctime,
 					Mode:     os.ModeDir,
 				}
 
@@ -99,12 +169,7 @@ func InsertInode(inode *Inode, cover bool) error {
 					dirInode.Mode = inode.Mode
 				}
 
-				b, err := dirInode.encodeProto()
-				if err != nil {
-					return err
-				}
-
-				err = kv.Client.SAdd(dirInode.Key(), b)
+				err := insertInode(dirInode)
 				if err != nil {
 					return err
 				}
@@ -114,6 +179,12 @@ func InsertInode(inode *Inode, cover bool) error {
 		}
 	}
 
+	if inode.FullPath != inodeRoot {
+		err := updateMtime(inode.Set, inode.Dir(), inode.Mtime)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -137,20 +208,29 @@ func GetInodes(set iam.Set, fp full_path.FullPath) ([]Inode, error) {
 	return ret, nil
 }
 
-func DeleteInodeAndEntry(set iam.Set, fp full_path.FullPath, recursive bool) error {
-
-	inodes, err := GetInodes(set, fp)
+func deleteInode(inode *Inode) error {
+	b, err := inode.encodeProto()
 	if err != nil {
-		return errors.ErrorCodeResponse[errors.ErrInvalidPath]
+		return err
 	}
 
-	if recursive == false && len(inodes) != 0 {
-		return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+	_, err = kv.Client.SRem(inode.Key(), b)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteInodeAndEntry(set iam.Set, fp full_path.FullPath) error {
+	inodes, err := GetInodes(set, fp)
+	if err != nil {
+		return err
 	}
 
 	for _, inode := range inodes {
 		if inode.IsDirectory() {
-			err = DeleteInodeAndEntry(set, inode.FullPath, recursive)
+			err = deleteInodeAndEntry(set, inode.FullPath)
 			if err != nil {
 				return err
 			}
@@ -168,19 +248,14 @@ func DeleteInodeAndEntry(set iam.Set, fp full_path.FullPath, recursive bool) err
 	}
 
 	if fp != inodeRoot {
-		inode := &Inode{
-			FullPath: fp,
-			Set:      set,
-			Time:     nowEntry.Time,
-			Mode:     nowEntry.Mode,
-		}
-
-		b, err := inode.encodeProto()
-		if err != nil {
-			return err
-		}
-
-		_, err = kv.Client.SRem(inode.Key(), b)
+		err := deleteInode(
+			&Inode{
+				FullPath: fp,
+				Set:      set,
+				Mtime:    nowEntry.Mtime,
+				Ctime:    nowEntry.Ctime,
+				Mode:     nowEntry.Mode,
+			})
 		if err != nil {
 			return err
 		}
@@ -194,6 +269,73 @@ func DeleteInodeAndEntry(set iam.Set, fp full_path.FullPath, recursive bool) err
 	err = entry.DeleteEntry(set, fp)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func DeleteInodeAndEntry(set iam.Set, fp full_path.FullPath, mtime time.Time, recursive bool) error {
+
+	inodes, err := GetInodes(set, fp)
+	if err != nil {
+		return err
+	}
+
+	nowEntry, err := entry.GetEntry(set, fp)
+	if err != nil {
+		if err == redis.Nil {
+			return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+		}
+		return err
+	}
+
+	if recursive == false && len(inodes) != 0 {
+		return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+	}
+
+	for _, inode := range inodes {
+		if inode.IsDirectory() {
+			err = deleteInodeAndEntry(set, inode.FullPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = entry.DeleteEntry(set, inode.FullPath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if fp != inodeRoot {
+		err := deleteInode(
+			&Inode{
+				FullPath: fp,
+				Set:      set,
+				Mtime:    nowEntry.Mtime,
+				Ctime:    nowEntry.Ctime,
+				Mode:     nowEntry.Mode,
+			})
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = kv.Client.SDelete(inodeKey(set, fp))
+	if err != nil {
+		return err
+	}
+
+	err = entry.DeleteEntry(set, fp)
+	if err != nil {
+		return err
+	}
+
+	if fp != inodeRoot {
+		err := updateMtime(set, fp.Dir(), mtime)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

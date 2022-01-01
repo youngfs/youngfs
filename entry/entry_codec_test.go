@@ -14,7 +14,8 @@ func TestObject_EnDecodeProto(t *testing.T) {
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",
-		Time:     time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Mtime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Ctime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
 		Mode:     os.ModePerm,
 		Mime:     "",
 		Md5:      util.RandMd5(),

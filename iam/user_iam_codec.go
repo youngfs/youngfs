@@ -3,6 +3,7 @@ package iam
 import (
 	"crypto/md5"
 	"github.com/golang/protobuf/proto"
+	"icesos/errors"
 	"icesos/iam/iam_pb"
 	"icesos/util"
 )
@@ -31,13 +32,17 @@ func userIAMPbToInstance(pb *iam_pb.UserIAM) *userIAM {
 
 func (userIam *userIAM) encodeProto() ([]byte, error) {
 	message := userIam.toPb()
-	return proto.Marshal(message)
+	b, err := proto.Marshal(message)
+	if err != nil {
+		err = errors.ErrorCodeResponse[errors.ErrProto]
+	}
+	return b, err
 }
 
 func decodeUserIAMProto(b []byte) (*userIAM, error) {
 	message := &iam_pb.UserIAM{}
 	if err := proto.Unmarshal(b, message); err != nil {
-		return nil, err
+		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return userIAMPbToInstance(message), nil
 }

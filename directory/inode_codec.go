@@ -3,6 +3,7 @@ package directory
 import (
 	"github.com/golang/protobuf/proto"
 	"icesos/directory/directory_pb"
+	"icesos/errors"
 	"icesos/full_path"
 	"icesos/iam"
 	"os"
@@ -16,7 +17,8 @@ func (inode *Inode) toPb() *directory_pb.Inode {
 	return &directory_pb.Inode{
 		FullPath: string(inode.FullPath),
 		Set:      string(inode.Set),
-		Time:     inode.Time.Unix(),
+		Mtime:    inode.Mtime.Unix(),
+		Ctime:    inode.Ctime.Unix(),
 		Mode:     uint32(inode.Mode),
 	}
 }
@@ -28,20 +30,25 @@ func inodePbToInstance(pb *directory_pb.Inode) *Inode {
 	return &Inode{
 		FullPath: full_path.FullPath(pb.FullPath),
 		Set:      iam.Set(pb.Set),
-		Time:     time.Unix(pb.Time, 0),
+		Mtime:    time.Unix(pb.Mtime, 0),
+		Ctime:    time.Unix(pb.Ctime, 0),
 		Mode:     os.FileMode(pb.Mode),
 	}
 }
 
 func (inode *Inode) encodeProto() ([]byte, error) {
 	message := inode.toPb()
-	return proto.Marshal(message)
+	b, err := proto.Marshal(message)
+	if err != nil {
+		err = errors.ErrorCodeResponse[errors.ErrProto]
+	}
+	return b, err
 }
 
 func decodeInodeProto(b []byte) (*Inode, error) {
 	message := &directory_pb.Inode{}
 	if err := proto.Unmarshal(b, message); err != nil {
-		return nil, err
+		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return inodePbToInstance(message), nil
 }

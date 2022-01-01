@@ -12,7 +12,8 @@ import (
 type Entry struct {
 	full_path.FullPath                // file full full_path
 	iam.Set                           // own set_iam
-	Time               time.Time      // time of creation
+	Mtime              time.Time      // time of last modification
+	Ctime              time.Time      // time of creation
 	Mode               os.FileMode    // file mode
 	Mime               string         // MIME type
 	Md5                [md5.Size]byte // MD5
@@ -61,8 +62,11 @@ func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 	key := entryKey(set, fp)
 
 	_, err := kv.Client.KvDelete(key)
+	if err != nil {
+		return err
+	}
 
 	//todo:  delete actual object
 
-	return err
+	return nil
 }

@@ -21,10 +21,14 @@ func TestEntry(t *testing.T) {
 	fp := full_path.FullPath("/aa/bb/cc")
 	set := iam.Set("test")
 
+	Ct := time.Unix(time.Now().Unix(), 0) // windows: precision to s
+	time.Sleep(time.Duration(2) * time.Second)
+
 	entry := &Entry{
 		FullPath: fp,
 		Set:      set,
-		Time:     time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Mtime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Ctime:    Ct,
 		Mode:     os.ModePerm,
 		Mime:     "",
 		Md5:      util.RandMd5(),
