@@ -125,10 +125,10 @@ func TestInode(t *testing.T) {
 	err = DeleteInodeAndEntry(set, full_path.FullPath("/aa/bb"), time2, true)
 	assert.Equal(t, err, nil)
 
-	entryFiles1 := []full_path.FullPath{}                //ctime: time2  mtime:time2
-	entryFiles2 := []full_path.FullPath{"/aa/ee", "/ff"} //ctime: time1  mtime:time1
-	entryDirs1 := []full_path.FullPath{"/", "/aa"}       //ctime: time1  mtime:time2
-	entryDirs2 := []full_path.FullPath{"/gg", "/aa/hh"}  //ctime: time1  mtime:time1
+	entryFiles1 := []full_path.FullPath{}                    //ctime: time2  mtime:time2
+	entryFiles2 := []full_path.FullPath{"/aa/ee", "/ff"}     //ctime: time1  mtime:time1
+	entryDirs1 := []full_path.FullPath{"/aa"}                //ctime: time1  mtime:time2
+	entryDirs2 := []full_path.FullPath{"/", "/gg", "/aa/hh"} //ctime: time1  mtime:time1
 	set1 := make(map[full_path.FullPath]bool)
 	for _, dir := range entryFiles1 {
 		set1[dir] = true
@@ -256,8 +256,8 @@ func TestInode(t *testing.T) {
 
 	entryFiles1 = []full_path.FullPath{"/aa/ee/kk"}                                   //ctime: time3  mtime:time3
 	entryFiles2 = []full_path.FullPath{"/ff"}                                         //ctime: time1  mtime:time1
-	entryDirs1 = []full_path.FullPath{"/", "/aa"}                                     //ctime: time1  mtime:time3
-	entryDirs2 = []full_path.FullPath{"/gg", "/aa/hh"}                                //ctime: time1  mtime:time1
+	entryDirs1 = []full_path.FullPath{"/aa"}                                          //ctime: time1  mtime:time3
+	entryDirs2 = []full_path.FullPath{"/", "/gg", "/aa/hh"}                           //ctime: time1  mtime:time1
 	entryDirs3 := []full_path.FullPath{"/aa/ee", "/aa/ll"}                            //ctime: time3  mtime:time3
 	entryFiles = []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/ff", "aa/ee/kk"} // delete /aa/ee
 	entryDirs = []full_path.FullPath{"/", "/aa", "/aa/bb", "/aa/bb/cc", "/gg", "/aa/hh", "/aa/bb/ii", "/aa/bb/ee", "/aa/bb/ee/jj", "/aa/ee", "/aa/ll"}

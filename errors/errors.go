@@ -18,12 +18,15 @@ func (e APIError) Error() string {
 }
 
 const (
-	ErrNone          ErrorCode = 2001
-	ErrCreated       ErrorCode = 2002
-	ErrInvalidPath   ErrorCode = 4001
-	ErrInvalidDelete ErrorCode = 4002
-	ErrKvSever       ErrorCode = 5001
-	ErrProto         ErrorCode = 5002
+	ErrNone            ErrorCode = 2001
+	ErrCreated         ErrorCode = 2002
+	ErrInvalidPath     ErrorCode = 4001
+	ErrInvalidDelete   ErrorCode = 4002
+	ErrKvSever         ErrorCode = 5001
+	ErrProto           ErrorCode = 5002
+	ErrSeaweedFSMaster ErrorCode = 5003
+	ErrSeaweedFSVolume ErrorCode = 5004
+	ErrRedisSync       ErrorCode = 5005
 )
 
 var ErrorCodeResponse = map[ErrorCode]APIError{
@@ -55,6 +58,21 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 	ErrProto: {
 		ErrorCode:      ErrProto,
 		Description:    "ProtoBuf error",
+		HTTPStatusCode: http.StatusInternalServerError,
+	},
+	ErrSeaweedFSMaster: {
+		ErrorCode:      ErrSeaweedFSMaster,
+		Description:    "SeaweedFS master server error",
+		HTTPStatusCode: http.StatusInternalServerError,
+	},
+	ErrSeaweedFSVolume: {
+		ErrorCode:      ErrSeaweedFSVolume,
+		Description:    "SeaweedFS volume server error",
+		HTTPStatusCode: http.StatusInternalServerError,
+	},
+	ErrRedisSync: {
+		ErrorCode:      ErrRedisSync,
+		Description:    "Redis lock server error",
 		HTTPStatusCode: http.StatusInternalServerError,
 	},
 }

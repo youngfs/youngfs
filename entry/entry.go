@@ -38,6 +38,7 @@ func (entry *Entry) IsFile() bool {
 	return entry.Mode.IsRegular()
 }
 
+// after insert entry, insert inode
 func InsertEntry(entry *Entry) error {
 	b, err := entry.encodeProto()
 	if err != nil {
@@ -58,6 +59,7 @@ func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
 	return decodeEntryProto(b)
 }
 
+// after delete entry, delete inode
 func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 	key := entryKey(set, fp)
 
