@@ -20,6 +20,8 @@ func (inode *Inode) toPb() *directory_pb.Inode {
 		Mtime:    inode.Mtime.Unix(),
 		Ctime:    inode.Ctime.Unix(),
 		Mode:     uint32(inode.Mode),
+		Mime:     inode.Mime,
+		FileSize: inode.FileSize,
 	}
 }
 
@@ -33,6 +35,8 @@ func inodePbToInstance(pb *directory_pb.Inode) *Inode {
 		Mtime:    time.Unix(pb.Mtime, 0),
 		Ctime:    time.Unix(pb.Ctime, 0),
 		Mode:     os.FileMode(pb.Mode),
+		Mime:     pb.Mime,
+		FileSize: pb.FileSize,
 	}
 }
 

@@ -17,6 +17,8 @@ type Inode struct {
 	Mtime              time.Time   // time of last modification
 	Ctime              time.Time   // time of creation
 	Mode               os.FileMode // file mode
+	Mime               string      // MIME type
+	FileSize           uint64      // file size
 }
 
 func (inode *Inode) Key() string {
@@ -136,6 +138,8 @@ func insertDir(inode *Inode, cover bool, dir full_path.FullPath) error {
 
 			if dir == inode.FullPath {
 				dirInode.Mode = inode.Mode
+				dirInode.Mime = inode.Mime
+				dirInode.FileSize = inode.FileSize
 			}
 
 			err := insertInode(dirInode)
@@ -179,6 +183,8 @@ func insertDir(inode *Inode, cover bool, dir full_path.FullPath) error {
 
 			if dir == inode.FullPath {
 				dirInode.Mode = inode.Mode
+				dirInode.Mime = inode.Mime
+				dirInode.FileSize = inode.FileSize
 			}
 
 			err = insertInode(dirInode)
@@ -287,6 +293,8 @@ func deleteInodeAndEntry(set iam.Set, fp full_path.FullPath, lock bool) error {
 				Mtime:    nowEntry.Mtime,
 				Ctime:    nowEntry.Ctime,
 				Mode:     nowEntry.Mode,
+				Mime:     nowEntry.Mime,
+				FileSize: nowEntry.FileSize,
 			})
 		if err != nil {
 			return err
