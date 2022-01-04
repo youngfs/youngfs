@@ -1,6 +1,6 @@
 package storage_engine
 
-type putObjectInfo struct {
+type PutObjectInfo struct {
 	Size uint64 `json:"size"`
 	ETag string `json:"eTag"`
 }

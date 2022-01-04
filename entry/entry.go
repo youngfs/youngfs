@@ -2,6 +2,7 @@ package entry
 
 import (
 	"crypto/md5"
+	"github.com/go-redis/redis/v8"
 	"icesos/full_path"
 	"icesos/iam"
 	"icesos/kv"
@@ -66,8 +67,12 @@ func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 
 	entry, err := GetEntry(set, fp)
 	if err != nil {
+		if err == redis.Nil {
+			return nil
+		}
 		return err
 	}
+
 	_, err = kv.Client.KvDelete(key)
 	if err != nil {
 		return err

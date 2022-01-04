@@ -17,7 +17,7 @@ func TestRedisStore_Set(t *testing.T) {
 
 	bList := make([][]byte, 10)
 	for i := 0; i < 10; i++ {
-		bList[i] = util.RandByte(128 + rand.Int()%128)
+		bList[i] = util.RandByte(uint64(128 + rand.Int()%128))
 	}
 
 	// not add members

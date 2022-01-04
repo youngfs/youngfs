@@ -11,7 +11,7 @@ import (
 )
 
 func TestDeleteObject(t *testing.T) {
-	size := 1024 * 1024
+	size := uint64(1024 * 1024)
 
 	info, err := AssignObject()
 	assert.Equal(t, err, nil)
@@ -26,10 +26,10 @@ func TestDeleteObject(t *testing.T) {
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	assert.Equal(t, err, nil)
 
-	putInfo := &putObjectInfo{}
+	putInfo := &PutObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, putInfo)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, putInfo.Size, uint64(size))
+	assert.Equal(t, putInfo.Size, size)
 
 	resp, err = http.Get("http://" + info.Url + "/" + info.Fid)
 	assert.Equal(t, err, nil)
@@ -39,7 +39,7 @@ func TestDeleteObject(t *testing.T) {
 	assert.Equal(t, httpBody, b)
 
 	volumeId, fid := SplitFid(info.Fid)
-	err = DeleteObject(volumeId, fid, uint64(size))
+	err = DeleteObject(volumeId, fid, size)
 	assert.Equal(t, err, nil)
 
 	resp, err = http.Get("http://" + info.Url + "/" + info.Fid)
