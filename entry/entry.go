@@ -5,6 +5,7 @@ import (
 	"icesos/full_path"
 	"icesos/iam"
 	"icesos/kv"
+	"icesos/storage_engine"
 	"os"
 	"time"
 )
@@ -63,12 +64,21 @@ func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
 func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 	key := entryKey(set, fp)
 
-	_, err := kv.Client.KvDelete(key)
+	entry, err := GetEntry(set, fp)
+	if err != nil {
+		return err
+	}
+	_, err = kv.Client.KvDelete(key)
 	if err != nil {
 		return err
 	}
 
-	//todo:  delete actual object
+	if entry.IsFile() {
+		err := storage_engine.DeleteObject(entry.VolumeId, entry.Fid, entry.FileSize)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
