@@ -6,7 +6,7 @@ import (
 )
 
 func TestAssignObject(t *testing.T) {
-	info, err := AssignObject()
+	info, err := AssignObject(1024 * 1024)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, info.Url, info.PublicUrl)
 	assert.Equal(t, info.Count, int64(1))

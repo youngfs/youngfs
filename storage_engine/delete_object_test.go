@@ -13,7 +13,7 @@ import (
 func TestDeleteObject(t *testing.T) {
 	size := uint64(1024 * 1024)
 
-	info, err := AssignObject()
+	info, err := AssignObject(size)
 	assert.Equal(t, err, nil)
 
 	b := util.RandByte(size)

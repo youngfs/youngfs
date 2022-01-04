@@ -19,7 +19,7 @@ import (
 )
 
 func putObject(t *testing.T, size uint64) (uint64, string) {
-	info, err := storage_engine.AssignObject()
+	info, err := storage_engine.AssignObject(size)
 	assert.Equal(t, err, nil)
 
 	b := util.RandByte(size)

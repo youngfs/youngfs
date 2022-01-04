@@ -17,8 +17,8 @@ type AssignObjectInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func AssignObject() (*AssignObjectInfo, error) {
-	resp, err := http.Get("http://" + vars.MasterServer + "/dir/assign")
+func AssignObject(size uint64) (*AssignObjectInfo, error) {
+	resp, err := http.Get("http://" + vars.MasterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10))
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
