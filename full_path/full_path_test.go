@@ -2,7 +2,6 @@ package full_path
 
 import (
 	"github.com/go-playground/assert/v2"
-	"runtime"
 	"testing"
 )
 
@@ -53,40 +52,32 @@ func TestFullPath_IsLegal(t *testing.T) {
 }
 
 func TestFullPath_Clean(t *testing.T) {
-	path := FullPath("/aa/bb/./cc")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, string(path.Clean()), "\\aa\\bb\\cc")
-	} else {
-		assert.Equal(t, string(path.Clean()), "/aa/bb/cc")
-	}
+	path := FullPath("/aa/bb/cc")
+	assert.Equal(t, string(path.Clean()), "/aa/bb/cc")
+
+	path = FullPath("/aa/bb/./cc")
+	assert.Equal(t, string(path.Clean()), "/aa/bb/cc")
 
 	path = FullPath("/aa/bb/cc/../dd")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, string(path.Clean()), "\\aa\\bb\\dd")
-	} else {
-		assert.Equal(t, string(path.Clean()), "/aa/bb/dd")
-	}
+	assert.Equal(t, string(path.Clean()), "/aa/bb/dd")
 
 	path = FullPath("/aa/../bb")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, string(path.Clean()), "\\bb")
-	} else {
-		assert.Equal(t, string(path.Clean()), "/bb")
-	}
+	assert.Equal(t, string(path.Clean()), "/bb")
 
 	path = FullPath("/././aa")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, string(path.Clean()), "\\aa")
-	} else {
-		assert.Equal(t, string(path.Clean()), "/aa")
-	}
+	assert.Equal(t, string(path.Clean()), "/aa")
 
 	path = FullPath("/")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, string(path.Clean()), "\\")
-	} else {
-		assert.Equal(t, string(path.Clean()), "/")
-	}
+	assert.Equal(t, string(path.Clean()), "/")
+
+	path = FullPath("/.")
+	assert.Equal(t, string(path.Clean()), "/")
+
+	path = FullPath("/./.")
+	assert.Equal(t, string(path.Clean()), "/")
+
+	path = FullPath("/aa/..")
+	assert.Equal(t, string(path.Clean()), "/")
 }
 
 func TestFullPath_DirAndName(t *testing.T) {

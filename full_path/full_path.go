@@ -67,8 +67,29 @@ func (fp FullPath) IsLegal() bool {
 }
 
 func (fp FullPath) Clean() FullPath {
-	// os:  Windows: \ Linux: /
-	return FullPath(filepath.Clean(string(fp)))
+	if fp == "/" {
+		return fp
+	}
+	list := strings.Split(string(fp), "/")
+	list = list[1:]
+	retList := make([]string, 0)
+	for _, dir := range list {
+		if dir == ".." {
+			retList = retList[:len(retList)-1]
+		} else if dir != "." {
+			retList = append(retList, dir)
+		}
+	}
+
+	ret := ""
+	for _, dir := range retList {
+		ret += "/" + dir
+	}
+	if ret == "" {
+		ret = "/"
+	}
+
+	return FullPath(ret)
 }
 
 func (fp FullPath) DirAndName() (FullPath, string) {
