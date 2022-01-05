@@ -14,21 +14,33 @@ func TestUser(t *testing.T) {
 	set := []string{"test_set1", "test_set2", "test_set3"}
 
 	// add user
+	ret, err := user.IsExist()
+	assert.Equal(t, err, nil)
+	assert.Equal(t, ret, false)
+
 	for _, str := range sk {
 		ret := user.Identify(str)
 		assert.Equal(t, ret, false)
 	}
 
-	err := user.CreateUser(sk[0])
+	err = user.Create(sk[0])
 	assert.Equal(t, err, nil)
+
+	ret, err = user.IsExist()
+	assert.Equal(t, err, nil)
+	assert.Equal(t, ret, true)
 
 	for i, str := range sk {
 		ret := user.Identify(str)
 		assert.Equal(t, ret, i == 0)
 	}
 
-	err = user.CreateUser(sk[1])
+	err = user.Create(sk[1])
 	assert.Equal(t, err, nil)
+
+	ret, err = user.IsExist()
+	assert.Equal(t, err, nil)
+	assert.Equal(t, ret, true)
 
 	for i, str := range sk {
 		ret := user.Identify(str)
@@ -64,8 +76,26 @@ func TestUser(t *testing.T) {
 		assert.Equal(t, ret, i > 0)
 	}
 
+	for _, str := range set {
+		err := user.DeleteReadSetPermission(Set(str))
+		assert.Equal(t, err, nil)
+		err = user.DeleteWriteSetPermission(Set(str))
+		assert.Equal(t, err, nil)
+	}
+
+	for _, str := range set {
+		ret := user.ReadSetPermission(Set(str))
+		assert.Equal(t, ret, false)
+		ret = user.WriteSetPermission(Set(str))
+		assert.Equal(t, ret, false)
+	}
+
+	ret, err = user.IsExist()
+	assert.Equal(t, err, nil)
+	assert.Equal(t, ret, true)
+
 	// delete user
-	ret, err := user.DeleteUser()
+	ret, err = user.Delete()
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, true)
 
@@ -81,7 +111,7 @@ func TestUser(t *testing.T) {
 		assert.Equal(t, ret, false)
 	}
 
-	ret, err = user.DeleteUser()
+	ret, err = user.Delete()
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 }

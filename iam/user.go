@@ -2,6 +2,7 @@ package iam
 
 import (
 	"crypto/md5"
+	"github.com/go-redis/redis/v8"
 	"icesos/kv"
 )
 
@@ -77,6 +78,36 @@ func (user User) AddWriteSetPermission(set Set) error {
 	return kv.Client.SAdd(setIAM.WriteKey(), member)
 }
 
+func (user User) DeleteReadSetPermission(set Set) error {
+	setIAM := setIAM{
+		User: user,
+		Set:  set,
+	}
+
+	member, err := setIAM.encodeProto()
+	if err != nil {
+		return err
+	}
+
+	_, err = kv.Client.SRem(setIAM.ReadKey(), member)
+	return err
+}
+
+func (user User) DeleteWriteSetPermission(set Set) error {
+	setIAM := setIAM{
+		User: user,
+		Set:  set,
+	}
+
+	member, err := setIAM.encodeProto()
+	if err != nil {
+		return err
+	}
+
+	_, err = kv.Client.SRem(setIAM.WriteKey(), member)
+	return err
+}
+
 func (user User) Identify(sk string) bool {
 	val, err := kv.Client.KvGet(user.userIAMKey())
 	if err != nil {
@@ -91,7 +122,17 @@ func (user User) Identify(sk string) bool {
 	return userIAM.SecretKey == md5.Sum([]byte(sk))
 }
 
-func (user User) CreateUser(sk string) error {
+func (user User) IsExist() (bool, error) {
+	_, err := kv.Client.KvGet(user.userIAMKey())
+	if err == redis.Nil {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (user User) Create(sk string) error {
 	userIAM := userIAM{
 		User:      user,
 		SecretKey: md5.Sum([]byte(sk)),
@@ -105,7 +146,7 @@ func (user User) CreateUser(sk string) error {
 	return kv.Client.KvPut(userIAM.key(), b)
 }
 
-func (user User) DeleteUser() (bool, error) {
+func (user User) Delete() (bool, error) {
 	ret, err := kv.Client.KvDelete(user.userIAMKey())
 	if err != nil || ret == false {
 		return false, err

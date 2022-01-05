@@ -152,7 +152,7 @@ func insertDir(inode *Inode, cover bool, dir full_path.FullPath) error {
 		return err
 	} else if dirEntry.IsFile() {
 		if cover {
-
+			//todo: if seaweedfs error, will not create inode
 			err = deleteInodeAndEntry(inode.Set, dir, false)
 			if err != nil {
 				return err
@@ -197,6 +197,8 @@ func insertDir(inode *Inode, cover bool, dir full_path.FullPath) error {
 	}
 	return nil
 }
+
+//todo: add insert inode and entry
 
 func InsertInode(inode *Inode, cover bool) error {
 	dirList := inode.SplitList()

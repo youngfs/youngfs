@@ -18,15 +18,21 @@ func (e APIError) Error() string {
 }
 
 const (
-	ErrNone            ErrorCode = 2001
-	ErrCreated         ErrorCode = 2002
-	ErrInvalidPath     ErrorCode = 4001
-	ErrInvalidDelete   ErrorCode = 4002
-	ErrKvSever         ErrorCode = 5001
-	ErrProto           ErrorCode = 5002
-	ErrSeaweedFSMaster ErrorCode = 5003
-	ErrSeaweedFSVolume ErrorCode = 5004
-	ErrRedisSync       ErrorCode = 5005
+	ErrNone                 ErrorCode = 2001
+	ErrCreated              ErrorCode = 2002
+	ErrInvalidPath          ErrorCode = 4001
+	ErrInvalidDelete        ErrorCode = 4002
+	ErrIllegalObjectName    ErrorCode = 4003
+	ErrAdminAuthenticate    ErrorCode = 4004
+	ErrUserNotExist         ErrorCode = 4005
+	ErrUserAuthenticate     ErrorCode = 4006
+	ErrSetReadAuthenticate  ErrorCode = 4007
+	ErrSetWriteAuthenticate ErrorCode = 4008
+	ErrKvSever              ErrorCode = 5001
+	ErrProto                ErrorCode = 5002
+	ErrSeaweedFSMaster      ErrorCode = 5003
+	ErrSeaweedFSVolume      ErrorCode = 5004
+	ErrRedisSync            ErrorCode = 5005
 )
 
 var ErrorCodeResponse = map[ErrorCode]APIError{
@@ -48,6 +54,36 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 	ErrInvalidDelete: {
 		ErrorCode:      ErrInvalidDelete,
 		Description:    "There are files in the folder and cannot be deleted recursively",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrIllegalObjectName: {
+		ErrorCode:      ErrIllegalObjectName,
+		Description:    "Illegal object name",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrAdminAuthenticate: {
+		ErrorCode:      ErrAdminAuthenticate,
+		Description:    "Administrator authority authentication failed",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrUserNotExist: {
+		ErrorCode:      ErrUserNotExist,
+		Description:    "User does not exist",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrUserAuthenticate: {
+		ErrorCode:      ErrUserAuthenticate,
+		Description:    "User authority authentication failed",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrSetReadAuthenticate: {
+		ErrorCode:      ErrSetReadAuthenticate,
+		Description:    "Set read authority authentication failed",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrSetWriteAuthenticate: {
+		ErrorCode:      ErrSetWriteAuthenticate,
+		Description:    "Set write authority authentication failed",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
 	ErrKvSever: {

@@ -12,7 +12,7 @@ type deleteObjectInfo struct {
 	Size uint64 `json:"size"`
 }
 
-func DeleteObject(volumeId uint64, fid string, size uint64) error {
+func DeleteObject(volumeId uint64, fid string) error {
 	volumeIp, err := GetVolumeIp(volumeId)
 	if err != nil || volumeIp == "" {
 		return err
@@ -27,6 +27,9 @@ func DeleteObject(volumeId uint64, fid string, size uint64) error {
 	if err != nil {
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
+	if resp.StatusCode != http.StatusAccepted {
+		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+	}
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -35,8 +38,7 @@ func DeleteObject(volumeId uint64, fid string, size uint64) error {
 
 	info := &deleteObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
-
-	if info.Size != size+deleteOffset {
+	if err != nil {
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 

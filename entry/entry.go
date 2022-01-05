@@ -79,7 +79,7 @@ func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
 	}
 
 	if entry.IsFile() {
-		err := storage_engine.DeleteObject(entry.VolumeId, entry.Fid, entry.FileSize)
+		err := storage_engine.DeleteObject(entry.VolumeId, entry.Fid)
 		if err != nil {
 			return err
 		}
