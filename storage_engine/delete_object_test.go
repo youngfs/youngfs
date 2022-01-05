@@ -39,7 +39,7 @@ func TestDeleteObject(t *testing.T) {
 	assert.Equal(t, httpBody, b)
 
 	volumeId, fid := SplitFid(info.Fid)
-	err = DeleteObject(volumeId, fid, size)
+	err = DeleteObject(volumeId, fid)
 	assert.Equal(t, err, nil)
 
 	resp, err = http.Get("http://" + info.Url + "/" + info.Fid)
