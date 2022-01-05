@@ -28,6 +28,7 @@ const (
 	ErrUserAuthenticate     ErrorCode = 4006
 	ErrSetReadAuthenticate  ErrorCode = 4007
 	ErrSetWriteAuthenticate ErrorCode = 4008
+	ErrInvalidUserName      ErrorCode = 4009
 	ErrKvSever              ErrorCode = 5001
 	ErrProto                ErrorCode = 5002
 	ErrSeaweedFSMaster      ErrorCode = 5003
@@ -36,6 +37,7 @@ const (
 )
 
 var ErrorCodeResponse = map[ErrorCode]APIError{
+	// 200
 	ErrNone: {
 		ErrorCode:      ErrNone,
 		Description:    "Request succeeded",
@@ -46,6 +48,7 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		Description:    "Created succeeded",
 		HTTPStatusCode: http.StatusCreated,
 	},
+	// 400
 	ErrInvalidPath: {
 		ErrorCode:      ErrInvalidPath,
 		Description:    "The file path is not valid",
@@ -86,6 +89,12 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		Description:    "Set write authority authentication failed",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
+	ErrInvalidUserName: {
+		ErrorCode:      ErrInvalidUserName,
+		Description:    "Invalid user name",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	// 500
 	ErrKvSever: {
 		ErrorCode:      ErrKvSever,
 		Description:    "Key-value database error",

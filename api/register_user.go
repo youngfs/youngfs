@@ -39,6 +39,16 @@ func RegisterUserHandler(c *gin.Context) {
 		return
 	}
 
+	if registerUserInfo.User == vars.AdminName {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": errors.ErrorCodeResponse[errors.ErrInvalidUserName].Error(),
+			},
+		)
+		return
+	}
+
 	user := iam.User(registerUserInfo.User)
 	err = user.Create(registerUserInfo.SecretKey)
 	if err != nil {
