@@ -34,6 +34,7 @@ const (
 	ErrSeaweedFSMaster      ErrorCode = 5003
 	ErrSeaweedFSVolume      ErrorCode = 5004
 	ErrRedisSync            ErrorCode = 5005
+	ErrServer               ErrorCode = 5006
 )
 
 var ErrorCodeResponse = map[ErrorCode]APIError{
@@ -118,6 +119,11 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 	ErrRedisSync: {
 		ErrorCode:      ErrRedisSync,
 		Description:    "Redis lock server error",
+		HTTPStatusCode: http.StatusInternalServerError,
+	},
+	ErrServer: {
+		ErrorCode:      ErrServer,
+		Description:    "icesos server error",
 		HTTPStatusCode: http.StatusInternalServerError,
 	},
 }

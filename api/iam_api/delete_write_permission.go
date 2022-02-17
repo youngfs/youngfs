@@ -1,4 +1,4 @@
-package api
+package iam_api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-type AddReadPermissionInfo struct {
+type DeleteWritePermissionInfo struct {
 	AdminName string `form:"adminName" json:"adminName" uri:"adminName" binding:"required"`
 	AdminSK   string `form:"adminSK" json:"adminSK" uri:"adminSK" binding:"required"`
 	User      string `form:"user" json:"user" uri:"user" binding:"required"`
 	Set       string `form:"set" json:"set" uri:"set" binding:"required"`
 }
 
-func AddReadPermissionHandler(c *gin.Context) {
-	addReadPermissionInfo := &AddReadPermissionInfo{}
+func DeleteWritePermissionHandler(c *gin.Context) {
+	deleteWritePermissionInfo := &DeleteWritePermissionInfo{}
 
-	err := c.Bind(addReadPermissionInfo)
+	err := c.Bind(deleteWritePermissionInfo)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -29,7 +29,7 @@ func AddReadPermissionHandler(c *gin.Context) {
 		return
 	}
 
-	if addReadPermissionInfo.AdminName != vars.AdminName || addReadPermissionInfo.AdminSK != vars.AdminSK {
+	if deleteWritePermissionInfo.AdminName != vars.AdminName || deleteWritePermissionInfo.AdminSK != vars.AdminSK {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
@@ -39,8 +39,8 @@ func AddReadPermissionHandler(c *gin.Context) {
 		return
 	}
 
-	user := iam.User(addReadPermissionInfo.User)
-	set := iam.Set(addReadPermissionInfo.Set)
+	user := iam.User(deleteWritePermissionInfo.User)
+	set := iam.Set(deleteWritePermissionInfo.Set)
 	ret, err := user.IsExist()
 	if err != nil {
 		c.JSON(
@@ -61,7 +61,7 @@ func AddReadPermissionHandler(c *gin.Context) {
 		return
 	}
 
-	err = user.AddReadSetPermission(set)
+	err = user.DeleteWriteSetPermission(set)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,

@@ -1,4 +1,4 @@
-package api
+package iam_api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,16 +8,17 @@ import (
 	"net/http"
 )
 
-type LogoutUserInfo struct {
+type RegisterUserInfo struct {
 	AdminName string `form:"adminName" json:"adminName" uri:"adminName" binding:"required"`
 	AdminSK   string `form:"adminSK" json:"adminSK" uri:"adminSK" binding:"required"`
 	User      string `form:"user" json:"user" uri:"user" binding:"required"`
+	SecretKey string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
 }
 
-func LogoutUserHandler(c *gin.Context) {
-	logoutUserInfo := &LogoutUserInfo{}
+func RegisterUserHandler(c *gin.Context) {
+	registerUserInfo := &RegisterUserInfo{}
 
-	err := c.Bind(logoutUserInfo)
+	err := c.Bind(registerUserInfo)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -28,7 +29,7 @@ func LogoutUserHandler(c *gin.Context) {
 		return
 	}
 
-	if logoutUserInfo.AdminName != vars.AdminName || logoutUserInfo.AdminSK != vars.AdminSK {
+	if registerUserInfo.AdminName != vars.AdminName || registerUserInfo.AdminSK != vars.AdminSK {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
@@ -38,8 +39,18 @@ func LogoutUserHandler(c *gin.Context) {
 		return
 	}
 
-	user := iam.User(logoutUserInfo.User)
-	_, err = user.Delete()
+	if registerUserInfo.User == vars.AdminName {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": errors.ErrorCodeResponse[errors.ErrInvalidUserName].Error(),
+			},
+		)
+		return
+	}
+
+	user := iam.User(registerUserInfo.User)
+	err = user.Create(registerUserInfo.SecretKey)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,

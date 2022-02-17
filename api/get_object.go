@@ -12,29 +12,69 @@ import (
 	"strconv"
 )
 
-type GetObjectInfo struct {
-	User       string `form:"user" json:"user" uri:"user" binding:"required"`
-	SecretKey  string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
-	Set        string `form:"set" json:"set" uri:"set" binding:"required"`
-	ObjectName string `form:"objectName" json:"objectName" uri:"objectName" binding:"required"`
-}
+//type GetObjectInfo struct {
+//	User       string `form:"user" json:"user" uri:"user" binding:"required"`
+//	SecretKey  string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
+//}
 
 func GetObjectHandler(c *gin.Context) {
-	getObjectInfo := &GetObjectInfo{}
+	//getObjectInfo := &GetObjectInfo{}
+	//
+	//err := c.Bind(getObjectInfo)
+	//if err != nil {
+	//	c.JSON(
+	//		http.StatusBadRequest,
+	//		gin.H{
+	//			"error": err.Error(),
+	//		},
+	//	)
+	//	return
+	//}
+	//
+	//set := iam.Set(getObjectInfo.Set)
+	//fp := full_path.FullPath(getObjectInfo.ObjectName)
+	//if !fp.IsLegal() {
+	//	c.JSON(
+	//		http.StatusBadRequest,
+	//		gin.H{
+	//			"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
+	//		},
+	//	)
+	//	return
+	//}
+	//fp = fp.Clean()
+	//
+	//user := iam.User(getObjectInfo.User)
+	//if !user.Identify(getObjectInfo.SecretKey) {
+	//	c.JSON(
+	//		http.StatusBadRequest,
+	//		gin.H{
+	//			"error": errors.ErrorCodeResponse[errors.ErrUserAuthenticate].Error(),
+	//		},
+	//	)
+	//	return
+	//}
+	//
+	//if !user.ReadSetPermission(set) {
+	//	c.JSON(
+	//		http.StatusBadRequest,
+	//		gin.H{
+	//			"error": errors.ErrorCodeResponse[errors.ErrSetReadAuthenticate].Error(),
+	//		},
+	//	)
+	//	return
+	//}
 
-	err := c.Bind(getObjectInfo)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
+	//redirect to list object
+	accepts := c.Request.Header["Accept"]
+	for _, str := range accepts {
+		if str == "application/json" {
+			ListObjectHandler(c)
+			return
+		}
 	}
 
-	set := iam.Set(getObjectInfo.Set)
-	fp := full_path.FullPath(getObjectInfo.ObjectName)
+	set, fp := iam.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !fp.IsLegal() {
 		c.JSON(
 			http.StatusBadRequest,
@@ -46,26 +86,7 @@ func GetObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	user := iam.User(getObjectInfo.User)
-	if !user.Identify(getObjectInfo.SecretKey) {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrUserAuthenticate].Error(),
-			},
-		)
-		return
-	}
-
-	if !user.ReadSetPermission(set) {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrSetReadAuthenticate].Error(),
-			},
-		)
-		return
-	}
+	println(set, fp)
 
 	nowEntry, err := entry.GetEntry(set, fp)
 	if err != nil {
@@ -81,6 +102,16 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
+	if nowEntry.IsDirectory() {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": errors.ErrorCodeResponse[errors.ErrInvalidPath].Error(),
+			},
+		)
+		return
+	}
+
 	url, err := storage_engine.GetVolumeIp(nowEntry.VolumeId)
 	if err != nil {
 		c.JSON(
@@ -91,6 +122,8 @@ func GetObjectHandler(c *gin.Context) {
 		)
 		return
 	}
+
+	println(url)
 
 	c.Redirect(http.StatusMovedPermanently, "http://"+url+"/"+strconv.FormatUint(nowEntry.VolumeId, 10)+","+nowEntry.Fid)
 	return

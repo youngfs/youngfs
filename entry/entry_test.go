@@ -4,15 +4,12 @@ import (
 	"bytes"
 	"github.com/go-playground/assert/v2"
 	"github.com/go-redis/redis/v8"
-	jsoniter "github.com/json-iterator/go"
 	"icesos/command/vars"
 	"icesos/full_path"
 	"icesos/iam"
 	"icesos/kv"
 	"icesos/storage_engine"
 	"icesos/util"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -27,7 +24,7 @@ func TestEntry(t *testing.T) {
 	Ct := time.Unix(time.Now().Unix(), 0) // windows: precision to s
 	time.Sleep(time.Duration(2) * time.Second)
 
-	size := uint64(5 * 1024 * 1024)
+	size := uint64(5 * 1024)
 
 	volumeId, fid := putObject(t, size)
 
@@ -68,30 +65,10 @@ func TestEntry(t *testing.T) {
 }
 
 func putObject(t *testing.T, size uint64) (uint64, string) {
-	info, err := storage_engine.AssignObject(size)
-	assert.Equal(t, err, nil)
-
 	b := util.RandByte(size)
-	req, err := http.NewRequest("PUT", "http://"+info.Url+"/"+info.Fid, bytes.NewReader(b))
+
+	Fid, err := storage_engine.PutObject(size, bytes.NewReader(b))
 	assert.Equal(t, err, nil)
 
-	resp, err := http.DefaultClient.Do(req)
-	assert.Equal(t, err, nil)
-
-	httpBody, err := ioutil.ReadAll(resp.Body)
-	assert.Equal(t, err, nil)
-
-	putInfo := &storage_engine.PutObjectInfo{}
-	err = jsoniter.Unmarshal(httpBody, putInfo)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, putInfo.Size, size)
-
-	resp, err = http.Get("http://" + info.Url + "/" + info.Fid)
-	assert.Equal(t, err, nil)
-
-	httpBody, err = ioutil.ReadAll(resp.Body)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, httpBody, b)
-
-	return storage_engine.SplitFid(info.Fid)
+	return storage_engine.SplitFid(Fid)
 }

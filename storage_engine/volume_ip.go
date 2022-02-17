@@ -41,7 +41,7 @@ func GetVolumeIp(volumeId uint64) (string, error) {
 	err = jsoniter.Unmarshal(httpBody, info)
 
 	if info.Error != "" || len(info.Locations) != 1 {
-		return "", nil
+		return "", errors.ErrorCodeResponse[errors.ErrServer]
 	}
 
 	volumeIpMap[volumeId] = info.Locations[0].Url

@@ -1,4 +1,4 @@
-package api
+package iam_api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-type RegisterUserInfo struct {
+type DeleteReadPermissionInfo struct {
 	AdminName string `form:"adminName" json:"adminName" uri:"adminName" binding:"required"`
 	AdminSK   string `form:"adminSK" json:"adminSK" uri:"adminSK" binding:"required"`
 	User      string `form:"user" json:"user" uri:"user" binding:"required"`
-	SecretKey string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
+	Set       string `form:"set" json:"set" uri:"set" binding:"required"`
 }
 
-func RegisterUserHandler(c *gin.Context) {
-	registerUserInfo := &RegisterUserInfo{}
+func DeleteReadPermissionHandler(c *gin.Context) {
+	deleteReadPermissionInfo := &DeleteReadPermissionInfo{}
 
-	err := c.Bind(registerUserInfo)
+	err := c.Bind(deleteReadPermissionInfo)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -29,7 +29,7 @@ func RegisterUserHandler(c *gin.Context) {
 		return
 	}
 
-	if registerUserInfo.AdminName != vars.AdminName || registerUserInfo.AdminSK != vars.AdminSK {
+	if deleteReadPermissionInfo.AdminName != vars.AdminName || deleteReadPermissionInfo.AdminSK != vars.AdminSK {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
@@ -39,18 +39,29 @@ func RegisterUserHandler(c *gin.Context) {
 		return
 	}
 
-	if registerUserInfo.User == vars.AdminName {
+	user := iam.User(deleteReadPermissionInfo.User)
+	set := iam.Set(deleteReadPermissionInfo.Set)
+	ret, err := user.IsExist()
+	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrInvalidUserName].Error(),
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+	if ret == false {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": errors.ErrorCodeResponse[errors.ErrUserNotExist].Error(),
 			},
 		)
 		return
 	}
 
-	user := iam.User(registerUserInfo.User)
-	err = user.Create(registerUserInfo.SecretKey)
+	err = user.DeleteReadSetPermission(set)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
