@@ -1,4 +1,4 @@
-package kv
+package redis
 
 import (
 	"github.com/go-redis/redis/v8"
@@ -11,15 +11,15 @@ type redisStore struct {
 	redSync *redsync.Redsync
 }
 
-var Client redisStore
-
-func (store *redisStore) Initialize(hostPort, password string, database int) {
-	store.client = redis.NewClient(
+func NewRedisStore(hostPort, password string, database int) *redisStore {
+	kvStore := &redisStore{}
+	kvStore.client = redis.NewClient(
 		&redis.Options{
 			Addr:     hostPort,
 			Password: password,
 			DB:       database,
 		},
 	)
-	store.redSync = redsync.New(goredis.NewPool(store.client))
+	kvStore.redSync = redsync.New(goredis.NewPool(kvStore.client))
+	return kvStore
 }

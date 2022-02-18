@@ -2,7 +2,9 @@ package storage_engine
 
 import (
 	"bytes"
+	"context"
 	"github.com/go-playground/assert/v2"
+	"icesos/command/vars"
 	"icesos/util"
 	"io/ioutil"
 	"net/http"
@@ -10,15 +12,17 @@ import (
 )
 
 func TestDeleteObject(t *testing.T) {
-	size := uint64(1024 * 1024)
+	client := NewStorageEngine(vars.MasterServer)
+	size := uint64(5 * 1024)
+	ctx := context.Background()
 
 	b := util.RandByte(size)
 
-	Fid, err := PutObject(size, bytes.NewReader(b))
+	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 
-	volumeId, fid := SplitFid(Fid)
+	volumeId, fid := client.SplitFid(Fid)
 
-	url, err := GetVolumeIp(volumeId)
+	url, err := client.GetVolumeIp(ctx, volumeId)
 	assert.Equal(t, err, nil)
 
 	resp, err := http.Get("http://" + url + "/" + Fid)
@@ -28,7 +32,7 @@ func TestDeleteObject(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
 
-	err = DeleteObject(volumeId, fid)
+	err = client.DeleteObject(ctx, volumeId, fid)
 	assert.Equal(t, err, nil)
 
 	resp, err = http.Get("http://" + url + "/" + Fid)

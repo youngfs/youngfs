@@ -9,7 +9,7 @@ import (
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/iam"
-	"icesos/kv"
+	redis2 "icesos/kv/redis"
 	"icesos/storage_engine"
 	"icesos/util"
 	"os"
@@ -18,7 +18,7 @@ import (
 )
 
 func TestInode(t *testing.T) {
-	kv.Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	redis2.Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 
 	set := iam.Set("test")
 	mime := "text/plain"

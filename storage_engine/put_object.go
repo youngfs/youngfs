@@ -1,6 +1,7 @@
 package storage_engine
 
 import (
+	"context"
 	"icesos/errors"
 	"io"
 	"net/http"
@@ -11,8 +12,8 @@ type PutObjectInfo struct {
 	ETag string `json:"eTag"`
 }
 
-func PutObject(size uint64, file io.Reader) (string, error) {
-	info, err := AssignObject(size)
+func (svr *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Reader) (string, error) {
+	info, err := svr.AssignObject(ctx, size)
 	if err != nil {
 		return "", err
 	}

@@ -16,60 +16,7 @@ import (
 	"time"
 )
 
-//type PutObjectInfo struct {
-//	User       string `form:"user" json:"user" uri:"user" binding:"required"`
-//	SecretKey  string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
-//}
-
 func PutObjectHandler(c *gin.Context) {
-	//putObjectInfo := &PutObjectInfo{}
-	//
-	//err := c.Bind(putObjectInfo)
-	//if err != nil {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"status": http.StatusBadRequest,
-	//			"error":  err.Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//
-	//set := iam.Set(putObjectInfo.Set)
-	//fp := full_path.FullPath(putObjectInfo.ObjectName)
-	//if !fp.IsLegal() {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//fp = fp.Clean()
-	//
-	//user := iam.User(putObjectInfo.User)
-	//if !user.Identify(putObjectInfo.SecretKey) {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrUserAuthenticate].Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//
-	//if !user.WriteSetPermission(set) {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrSetWriteAuthenticate].Error(),
-	//		},
-	//	)
-	//	return
-	//}'
-
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	file, head, err := c.Request.FormFile("file")

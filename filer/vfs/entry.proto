@@ -1,0 +1,16 @@
+syntax = "proto3";
+package entry_pb;
+option go_package = "./entry_pb";
+
+message Entry{
+  string full_path = 1;
+  string set = 2;
+  int64 mtime = 3;
+  int64 ctime = 4;
+  uint32 mode = 5;
+  string mine = 6;
+  bytes md5 = 7;
+  uint64 file_size = 8;
+  uint64 volume_id = 9;
+  string fid = 10;
+}

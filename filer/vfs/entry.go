@@ -1,4 +1,4 @@
-package entry
+package vfs
 
 import (
 	"crypto/md5"

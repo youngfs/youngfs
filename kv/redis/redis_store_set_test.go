@@ -1,6 +1,7 @@
-package kv
+package redis
 
 import (
+	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
 	"icesos/util"
@@ -10,8 +11,9 @@ import (
 )
 
 func TestRedisStore_Set(t *testing.T) {
-	Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	client := NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_set"
+	ctx := context.Background()
 
 	b := util.RandByte(512)
 
@@ -21,59 +23,59 @@ func TestRedisStore_Set(t *testing.T) {
 	}
 
 	// not add members
-	bList2, err := Client.SMembers(key)
+	bList2, err := client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, bList2, nil)
 
-	cnt, err := Client.SCard(key)
+	cnt, err := client.SCard(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, cnt, int64(0))
 
-	ret, err := Client.SRem(key, b)
+	ret, err := client.SRem(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
-	ret, err = Client.SIsMember(key, b)
+	ret, err = client.SIsMember(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
-	ret, err = Client.SDelete(key)
+	ret, err = client.SDelete(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	//add members
 	for _, m := range bList {
-		err = Client.SAdd(key, m)
+		err = client.SAdd(ctx, key, m)
 		assert.Equal(t, err, nil)
 	}
 
-	bList2, err = Client.SMembers(key)
+	bList2, err = client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
 	sort.Sort(util.BytesSlice(bList))
 	sort.Sort(util.BytesSlice(bList2))
 	assert.Equal(t, bList2, bList)
 
-	cnt, err = Client.SCard(key)
+	cnt, err = client.SCard(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, cnt, int64(10))
 
-	ret, err = Client.SRem(key, b)
+	ret, err = client.SRem(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
-	ret, err = Client.SIsMember(key, b)
+	ret, err = client.SIsMember(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	for _, m := range bList {
-		ret, err = Client.SIsMember(key, m)
+		ret, err = client.SIsMember(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, true)
 	}
 
 	// delete some members
 	for i := 7; i < 10; i++ {
-		ret, err = Client.SRem(key, bList[i])
+		ret, err = client.SRem(ctx, key, bList[i])
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, true)
 	}
@@ -81,88 +83,88 @@ func TestRedisStore_Set(t *testing.T) {
 	bDel := bList[7:]
 	bList = bList[:7]
 
-	bList2, err = Client.SMembers(key)
+	bList2, err = client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
 	sort.Sort(util.BytesSlice(bList))
 	sort.Sort(util.BytesSlice(bList2))
 	assert.Equal(t, bList2, bList)
 
-	cnt, err = Client.SCard(key)
+	cnt, err = client.SCard(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, cnt, int64(7))
 
-	ret, err = Client.SRem(key, b)
+	ret, err = client.SRem(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	for _, m := range bDel {
-		ret, err = Client.SRem(key, m)
+		ret, err = client.SRem(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
-	ret, err = Client.SIsMember(key, b)
+	ret, err = client.SIsMember(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	for _, m := range bList {
-		ret, err = Client.SIsMember(key, m)
+		ret, err = client.SIsMember(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, true)
 	}
 
 	for _, m := range bDel {
-		ret, err = Client.SIsMember(key, m)
+		ret, err = client.SIsMember(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
 	// delete all members
-	ret, err = Client.SDelete(key)
+	ret, err = client.SDelete(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, true)
 
-	bList2, err = Client.SMembers(key)
+	bList2, err = client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, bList2, nil)
 
-	cnt, err = Client.SCard(key)
+	cnt, err = client.SCard(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, cnt, int64(0))
 
-	ret, err = Client.SRem(key, b)
+	ret, err = client.SRem(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	for _, m := range bList {
-		ret, err = Client.SRem(key, m)
+		ret, err = client.SRem(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
 	for _, m := range bDel {
-		ret, err = Client.SRem(key, m)
+		ret, err = client.SRem(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
-	ret, err = Client.SIsMember(key, b)
+	ret, err = client.SIsMember(ctx, key, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
 	for _, m := range bList {
-		ret, err = Client.SIsMember(key, m)
+		ret, err = client.SIsMember(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
 	for _, m := range bDel {
-		ret, err = Client.SIsMember(key, m)
+		ret, err = client.SIsMember(ctx, key, m)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ret, false)
 	}
 
-	ret, err = Client.SDelete(key)
+	ret, err = client.SDelete(ctx, key)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 }

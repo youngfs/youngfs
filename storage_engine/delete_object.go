@@ -1,6 +1,7 @@
 package storage_engine
 
 import (
+	"context"
 	jsoniter "github.com/json-iterator/go"
 	"icesos/errors"
 	"io/ioutil"
@@ -12,8 +13,8 @@ type deleteObjectInfo struct {
 	Size uint64 `json:"size"`
 }
 
-func DeleteObject(volumeId uint64, fid string) error {
-	volumeIp, err := GetVolumeIp(volumeId)
+func (svr *StorageEngine) DeleteObject(ctx context.Context, volumeId uint64, fid string) error {
+	volumeIp, err := svr.GetVolumeIp(ctx, volumeId)
 	if err != nil || volumeIp == "" {
 		return err
 	}

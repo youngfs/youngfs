@@ -6,7 +6,7 @@ import (
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/iam"
-	"icesos/kv"
+	redis2 "icesos/kv/redis"
 	"os"
 	"time"
 )
@@ -39,7 +39,7 @@ func (inode *Inode) IsFile() bool {
 
 func updateMtime(set iam.Set, fp full_path.FullPath, mtime time.Time) error {
 
-	mutex := kv.Client.NewMutex(string(set) + string(fp) + inodeLock)
+	mutex := redis2.Client.NewMutex(string(set) + string(fp) + inodeLock)
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrorCodeResponse[errors.ErrRedisSync]
 	}
@@ -93,7 +93,7 @@ func insertInode(inode *Inode) error {
 		return err
 	}
 
-	err = kv.Client.SAdd(inode.Key(), b)
+	err = redis2.Client.SAdd(inode.Key(), b)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func insertInode(inode *Inode) error {
 }
 
 func insertDir(inode *Inode, cover bool, dir full_path.FullPath) error {
-	mutex := kv.Client.NewMutex(string(inode.Set) + string(dir) + inodeLock)
+	mutex := redis2.Client.NewMutex(string(inode.Set) + string(dir) + inodeLock)
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrorCodeResponse[errors.ErrRedisSync]
 	}
@@ -221,7 +221,7 @@ func InsertInode(inode *Inode, cover bool) error {
 func GetInodes(set iam.Set, fp full_path.FullPath) ([]Inode, error) {
 	key := inodeKey(set, fp)
 
-	b, err := kv.Client.SMembers(key)
+	b, err := redis2.Client.SMembers(key)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func deleteInode(inode *Inode) error {
 		return err
 	}
 
-	_, err = kv.Client.SRem(inode.Key(), b)
+	_, err = redis2.Client.SRem(inode.Key(), b)
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func deleteInode(inode *Inode) error {
 
 func deleteInodeAndEntry(set iam.Set, fp full_path.FullPath, lock bool) error {
 	if lock {
-		mutex := kv.Client.NewMutex(string(set) + string(fp) + inodeLock)
+		mutex := redis2.Client.NewMutex(string(set) + string(fp) + inodeLock)
 		if err := mutex.Lock(); err != nil {
 			return errors.ErrorCodeResponse[errors.ErrRedisSync]
 		}
@@ -303,7 +303,7 @@ func deleteInodeAndEntry(set iam.Set, fp full_path.FullPath, lock bool) error {
 		}
 	}
 
-	_, err = kv.Client.SDelete(inodeKey(set, fp))
+	_, err = redis2.Client.SDelete(inodeKey(set, fp))
 	if err != nil {
 		return err
 	}
@@ -318,7 +318,7 @@ func deleteInodeAndEntry(set iam.Set, fp full_path.FullPath, lock bool) error {
 
 func DeleteInodeAndEntry(set iam.Set, fp full_path.FullPath, mtime time.Time, recursive bool) error {
 
-	inodeCnt, err := kv.Client.SCard(inodeKey(set, fp))
+	inodeCnt, err := redis2.Client.SCard(inodeKey(set, fp))
 	if err != nil {
 		return err
 	}

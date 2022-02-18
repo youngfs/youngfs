@@ -1,4 +1,4 @@
-package kv
+package redis
 
 import "github.com/go-redsync/redsync/v4"
 

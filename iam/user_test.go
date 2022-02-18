@@ -3,12 +3,12 @@ package iam
 import (
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
-	"icesos/kv"
+	"icesos/kv/redis"
 	"testing"
 )
 
 func TestUser(t *testing.T) {
-	kv.Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	redis.Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	user := User("test_name")
 	sk := []string{"test_sk", "test_sk2"}
 	set := []string{"test_set1", "test_set2", "test_set3"}

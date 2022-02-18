@@ -1,8 +1,0 @@
-syntax = "proto3";
-package iam_pb;
-option go_package = "./iam_pb";
-
-message UserIAM{
-  string user = 1;
-  bytes secret_key = 2;
-}

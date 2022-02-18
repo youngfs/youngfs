@@ -1,8 +1,8 @@
 package storage_engine
 
 import (
+	"context"
 	jsoniter "github.com/json-iterator/go"
-	"icesos/command/vars"
 	"icesos/errors"
 	"io/ioutil"
 	"net/http"
@@ -20,14 +20,12 @@ type volumeIpInfo struct {
 	Error          string       `json:"error"`
 }
 
-var volumeIpMap = map[uint64]string{}
-
-func GetVolumeIp(volumeId uint64) (string, error) {
-	if volumeIpMap[volumeId] != "" {
-		return volumeIpMap[volumeId], nil
+func (svr *StorageEngine) GetVolumeIp(ctx context.Context, volumeId uint64) (string, error) {
+	if svr.volumeIpMap[volumeId] != "" {
+		return svr.volumeIpMap[volumeId], nil
 	}
 
-	resp, err := http.Get("http://" + vars.MasterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
+	resp, err := http.Get("http://" + svr.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
 	if err != nil {
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
@@ -44,6 +42,6 @@ func GetVolumeIp(volumeId uint64) (string, error) {
 		return "", errors.ErrorCodeResponse[errors.ErrServer]
 	}
 
-	volumeIpMap[volumeId] = info.Locations[0].Url
-	return volumeIpMap[volumeId], nil
+	svr.volumeIpMap[volumeId] = info.Locations[0].Url
+	return svr.volumeIpMap[volumeId], nil
 }

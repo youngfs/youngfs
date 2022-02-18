@@ -12,59 +12,7 @@ import (
 	"strconv"
 )
 
-//type GetObjectInfo struct {
-//	User       string `form:"user" json:"user" uri:"user" binding:"required"`
-//	SecretKey  string `form:"secretKey" json:"secretKey" uri:"secretKey" binding:"required"`
-//}
-
 func GetObjectHandler(c *gin.Context) {
-	//getObjectInfo := &GetObjectInfo{}
-	//
-	//err := c.Bind(getObjectInfo)
-	//if err != nil {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": err.Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//
-	//set := iam.Set(getObjectInfo.Set)
-	//fp := full_path.FullPath(getObjectInfo.ObjectName)
-	//if !fp.IsLegal() {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//fp = fp.Clean()
-	//
-	//user := iam.User(getObjectInfo.User)
-	//if !user.Identify(getObjectInfo.SecretKey) {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrUserAuthenticate].Error(),
-	//		},
-	//	)
-	//	return
-	//}
-	//
-	//if !user.ReadSetPermission(set) {
-	//	c.JSON(
-	//		http.StatusBadRequest,
-	//		gin.H{
-	//			"error": errors.ErrorCodeResponse[errors.ErrSetReadAuthenticate].Error(),
-	//		},
-	//	)
-	//	return
-	//}
-
 	//redirect to list object
 	accepts := c.Request.Header["Accept"]
 	for _, str := range accepts {

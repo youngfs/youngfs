@@ -3,7 +3,7 @@ package iam
 import (
 	"crypto/md5"
 	"github.com/go-redis/redis/v8"
-	"icesos/kv"
+	redis2 "icesos/kv/redis"
 )
 
 type User string
@@ -31,7 +31,7 @@ func (user User) ReadSetPermission(set Set) bool {
 		return false
 	}
 
-	ret, _ := kv.Client.SIsMember(setIAM.ReadKey(), member)
+	ret, _ := redis2.Client.SIsMember(setIAM.ReadKey(), member)
 	return ret
 }
 
@@ -46,7 +46,7 @@ func (user User) WriteSetPermission(set Set) bool {
 		return false
 	}
 
-	ret, _ := kv.Client.SIsMember(setIAM.WriteKey(), member)
+	ret, _ := redis2.Client.SIsMember(setIAM.WriteKey(), member)
 	return ret
 }
 
@@ -61,7 +61,7 @@ func (user User) AddReadSetPermission(set Set) error {
 		return err
 	}
 
-	return kv.Client.SAdd(setIAM.ReadKey(), member)
+	return redis2.Client.SAdd(setIAM.ReadKey(), member)
 }
 
 func (user User) AddWriteSetPermission(set Set) error {
@@ -75,7 +75,7 @@ func (user User) AddWriteSetPermission(set Set) error {
 		return err
 	}
 
-	return kv.Client.SAdd(setIAM.WriteKey(), member)
+	return redis2.Client.SAdd(setIAM.WriteKey(), member)
 }
 
 func (user User) DeleteReadSetPermission(set Set) error {
@@ -89,7 +89,7 @@ func (user User) DeleteReadSetPermission(set Set) error {
 		return err
 	}
 
-	_, err = kv.Client.SRem(setIAM.ReadKey(), member)
+	_, err = redis2.Client.SRem(setIAM.ReadKey(), member)
 	return err
 }
 
@@ -104,12 +104,12 @@ func (user User) DeleteWriteSetPermission(set Set) error {
 		return err
 	}
 
-	_, err = kv.Client.SRem(setIAM.WriteKey(), member)
+	_, err = redis2.Client.SRem(setIAM.WriteKey(), member)
 	return err
 }
 
 func (user User) Identify(sk string) bool {
-	val, err := kv.Client.KvGet(user.userIAMKey())
+	val, err := redis2.Client.KvGet(user.userIAMKey())
 	if err != nil {
 		return false
 	}
@@ -123,7 +123,7 @@ func (user User) Identify(sk string) bool {
 }
 
 func (user User) IsExist() (bool, error) {
-	_, err := kv.Client.KvGet(user.userIAMKey())
+	_, err := redis2.Client.KvGet(user.userIAMKey())
 	if err == redis.Nil {
 		return false, nil
 	} else if err != nil {
@@ -143,21 +143,21 @@ func (user User) Create(sk string) error {
 		return err
 	}
 
-	return kv.Client.KvPut(userIAM.key(), b)
+	return redis2.Client.KvPut(userIAM.key(), b)
 }
 
 func (user User) Delete() (bool, error) {
-	ret, err := kv.Client.KvDelete(user.userIAMKey())
+	ret, err := redis2.Client.KvDelete(user.userIAMKey())
 	if err != nil || ret == false {
 		return false, err
 	}
 
-	_, err = kv.Client.SDelete(user.setReadIAMKey())
+	_, err = redis2.Client.SDelete(user.setReadIAMKey())
 	if err != nil {
 		return false, err
 	}
 
-	_, err = kv.Client.SDelete(user.setWriteIAMKey())
+	_, err = redis2.Client.SDelete(user.setWriteIAMKey())
 	if err != nil {
 		return false, err
 	}
