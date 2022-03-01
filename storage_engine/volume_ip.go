@@ -39,7 +39,7 @@ func (svr *StorageEngine) GetVolumeIp(ctx context.Context, volumeId uint64) (str
 	err = jsoniter.Unmarshal(httpBody, info)
 
 	if info.Error != "" || len(info.Locations) != 1 {
-		return "", errors.ErrorCodeResponse[errors.ErrServer]
+		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 
 	svr.volumeIpMap[volumeId] = info.Locations[0].Url

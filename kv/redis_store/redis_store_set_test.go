@@ -1,9 +1,10 @@
-package redis
+package redis_store
 
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
+	"icesos/kv"
 	"icesos/util"
 	"math/rand"
 	"sort"
@@ -24,8 +25,8 @@ func TestRedisStore_Set(t *testing.T) {
 
 	// not add members
 	bList2, err := client.SMembers(ctx, key)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, bList2, nil)
+	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err := client.SCard(ctx, key)
 	assert.Equal(t, err, nil)
@@ -125,8 +126,8 @@ func TestRedisStore_Set(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	bList2, err = client.SMembers(ctx, key)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, bList2, nil)
+	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err = client.SCard(ctx, key)
 	assert.Equal(t, err, nil)

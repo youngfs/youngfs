@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestDeleteObject(t *testing.T) {
@@ -20,7 +21,7 @@ func TestDeleteObject(t *testing.T) {
 
 	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 
-	volumeId, fid := client.SplitFid(Fid)
+	volumeId, _ := SplitFid(Fid)
 
 	url, err := client.GetVolumeIp(ctx, volumeId)
 	assert.Equal(t, err, nil)
@@ -32,8 +33,10 @@ func TestDeleteObject(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
 
-	err = client.DeleteObject(ctx, volumeId, fid)
+	err = client.DeleteObject(ctx, Fid)
 	assert.Equal(t, err, nil)
+
+	time.Sleep(3 * time.Second)
 
 	resp, err = http.Get("http://" + url + "/" + Fid)
 	assert.Equal(t, err, nil)

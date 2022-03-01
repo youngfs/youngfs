@@ -1,13 +1,13 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
-	"icesos/directory"
 	"icesos/errors"
 	"icesos/full_path"
-	"icesos/iam"
+	"icesos/server"
+	"icesos/set"
 	"net/http"
-	"time"
 )
 
 type DeleteObjectInfo struct {
@@ -15,8 +15,7 @@ type DeleteObjectInfo struct {
 }
 
 func DeleteObjectHandler(c *gin.Context) {
-	mtime := time.Unix(time.Now().Unix(), 0)
-
+	ctx := context.Background()
 	deleteObjectInfo := &DeleteObjectInfo{}
 
 	err := c.Bind(deleteObjectInfo)
@@ -30,22 +29,27 @@ func DeleteObjectHandler(c *gin.Context) {
 		return
 	}
 
-	set, fp := iam.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !fp.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
+				"error": err.Error(),
 			},
 		)
 		return
 	}
 	fp = fp.Clean()
 
-	err = directory.DeleteInodeAndEntry(set, fp, mtime, deleteObjectInfo.Recursive)
+	err = server.Svr.DeleteObject(ctx, setName, fp, deleteObjectInfo.Recursive)
 	if err != nil {
+		err, ok := err.(errors.APIError)
+		if ok != true {
+			err = errors.ErrorCodeResponse[errors.ErrServer]
+		}
 		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
 				"error": err.Error(),
 			},

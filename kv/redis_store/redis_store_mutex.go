@@ -1,4 +1,4 @@
-package redis
+package redis_store
 
 import "github.com/go-redsync/redsync/v4"
 

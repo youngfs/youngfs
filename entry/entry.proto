@@ -11,6 +11,5 @@ message Entry{
   string mine = 6;
   bytes md5 = 7;
   uint64 file_size = 8;
-  uint64 volume_id = 9;
-  string fid = 10;
+  string fid = 9;
 }

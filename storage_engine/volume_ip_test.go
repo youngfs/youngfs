@@ -37,5 +37,5 @@ func TestGetVolumeIp(t *testing.T) {
 
 	url, err = client.GetVolumeIp(ctx, 100)
 	assert.Equal(t, url, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrServer])
+	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster])
 }

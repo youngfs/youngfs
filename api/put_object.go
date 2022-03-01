@@ -1,23 +1,17 @@
 package api
 
 import (
-	"crypto/md5"
+	"context"
 	"github.com/gin-gonic/gin"
-	"icesos/directory"
-	"icesos/entry"
 	"icesos/errors"
 	"icesos/full_path"
-	"icesos/iam"
-	"icesos/storage_engine"
-	"io"
-	"io/ioutil"
+	"icesos/server"
+	"icesos/set"
 	"net/http"
-	"os"
-	"time"
 )
 
 func PutObjectHandler(c *gin.Context) {
-	ctime := time.Unix(time.Now().Unix(), 0)
+	ctx := context.Background()
 
 	file, head, err := c.Request.FormFile("file")
 	if err != nil {
@@ -30,103 +24,30 @@ func PutObjectHandler(c *gin.Context) {
 		return
 	}
 
-	set, fp := iam.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if len(fp) == 0 || fp[len(fp)-1] == '/' {
 		fp += full_path.FullPath(head.Filename)
 	}
 	if !fp.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
+				"error": err.Error(),
 			},
 		)
 		return
 	}
 	fp = fp.Clean()
 
-	fid, err := storage_engine.PutObject(uint64(head.Size), file)
+	err = server.Svr.PutObject(ctx, setName, fp, uint64(head.Size), file)
 	if err != nil {
+		err, ok := err.(errors.APIError)
+		if ok != true {
+			err = errors.ErrorCodeResponse[errors.ErrServer]
+		}
 		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	volumeId, fid := storage_engine.SplitFid(fid)
-
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	md5Ret := md5.Sum(b)
-
-	err = file.Close()
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	err = directory.InsertInode(
-		&directory.Inode{
-			FullPath: fp,
-			Set:      set,
-			Mtime:    ctime,
-			Ctime:    ctime,
-			Mode:     os.ModePerm,
-			FileSize: uint64(head.Size),
-		}, true)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	err = entry.InsertEntry(
-		&entry.Entry{
-			FullPath: fp,
-			Set:      set,
-			Mtime:    ctime,
-			Ctime:    ctime,
-			Mode:     os.ModePerm,
-			Md5:      md5Ret,
-			FileSize: uint64(head.Size),
-			VolumeId: volumeId,
-			Fid:      fid,
-		})
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
 				"error": err.Error(),
 			},

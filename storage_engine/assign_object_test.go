@@ -16,33 +16,31 @@ func TestAssignObject(t *testing.T) {
 }
 
 func TestSplitFid(t *testing.T) {
-	client := NewStorageEngine(vars.MasterServer)
-
-	volumeId, fid := client.SplitFid("3,3fd41bd1da80")
+	volumeId, fid := SplitFid("3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")
 
-	volumeId, fid = client.SplitFid("3,3fd41bd1da80,3")
+	volumeId, fid = SplitFid("3,3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = client.SplitFid("3fd41bd1da80")
+	volumeId, fid = SplitFid("3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = client.SplitFid("")
+	volumeId, fid = SplitFid("")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = client.SplitFid("-3,3fd41bd1da80")
+	volumeId, fid = SplitFid("-3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = client.SplitFid("3fd41bd1da80,3")
+	volumeId, fid = SplitFid("3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = client.SplitFid("3fd41bd1da80.3")
+	volumeId, fid = SplitFid("3fd41bd1da80.3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 }

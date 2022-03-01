@@ -7,20 +7,10 @@ import (
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
-	"icesos/storage_engine"
 	"net/http"
 )
 
-func GetObjectHandler(c *gin.Context) {
-	//redirect to list object
-	accepts := c.Request.Header["Accept"]
-	for _, str := range accepts {
-		if str == "application/json" {
-			ListObjectHandler(c)
-			return
-		}
-	}
-
+func HeadObjectHandler(c *gin.Context) {
 	ctx := context.Background()
 
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
@@ -51,22 +41,12 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	volumeId, _ := storage_engine.SplitFid(ent.Fid)
-	url, err := server.Svr.StorageEngine.GetVolumeIp(ctx, volumeId)
-	if err != nil {
-		err, ok := err.(errors.APIError)
-		if ok != true {
-			err = errors.ErrorCodeResponse[errors.ErrServer]
-		}
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
-		return
-	}
-
-	c.Redirect(http.StatusMovedPermanently, "http://"+url+"/"+ent.Fid)
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"Path":  fp,
+			"Entry": ent,
+		},
+	)
 	return
 }

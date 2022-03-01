@@ -1,85 +1,51 @@
 package vfs
 
 import (
-	"crypto/md5"
-	"github.com/go-redis/redis/v8"
+	"context"
+	"icesos/entry"
 	"icesos/full_path"
-	"icesos/iam"
-	redis2 "icesos/kv/redis"
-	"icesos/storage_engine"
-	"os"
-	"time"
+	"icesos/kv"
+	"icesos/set"
 )
 
-type Entry struct {
-	full_path.FullPath                // file full full_path
-	iam.Set                           // own set_iam
-	Mtime              time.Time      // time of last modification
-	Ctime              time.Time      // time of creation
-	Mode               os.FileMode    // file mode
-	Mime               string         // MIME type
-	Md5                [md5.Size]byte // MD5
-	FileSize           uint64         // file size
-	VolumeId           uint64         // volume id
-	Fid                string         // fid
-}
-
-func (entry *Entry) key() string {
-	return string(entry.Set) + string(entry.FullPath) + entryKv
-}
-
-func entryKey(set iam.Set, fp full_path.FullPath) string {
-	return string(set) + string(fp) + entryKv
-}
-
-func (entry *Entry) IsDirectory() bool {
-	return entry.Mode.IsDir()
-}
-
-func (entry *Entry) IsFile() bool {
-	return entry.Mode.IsRegular()
-}
-
-// after insert entry, insert inode
-func InsertEntry(entry *Entry) error {
-	b, err := entry.encodeProto()
+func (vfs VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
+	b, err := ent.EncodeProto()
 	if err != nil {
 		return err
 	}
 
-	return redis2.Client.KvPut(entry.key(), b)
+	return vfs.kvStore.KvPut(ctx, ent.Key(), b)
 }
 
-func GetEntry(set iam.Set, fp full_path.FullPath) (*Entry, error) {
-	key := entryKey(set, fp)
+func (vfs VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
+	key := entry.EntryKey(set, fp)
 
-	b, err := redis2.Client.KvGet(key)
+	b, err := vfs.kvStore.KvGet(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeEntryProto(b)
+	return entry.DecodeEntryProto(b)
 }
 
-// after delete entry, delete inode
-func DeleteEntry(set iam.Set, fp full_path.FullPath) error {
-	key := entryKey(set, fp)
+func (vfs VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+	key := entry.EntryKey(set, fp)
 
-	entry, err := GetEntry(set, fp)
+	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
-		if err == redis.Nil {
+		if err == kv.KvNotFound {
 			return nil
 		}
 		return err
 	}
 
-	_, err = redis2.Client.KvDelete(key)
+	_, err = vfs.kvStore.KvDelete(ctx, key)
 	if err != nil {
 		return err
 	}
 
-	if entry.IsFile() {
-		err := storage_engine.DeleteObject(entry.VolumeId, entry.Fid)
+	if ent.IsFile() {
+		err := vfs.storageEngine.DeleteObject(ctx, ent.Fid)
 		if err != nil {
 			return err
 		}

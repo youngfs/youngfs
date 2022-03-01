@@ -1,13 +1,14 @@
 package vfs
 
 import (
-	"bytes"
+	"context"
 	"github.com/go-playground/assert/v2"
-	"github.com/go-redis/redis/v8"
 	"icesos/command/vars"
+	"icesos/entry"
 	"icesos/full_path"
-	"icesos/iam"
-	redis2 "icesos/kv/redis"
+	"icesos/kv"
+	"icesos/kv/redis_store"
+	"icesos/set"
 	"icesos/storage_engine"
 	"icesos/util"
 	"os"
@@ -16,59 +17,48 @@ import (
 )
 
 func TestEntry(t *testing.T) {
-	redis2.Client.Initialize(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	kvStore := redis_store.NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	storageEngine := storage_engine.NewStorageEngine(vars.MasterServer)
+	vfs := NewVFS(kvStore, storageEngine)
 
 	fp := full_path.FullPath("/aa/bb/cc")
-	set := iam.Set("test")
-
-	Ct := time.Unix(time.Now().Unix(), 0) // windows: precision to s
-	time.Sleep(time.Duration(2) * time.Second)
+	setName := set.Set("test")
+	ctx := context.Background()
 
 	size := uint64(5 * 1024)
 
-	volumeId, fid := putObject(t, size)
+	fid := putObject(t, ctx, vfs, size)
 
-	entry := &Entry{
+	ent := &entry.Entry{
 		FullPath: fp,
-		Set:      set,
-		Mtime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
-		Ctime:    Ct,
+		Set:      setName,
+		Ctime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
 		Mode:     os.ModePerm,
 		Mime:     "",
 		Md5:      util.RandMd5(),
 		FileSize: size,
-		VolumeId: volumeId,
 		Fid:      fid,
 	}
 
-	assert.Equal(t, entry.IsFile(), true)
-	assert.Equal(t, entry.IsDirectory(), false)
+	assert.Equal(t, ent.IsFile(), true)
+	assert.Equal(t, ent.IsDirectory(), false)
 
-	err := InsertEntry(entry)
+	err := vfs.insertEntry(ctx, ent)
 	assert.Equal(t, err, nil)
 
-	entry2, err := GetEntry(set, fp)
+	ent2, err := vfs.getEntry(ctx, setName, fp)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, entry2, entry)
-	assert.Equal(t, entry2.IsFile(), true)
-	assert.Equal(t, entry2.IsDirectory(), false)
+	assert.Equal(t, ent2, ent)
+	assert.Equal(t, ent2.IsFile(), true)
+	assert.Equal(t, ent2.IsDirectory(), false)
 
-	err = DeleteEntry(set, fp)
+	err = vfs.deleteEntry(ctx, setName, fp)
 	assert.Equal(t, err, nil)
 
-	entry3, err := GetEntry(set, fp)
-	assert.Equal(t, err, redis.Nil)
+	entry3, err := vfs.getEntry(ctx, setName, fp)
+	assert.Equal(t, err, kv.KvNotFound)
 	assert.Equal(t, entry3, nil)
 
-	err = DeleteEntry(set, fp)
+	err = vfs.deleteEntry(ctx, setName, fp)
 	assert.Equal(t, err, nil)
-}
-
-func putObject(t *testing.T, size uint64) (uint64, string) {
-	b := util.RandByte(size)
-
-	Fid, err := storage_engine.PutObject(size, bytes.NewReader(b))
-	assert.Equal(t, err, nil)
-
-	return storage_engine.SplitFid(Fid)
 }

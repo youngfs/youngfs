@@ -7,13 +7,35 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type deleteObjectInfo struct {
 	Size uint64 `json:"size"`
 }
 
-func (svr *StorageEngine) DeleteObject(ctx context.Context, volumeId uint64, fid string) error {
+func (svr *StorageEngine) DeleteObject(ctx context.Context, fid string) error {
+	svr.DeletionQueue.EnQueue(fid)
+	return nil
+}
+
+func (svr *StorageEngine) loopProcessingDeletion() {
+	var deleteCnt int
+	for {
+		deleteCnt = 0
+		svr.DeletionQueue.Consume(func(fids []string) {
+			for _, fid := range fids {
+				volumeId, fid := SplitFid(fid)
+				_ = svr.deleteActualObject(context.Background(), volumeId, fid)
+			}
+		})
+		if deleteCnt == 0 {
+			time.Sleep(1234 * time.Millisecond)
+		}
+	}
+}
+
+func (svr *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64, fid string) error {
 	volumeIp, err := svr.GetVolumeIp(ctx, volumeId)
 	if err != nil || volumeIp == "" {
 		return err

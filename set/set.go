@@ -1,3 +1,3 @@
-package iam
+package set
 
 type Set string

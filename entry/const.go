@@ -1,5 +1,5 @@
 package entry
 
 const (
-	entryKv = "_Entry"
+	entryKv = "_entry"
 )

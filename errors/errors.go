@@ -18,6 +18,7 @@ func (e APIError) Error() string {
 }
 
 const (
+	ErrKvNotFound           ErrorCode = 1001
 	ErrNone                 ErrorCode = 2001
 	ErrCreated              ErrorCode = 2002
 	ErrInvalidPath          ErrorCode = 4001
@@ -53,7 +54,7 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 	ErrInvalidPath: {
 		ErrorCode:      ErrInvalidPath,
 		Description:    "The file path is not valid",
-		HTTPStatusCode: http.StatusBadRequest,
+		HTTPStatusCode: http.StatusNotFound,
 	},
 	ErrInvalidDelete: {
 		ErrorCode:      ErrInvalidDelete,

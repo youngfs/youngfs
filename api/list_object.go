@@ -1,17 +1,18 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
-	"icesos/directory"
 	"icesos/errors"
 	"icesos/full_path"
-	"icesos/iam"
+	"icesos/server"
+	"icesos/set"
 	"net/http"
-	"sort"
 )
 
 func ListObjectHandler(c *gin.Context) {
-	set, fp := iam.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	ctx := context.Background()
+	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !fp.IsLegal() {
 		c.JSON(
 			http.StatusBadRequest,
@@ -23,10 +24,14 @@ func ListObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	inodes, err := directory.GetInodes(set, fp)
+	ents, err := server.Svr.ListObejcts(ctx, setName, fp)
 	if err != nil {
+		err, ok := err.(errors.APIError)
+		if ok != true {
+			err = errors.ErrorCodeResponse[errors.ErrServer]
+		}
 		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
 				"error": err.Error(),
 			},
@@ -34,12 +39,11 @@ func ListObjectHandler(c *gin.Context) {
 		return
 	}
 
-	sort.Sort(directory.InodeSlice(inodes))
 	c.JSON(
 		http.StatusOK,
 		gin.H{
 			"Path":    fp,
-			"Entries": inodes,
+			"Entries": ents,
 		},
 	)
 

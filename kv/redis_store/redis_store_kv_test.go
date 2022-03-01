@@ -1,10 +1,10 @@
-package redis
+package redis_store
 
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"github.com/go-redis/redis/v8"
 	"icesos/command/vars"
+	"icesos/kv"
 	"icesos/util"
 	"testing"
 )
@@ -15,7 +15,7 @@ func TestRedisStore_Kv(t *testing.T) {
 	ctx := context.Background()
 
 	b, err := client.KvGet(ctx, key)
-	assert.Equal(t, err, redis.Nil)
+	assert.Equal(t, err, kv.KvNotFound)
 	assert.Equal(t, b, nil)
 
 	ret, err := client.KvDelete(ctx, key)
@@ -43,7 +43,7 @@ func TestRedisStore_Kv(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	b, err = client.KvGet(ctx, key)
-	assert.Equal(t, err, redis.Nil)
+	assert.Equal(t, err, kv.KvNotFound)
 	assert.Equal(t, b, nil)
 
 	ret, err = client.KvDelete(ctx, key)
