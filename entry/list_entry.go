@@ -17,11 +17,16 @@ type ListEntry struct {
 }
 
 func (ent *Entry) ToListEntry() *ListEntry {
+	md5Str := ""
+	if !util.Md5IsEmpty(ent.Md5) {
+		md5Str = util.Md5ToStr(ent.Md5)
+	}
+
 	return &ListEntry{
 		FullPath: ent.FullPath,
 		Set:      ent.Set,
 		Mode:     ent.Mode,
-		Md5:      util.Md5ToStr(ent.Md5),
+		Md5:      md5Str,
 		FileSize: ent.FileSize,
 		Fid:      ent.Fid,
 	}

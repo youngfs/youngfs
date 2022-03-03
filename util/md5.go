@@ -39,3 +39,12 @@ func Md5ToStr(b [md5.Size]byte) string {
 
 	return ret
 }
+
+func Md5IsEmpty(b [md5.Size]byte) bool {
+	for _, u := range b {
+		if u != 0 {
+			return false
+		}
+	}
+	return true
+}
