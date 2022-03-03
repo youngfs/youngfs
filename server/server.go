@@ -33,6 +33,21 @@ func NewServer(filer filer.FilerStore, storageEngine *storage_engine.StorageEngi
 func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file multipart.File) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
+	if size == 0 {
+		err := svr.FilerStore.InsertObject(ctx,
+			&entry.Entry{
+				FullPath: fp,
+				Set:      set,
+				Ctime:    ctime,
+				Mode:     os.ModeDir,
+				FileSize: size,
+			}, true)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	fid, err := svr.StorageEngine.PutObject(ctx, size, file)
 	if err != nil {
 		return err
@@ -76,7 +91,7 @@ func (svr Server) GetObject(ctx context.Context, set set.Set, fp full_path.FullP
 	return svr.FilerStore.GetObject(ctx, set, fp)
 }
 
-func (svr Server) ListObejcts(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.Entry, error) {
+func (svr Server) ListObejcts(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
 	return svr.FilerStore.ListObjects(ctx, set, fp)
 }
 
