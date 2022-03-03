@@ -10,7 +10,7 @@ import (
 
 type Entry struct {
 	full_path.FullPath                // file full full_path
-	set.Set                           // own set_iam
+	set.Set                           // own set
 	Ctime              time.Time      // time of creation
 	Mode               os.FileMode    // file mode
 	Mime               string         // MIME type
@@ -19,18 +19,18 @@ type Entry struct {
 	Fid                string         // fid
 }
 
-func (entry *Entry) Key() string {
-	return string(entry.Set) + string(entry.FullPath) + entryKv
+func (ent *Entry) Key() string {
+	return string(ent.Set) + string(ent.FullPath) + entryKv
 }
 
 func EntryKey(set set.Set, fp full_path.FullPath) string {
 	return string(set) + string(fp) + entryKv
 }
 
-func (entry *Entry) IsDirectory() bool {
-	return entry.Mode.IsDir()
+func (ent *Entry) IsDirectory() bool {
+	return ent.Mode.IsDir()
 }
 
-func (entry *Entry) IsFile() bool {
-	return entry.Mode.IsRegular()
+func (ent *Entry) IsFile() bool {
+	return ent.Mode.IsRegular()
 }

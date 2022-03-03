@@ -76,28 +76,28 @@ func (vfs VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullP
 	return nil
 }
 
-func (vfs VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.Entry, error) {
+func (vfs VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
 	_, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
-			return []entry.Entry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
+			return []entry.ListEntry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
 		}
-		return []entry.Entry{}, err
+		return []entry.ListEntry{}, err
 	}
 
 	inodes, err := vfs.getInodeChs(ctx, set, fp)
 	if err != nil {
-		return []entry.Entry{}, err
+		return []entry.ListEntry{}, err
 	}
 
 	ret := make([]entry.Entry, len(inodes))
 	for i, v := range inodes {
 		ent, err := vfs.getEntry(ctx, set, v)
 		if err != nil {
-			return []entry.Entry{}, err
+			return []entry.ListEntry{}, err
 		}
 		ret[i] = *ent
 	}
 
-	return ret, nil
+	return entry.ToListEntris(ret), nil
 }

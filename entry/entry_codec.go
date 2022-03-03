@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-func (entry *Entry) ToPb() *entry_pb.Entry {
-	if entry == nil {
+func (ent *Entry) ToPb() *entry_pb.Entry {
+	if ent == nil {
 		return nil
 	}
 
 	return &entry_pb.Entry{
-		FullPath: string(entry.FullPath),
-		Set:      string(entry.Set),
-		Ctime:    entry.Ctime.Unix(),
-		Mode:     uint32(entry.Mode),
-		Mine:     entry.Mime,
-		Md5:      util.Md5ToBytes(entry.Md5),
-		FileSize: entry.FileSize,
-		Fid:      entry.Fid,
+		FullPath: string(ent.FullPath),
+		Set:      string(ent.Set),
+		Ctime:    ent.Ctime.Unix(),
+		Mode:     uint32(ent.Mode),
+		Mine:     ent.Mime,
+		Md5:      util.Md5ToBytes(ent.Md5),
+		FileSize: ent.FileSize,
+		Fid:      ent.Fid,
 	}
 }
 
@@ -46,8 +46,8 @@ func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
 	}
 }
 
-func (entry *Entry) EncodeProto() ([]byte, error) {
-	message := entry.ToPb()
+func (ent *Entry) EncodeProto() ([]byte, error) {
+	message := ent.ToPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrProto]
