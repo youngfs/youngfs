@@ -52,10 +52,10 @@ func (vfs VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath
 
 // after delete entry, delete inode
 func (vfs VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
-	_, err := vfs.getEntry(ctx, set, fp)
+	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
-			return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+			return errors.ErrorCodeResponse[errors.ErrInvalidPath]
 		}
 		return err
 	}
@@ -65,7 +65,7 @@ func (vfs VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullP
 		return err
 	}
 
-	if recursive == false && inodeCnt != 0 {
+	if ent.IsDirectory() && recursive == false && inodeCnt != 0 {
 		return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
 	}
 

@@ -63,7 +63,7 @@ func (vfs VFS) deleteInodeChs(ctx context.Context, set set.Set, fp full_path.Ful
 }
 
 func (vfs VFS) inodeCnt(ctx context.Context, set set.Set, fp full_path.FullPath) (int64, error) {
-	return vfs.kvStore.ZCard(ctx, inodeKey(set, fp))
+	return vfs.kvStore.ZCard(ctx, string(set)+string(fp)+inodeKv)
 }
 
 func (vfs VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir full_path.FullPath, cover bool) error {

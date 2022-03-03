@@ -57,6 +57,6 @@ func DeleteObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusAccepted)
 	return
 }
