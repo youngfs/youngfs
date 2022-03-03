@@ -1,6 +1,9 @@
 package util
 
-import "crypto/md5"
+import (
+	"crypto/md5"
+	"strconv"
+)
 
 func Md5ToBytes(b [md5.Size]byte) []byte {
 	ret := make([]byte, md5.Size)
@@ -21,4 +24,18 @@ func BytesToMd5(b []byte) [md5.Size]byte {
 	}
 
 	return md5b
+}
+
+func Md5ToStr(b [md5.Size]byte) string {
+	ret := ""
+
+	for _, u := range b {
+		str := strconv.FormatUint(uint64(u), 16)
+		if len(str) == 1 {
+			ret += "0"
+		}
+		ret += str
+	}
+
+	return ret
 }

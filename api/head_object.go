@@ -7,8 +7,12 @@ import (
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
+	"icesos/util"
 	"net/http"
+	"strconv"
 )
+
+const timeFormat = "2006-01-02 15:04:05"
 
 func HeadObjectHandler(c *gin.Context) {
 	ctx := context.Background()
@@ -41,12 +45,14 @@ func HeadObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"Path":  fp,
-			"Entry": ent,
-		},
-	)
+	c.Header("Full-Path", string(ent.FullPath))
+	c.Header("Set", string(ent.Set))
+	c.Header("Creation-Time", ent.Ctime.Format(timeFormat))
+	c.Header("Mode", strconv.FormatUint(uint64(ent.Mode), 10))
+	c.Header("Mime", ent.Mime)
+	c.Header("Md5", util.Md5ToStr(ent.Md5))
+	c.Header("File-Size", strconv.FormatUint(ent.FileSize, 10))
+	c.Header("Fid", ent.Fid)
+	c.Status(http.StatusOK)
 	return
 }
