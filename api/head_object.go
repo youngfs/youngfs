@@ -20,12 +20,7 @@ func HeadObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
+		c.Status(err.HTTPStatusCode)
 		return
 	}
 	fp = fp.Clean()
@@ -36,12 +31,7 @@ func HeadObjectHandler(c *gin.Context) {
 		if ok != true {
 			err = errors.ErrorCodeResponse[errors.ErrServer]
 		}
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				"error": err.Error(),
-			},
-		)
+		c.Status(err.HTTPStatusCode)
 		return
 	}
 
