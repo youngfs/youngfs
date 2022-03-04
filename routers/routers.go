@@ -7,6 +7,7 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.Default()
+	r.PUT("/:set/*fp", api.PutObjectHandler)
 	r.POST("/:set/*fp", api.PutObjectHandler)
 	r.GET("/:set/*fp", api.GetObjectHandler)
 	r.DELETE("/:set/*fp", api.DeleteObjectHandler)
