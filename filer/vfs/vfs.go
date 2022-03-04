@@ -80,13 +80,16 @@ func (vfs VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPa
 	_, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
-			return []entry.ListEntry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
+			return []entry.ListEntry{}, nil //not found return not err
 		}
 		return []entry.ListEntry{}, err
 	}
 
 	inodes, err := vfs.getInodeChs(ctx, set, fp)
 	if err != nil {
+		if err == kv.KvNotFound {
+			return []entry.ListEntry{}, nil //not found return not err
+		}
 		return []entry.ListEntry{}, err
 	}
 
