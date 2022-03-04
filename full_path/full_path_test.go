@@ -49,6 +49,18 @@ func TestFullPath_IsLegal(t *testing.T) {
 		path = FullPath("/aa/b" + string(ch) + "b/cc")
 		assert.Equal(t, path.IsLegal(), false)
 	}
+
+	path = FullPath("/测试")
+	assert.Equal(t, path.IsLegal(), true)
+
+	path = FullPath("/ÄäÖöÜüẞß")
+	assert.Equal(t, path.IsLegal(), true)
+
+	path = FullPath("/あいうえお")
+	assert.Equal(t, path.IsLegal(), true)
+
+	path = FullPath("/aa bb")
+	assert.Equal(t, path.IsLegal(), true)
 }
 
 func TestFullPath_Clean(t *testing.T) {
