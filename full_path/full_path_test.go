@@ -61,6 +61,9 @@ func TestFullPath_IsLegal(t *testing.T) {
 
 	path = FullPath("/aa bb")
 	assert.Equal(t, path.IsLegal(), true)
+
+	path = FullPath("/" + string([]byte{0xff, 0xfe, 0xfd}))
+	assert.Equal(t, path.IsLegal(), false)
 }
 
 func TestFullPath_Clean(t *testing.T) {

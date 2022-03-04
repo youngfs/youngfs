@@ -3,6 +3,7 @@ package full_path
 import (
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 )
 
 type FullPath string
@@ -28,6 +29,10 @@ type FullPath string
 */
 
 func (fp FullPath) IsLegal() bool {
+	if !utf8.ValidString(string(fp)) {
+		return false
+	}
+
 	if fp == "" {
 		return false
 	}
