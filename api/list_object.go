@@ -14,10 +14,12 @@ func ListObjectHandler(c *gin.Context) {
 	ctx := context.Background()
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !fp.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(
-			http.StatusBadRequest,
+			err.HTTPStatusCode,
 			gin.H{
-				"error": errors.ErrorCodeResponse[errors.ErrIllegalObjectName].Error(),
+				"code":  err.ErrorCode,
+				"error": err.Error(),
 			},
 		)
 		return
@@ -33,6 +35,7 @@ func ListObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)

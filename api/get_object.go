@@ -29,6 +29,7 @@ func GetObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -45,6 +46,7 @@ func GetObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -61,6 +63,7 @@ func GetObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)

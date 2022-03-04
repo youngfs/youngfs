@@ -24,12 +24,13 @@ const (
 	ErrInvalidPath          ErrorCode = 4001
 	ErrInvalidDelete        ErrorCode = 4002
 	ErrIllegalObjectName    ErrorCode = 4003
-	ErrAdminAuthenticate    ErrorCode = 4004
-	ErrUserNotExist         ErrorCode = 4005
-	ErrUserAuthenticate     ErrorCode = 4006
-	ErrSetReadAuthenticate  ErrorCode = 4007
-	ErrSetWriteAuthenticate ErrorCode = 4008
-	ErrInvalidUserName      ErrorCode = 4009
+	ErrRouter               ErrorCode = 4004
+	ErrAdminAuthenticate    ErrorCode = 4100
+	ErrUserNotExist         ErrorCode = 4101
+	ErrUserAuthenticate     ErrorCode = 4102
+	ErrSetReadAuthenticate  ErrorCode = 4103
+	ErrSetWriteAuthenticate ErrorCode = 4104
+	ErrInvalidUserName      ErrorCode = 4105
 	ErrKvSever              ErrorCode = 5001
 	ErrProto                ErrorCode = 5002
 	ErrSeaweedFSMaster      ErrorCode = 5003
@@ -61,6 +62,12 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		Description:    "There are files in the folder and cannot be deleted recursively",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
+	ErrRouter: {
+		ErrorCode:      ErrRouter,
+		Description:    "Router problem",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	// iam
 	ErrIllegalObjectName: {
 		ErrorCode:      ErrIllegalObjectName,
 		Description:    "Illegal object name",

@@ -20,9 +20,11 @@ func DeleteObjectHandler(c *gin.Context) {
 
 	err := c.Bind(deleteObjectInfo)
 	if err != nil {
+		apiErr := errors.ErrorCodeResponse[errors.ErrRouter]
 		c.JSON(
-			http.StatusBadRequest,
+			apiErr.HTTPStatusCode,
 			gin.H{
+				"code":  apiErr.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -35,6 +37,7 @@ func DeleteObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -51,6 +54,7 @@ func DeleteObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)

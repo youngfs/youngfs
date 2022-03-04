@@ -15,9 +15,11 @@ func PutObjectHandler(c *gin.Context) {
 
 	file, head, err := c.Request.FormFile("file")
 	if err != nil {
+		apiErr := errors.ErrorCodeResponse[errors.ErrRouter]
 		c.JSON(
-			http.StatusBadRequest,
+			apiErr.HTTPStatusCode,
 			gin.H{
+				"code":  apiErr.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -33,6 +35,7 @@ func PutObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)
@@ -49,6 +52,7 @@ func PutObjectHandler(c *gin.Context) {
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
+				"code":  err.ErrorCode,
 				"error": err.Error(),
 			},
 		)
