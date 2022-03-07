@@ -64,6 +64,12 @@ func TestFullPath_IsLegal(t *testing.T) {
 
 	path = FullPath("/" + string([]byte{0xff, 0xfe, 0xfd}))
 	assert.Equal(t, path.IsLegal(), false)
+
+	path = FullPath("/  aa/\tbb/  cc")
+	assert.Equal(t, path.IsLegal(), true)
+
+	path = FullPath("/  aa dd/\tbb/  cc")
+	assert.Equal(t, path.IsLegal(), true)
 }
 
 func TestFullPath_Clean(t *testing.T) {
@@ -93,6 +99,12 @@ func TestFullPath_Clean(t *testing.T) {
 
 	path = FullPath("/aa/..")
 	assert.Equal(t, string(path.Clean()), "/")
+
+	path = FullPath("/  aa/\tbb/  cc")
+	assert.Equal(t, string(path.Clean()), "/aa/bb/cc")
+
+	path = FullPath("/  aa dd/\tbb/  cc")
+	assert.Equal(t, string(path.Clean()), "/aa dd/bb/cc")
 }
 
 func TestFullPath_DirAndName(t *testing.T) {

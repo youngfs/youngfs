@@ -88,6 +88,14 @@ func (fp FullPath) Clean() FullPath {
 
 	ret := ""
 	for _, dir := range retList {
+		p := 0
+		for i, u := range dir {
+			if u != ' ' && u != '\t' {
+				p = i
+				break
+			}
+		}
+		dir = dir[p:]
 		ret += "/" + dir
 	}
 	if ret == "" {
