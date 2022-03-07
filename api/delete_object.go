@@ -32,6 +32,17 @@ func DeleteObjectHandler(c *gin.Context) {
 	}
 
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	if !setName.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		c.JSON(
+			err.HTTPStatusCode,
+			gin.H{
+				"code":  err.ErrorCode,
+				"error": err.Error(),
+			},
+		)
+		return
+	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(

@@ -24,7 +24,8 @@ const (
 	ErrInvalidPath          ErrorCode = 4001
 	ErrInvalidDelete        ErrorCode = 4002
 	ErrIllegalObjectName    ErrorCode = 4003
-	ErrRouter               ErrorCode = 4004
+	ErrIllegalSetName       ErrorCode = 4004
+	ErrRouter               ErrorCode = 4005
 	ErrAdminAuthenticate    ErrorCode = 4100
 	ErrUserNotExist         ErrorCode = 4101
 	ErrUserAuthenticate     ErrorCode = 4102
@@ -62,17 +63,22 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		Description:    "There are files in the folder and cannot be deleted recursively",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
+	ErrIllegalObjectName: {
+		ErrorCode:      ErrIllegalObjectName,
+		Description:    "Illegal object name",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrIllegalSetName: {
+		ErrorCode:      ErrIllegalSetName,
+		Description:    "Illegal set name",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
 	ErrRouter: {
 		ErrorCode:      ErrRouter,
 		Description:    "Router problem",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
 	// iam
-	ErrIllegalObjectName: {
-		ErrorCode:      ErrIllegalObjectName,
-		Description:    "Illegal object name",
-		HTTPStatusCode: http.StatusBadRequest,
-	},
 	ErrAdminAuthenticate: {
 		ErrorCode:      ErrAdminAuthenticate,
 		Description:    "Administrator authority authentication failed",

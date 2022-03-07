@@ -30,6 +30,17 @@ func PutObjectHandler(c *gin.Context) {
 	if len(fp) == 0 || fp[len(fp)-1] == '/' {
 		fp += full_path.FullPath(head.Filename)
 	}
+	if !setName.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		c.JSON(
+			err.HTTPStatusCode,
+			gin.H{
+				"code":  err.ErrorCode,
+				"error": err.Error(),
+			},
+		)
+		return
+	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(

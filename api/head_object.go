@@ -18,6 +18,11 @@ func HeadObjectHandler(c *gin.Context) {
 	ctx := context.Background()
 
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	if !setName.IsLegal() {
+		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		c.Status(err.HTTPStatusCode)
+		return
+	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.Status(err.HTTPStatusCode)
