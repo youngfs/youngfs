@@ -9,6 +9,7 @@ import (
 	"icesos/set"
 	"icesos/util"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -40,8 +41,10 @@ func HeadObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Header("Full-Path", string(ent.FullPath))
-	c.Header("Set", string(ent.Set))
+	// url encode but not code /
+	c.Header("Full-Path", (&url.URL{Path: string(ent.FullPath)}).String())
+	// url encode and code /
+	c.Header("Set", url.PathEscape(string(ent.Set)))
 	c.Header("Creation-Time", ent.Ctime.Format(timeFormat))
 	c.Header("Mode", strconv.FormatUint(uint64(ent.Mode), 10))
 	c.Header("Mime", ent.Mime)
