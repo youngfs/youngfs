@@ -2,7 +2,7 @@ package util
 
 import (
 	"crypto/md5"
-	"strconv"
+	"encoding/hex"
 )
 
 func Md5ToBytes(b [md5.Size]byte) []byte {
@@ -27,17 +27,7 @@ func BytesToMd5(b []byte) [md5.Size]byte {
 }
 
 func Md5ToStr(b [md5.Size]byte) string {
-	ret := ""
-
-	for _, u := range b {
-		str := strconv.FormatUint(uint64(u), 16)
-		if len(str) == 1 {
-			ret += "0"
-		}
-		ret += str
-	}
-
-	return ret
+	return hex.EncodeToString(Md5ToBytes(b))
 }
 
 func Md5IsEmpty(b [md5.Size]byte) bool {
