@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
@@ -11,7 +10,6 @@ import (
 )
 
 func ListObjectHandler(c *gin.Context) {
-	ctx := context.Background()
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
@@ -37,7 +35,7 @@ func ListObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ents, err := server.Svr.ListObejcts(ctx, setName, fp)
+	ents, err := server.Svr.ListObejcts(c, setName, fp)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

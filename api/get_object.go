@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
@@ -20,8 +19,6 @@ func GetObjectHandler(c *gin.Context) {
 			return
 		}
 	}
-
-	ctx := context.Background()
 
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
@@ -48,7 +45,7 @@ func GetObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.Svr.GetObject(ctx, setName, fp)
+	ent, err := server.Svr.GetObject(c, setName, fp)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
@@ -65,7 +62,7 @@ func GetObjectHandler(c *gin.Context) {
 	}
 
 	volumeId, _ := storage_engine.SplitFid(ent.Fid)
-	url, err := server.Svr.StorageEngine.GetVolumeIp(ctx, volumeId)
+	url, err := server.Svr.StorageEngine.GetVolumeIp(c, volumeId)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

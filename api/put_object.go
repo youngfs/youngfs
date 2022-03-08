@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
@@ -11,8 +10,6 @@ import (
 )
 
 func PutObjectHandler(c *gin.Context) {
-	ctx := context.Background()
-
 	file, head, err := c.Request.FormFile("file")
 	if err != nil {
 		apiErr := errors.ErrorCodeResponse[errors.ErrRouter]
@@ -54,7 +51,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.Svr.PutObject(ctx, setName, fp, uint64(head.Size), file)
+	err = server.Svr.PutObject(c, setName, fp, uint64(head.Size), file)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

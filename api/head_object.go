@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
@@ -10,14 +9,14 @@ import (
 	"icesos/util"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strconv"
 )
 
 const timeFormat = "2006-01-02 15:04:05"
 
 func HeadObjectHandler(c *gin.Context) {
-	ctx := context.Background()
-
+	println(runtime.NumGoroutine())
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
@@ -31,7 +30,7 @@ func HeadObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.Svr.GetObject(ctx, setName, fp)
+	ent, err := server.Svr.GetObject(c, setName, fp)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

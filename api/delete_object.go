@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
@@ -15,7 +14,6 @@ type DeleteObjectInfo struct {
 }
 
 func DeleteObjectHandler(c *gin.Context) {
-	ctx := context.Background()
 	deleteObjectInfo := &DeleteObjectInfo{}
 
 	err := c.Bind(deleteObjectInfo)
@@ -56,7 +54,7 @@ func DeleteObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.Svr.DeleteObject(ctx, setName, fp, deleteObjectInfo.Recursive)
+	err = server.Svr.DeleteObject(c, setName, fp, deleteObjectInfo.Recursive)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
