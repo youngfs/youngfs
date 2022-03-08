@@ -31,6 +31,9 @@ func NewServer(filer filer.FilerStore, storageEngine *storage_engine.StorageEngi
 }
 
 func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file multipart.File) error {
+	defer func() {
+		_ = file.Close()
+	}()
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
@@ -64,11 +67,6 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 	}
 
 	md5Ret := md5.Sum(b)
-
-	err = file.Close()
-	if err != nil {
-		return errors.ErrorCodeResponse[errors.ErrServer]
-	}
 
 	err = svr.FilerStore.InsertObject(ctx,
 		&entry.Entry{
