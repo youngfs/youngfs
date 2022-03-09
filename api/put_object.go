@@ -6,26 +6,32 @@ import (
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
+	"icesos/util"
+	"io"
 	"net/http"
 )
 
 func PutObjectHandler(c *gin.Context) {
+	var file io.ReadCloser
+	var contentLength uint64
+	var filename string
 	file, head, err := c.Request.FormFile("file")
-	if err != nil {
-		apiErr := errors.ErrorCodeResponse[errors.ErrRouter]
-		c.JSON(
-			apiErr.HTTPStatusCode,
-			gin.H{
-				"code":  apiErr.ErrorCode,
-				"error": err.Error(),
-			},
-		)
-		return
+	if head != nil && err == nil {
+		contentLength = uint64(head.Size)
+		filename = head.Filename
 	}
+	if err != nil {
+		file = c.Request.Body
+		contentLength = util.GetContentLength(c.Request)
+		filename = ""
+	}
+	defer func() {
+		_ = file.Close()
+	}()
 
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if len(fp) == 0 || fp[len(fp)-1] == '/' {
-		fp += full_path.FullPath(head.Filename)
+		fp += full_path.FullPath(filename)
 	}
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
@@ -51,7 +57,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.Svr.PutObject(c, setName, fp, uint64(head.Size), file)
+	err = server.Svr.PutObject(c, setName, fp, contentLength, file)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
