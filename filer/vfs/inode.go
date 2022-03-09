@@ -14,7 +14,7 @@ func inodeKey(set set.Set, dir full_path.FullPath) string {
 	return string(set) + string(dir.Dir()) + inodeKv
 }
 
-func (vfs VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
 		return errors.ErrorCodeResponse[errors.ErrServer]
 	}
@@ -27,7 +27,7 @@ func (vfs VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.Full
 	return nil
 }
 
-func (vfs VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) ([]full_path.FullPath, error) {
+func (vfs *VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) ([]full_path.FullPath, error) {
 	fps, err := vfs.kvStore.ZRangeByLex(ctx, string(set)+string(fp)+inodeKv, "", "")
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (vfs VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullPa
 	return ret, nil
 }
 
-func (vfs VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
 		return errors.ErrorCodeResponse[errors.ErrServer]
 	}
@@ -54,7 +54,7 @@ func (vfs VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.Full
 	return nil
 }
 
-func (vfs VFS) deleteInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) deleteInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	_, err := vfs.kvStore.ZRemRangeByLex(ctx, string(set)+string(fp)+inodeKv, "", "")
 	if err != nil {
 		return err
@@ -62,11 +62,11 @@ func (vfs VFS) deleteInodeChs(ctx context.Context, set set.Set, fp full_path.Ful
 	return err
 }
 
-func (vfs VFS) inodeCnt(ctx context.Context, set set.Set, fp full_path.FullPath) (int64, error) {
+func (vfs *VFS) inodeCnt(ctx context.Context, set set.Set, fp full_path.FullPath) (int64, error) {
 	return vfs.kvStore.ZCard(ctx, string(set)+string(fp)+inodeKv)
 }
 
-func (vfs VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir full_path.FullPath, cover bool) error {
+func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir full_path.FullPath, cover bool) error {
 	mutex := vfs.kvStore.NewMutex(string(ent.Set) + string(dir) + inodeLock)
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrorCodeResponse[errors.ErrRedisSync]
@@ -143,7 +143,7 @@ func (vfs VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir fu
 	return nil
 }
 
-func (vfs VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_path.FullPath, lock bool) error {
+func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_path.FullPath, lock bool) error {
 	if lock {
 		mutex := vfs.kvStore.NewMutex(string(set) + string(fp) + inodeLock)
 		if err := mutex.Lock(); err != nil {

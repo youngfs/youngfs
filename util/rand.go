@@ -11,6 +11,6 @@ func RandByte(len uint64) []byte {
 	return b
 }
 
-func RandMd5() [16]byte {
-	return md5.Sum(RandByte(md5.BlockSize))
+func RandMd5() []byte {
+	return Md5ToBytes(md5.Sum(RandByte(md5.BlockSize)))
 }

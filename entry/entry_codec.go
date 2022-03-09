@@ -1,13 +1,11 @@
 package entry
 
 import (
-	"crypto/md5"
 	"github.com/golang/protobuf/proto"
 	"icesos/entry/entry_pb"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/set"
-	"icesos/util"
 	"os"
 	"time"
 )
@@ -23,14 +21,14 @@ func (ent *Entry) ToPb() *entry_pb.Entry {
 		Ctime:    ent.Ctime.Unix(),
 		Mode:     uint32(ent.Mode),
 		Mine:     ent.Mime,
-		Md5:      util.Md5ToBytes(ent.Md5),
+		Md5:      ent.Md5,
 		FileSize: ent.FileSize,
 		Fid:      ent.Fid,
 	}
 }
 
 func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
-	if pb == nil || len(pb.Md5) != md5.Size {
+	if pb == nil {
 		return nil
 	}
 
@@ -40,7 +38,7 @@ func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
 		Ctime:    time.Unix(pb.Ctime, 0),
 		Mode:     os.FileMode(pb.Mode),
 		Mime:     pb.Mine,
-		Md5:      util.BytesToMd5(pb.Md5),
+		Md5:      pb.Md5,
 		FileSize: pb.FileSize,
 		Fid:      pb.Fid,
 	}

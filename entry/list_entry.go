@@ -1,9 +1,10 @@
 package entry
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"icesos/full_path"
 	"icesos/set"
-	"icesos/util"
 	"os"
 )
 
@@ -18,8 +19,8 @@ type ListEntry struct {
 
 func (ent *Entry) ToListEntry() *ListEntry {
 	md5Str := ""
-	if !util.Md5IsEmpty(ent.Md5) {
-		md5Str = util.Md5ToStr(ent.Md5)
+	if len(ent.Md5) == md5.Size {
+		md5Str = hex.EncodeToString(ent.Md5)
 	}
 
 	return &ListEntry{

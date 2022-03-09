@@ -1,22 +1,20 @@
 package api
 
 import (
+	"encoding/hex"
 	"github.com/gin-gonic/gin"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
-	"icesos/util"
 	"net/http"
 	"net/url"
-	"runtime"
 	"strconv"
 )
 
 const timeFormat = "2006-01-02 15:04:05"
 
 func HeadObjectHandler(c *gin.Context) {
-	println(runtime.NumGoroutine())
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
@@ -47,7 +45,7 @@ func HeadObjectHandler(c *gin.Context) {
 	c.Header("Creation-Time", ent.Ctime.Format(timeFormat))
 	c.Header("Mode", strconv.FormatUint(uint64(ent.Mode), 10))
 	c.Header("Mime", ent.Mime)
-	c.Header("Md5", util.Md5ToStr(ent.Md5))
+	c.Header("Md5", hex.EncodeToString(ent.Md5))
 	c.Header("File-Size", strconv.FormatUint(ent.FileSize, 10))
 	c.Header("Fid", ent.Fid)
 	c.Status(http.StatusOK)

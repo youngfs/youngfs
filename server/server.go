@@ -4,14 +4,11 @@ import (
 	"context"
 	"crypto/md5"
 	"icesos/entry"
-	"icesos/errors"
 	"icesos/filer"
 	"icesos/full_path"
 	"icesos/set"
 	"icesos/storage_engine"
 	"io"
-	"io/ioutil"
-	"mime/multipart"
 	"os"
 	"time"
 )
@@ -30,10 +27,7 @@ func NewServer(filer filer.FilerStore, storageEngine *storage_engine.StorageEngi
 	}
 }
 
-func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file multipart.File) error {
-	defer func() {
-		_ = file.Close()
-	}()
+func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file io.Reader) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
@@ -51,22 +45,13 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 		return nil
 	}
 
+	md5Hash := md5.New()
+	file = io.TeeReader(file, md5Hash)
+
 	fid, err := svr.StorageEngine.PutObject(ctx, size, file)
 	if err != nil {
 		return err
 	}
-
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		return errors.ErrorCodeResponse[errors.ErrServer]
-	}
-
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		return errors.ErrorCodeResponse[errors.ErrServer]
-	}
-
-	md5Ret := md5.Sum(b)
 
 	err = svr.FilerStore.InsertObject(ctx,
 		&entry.Entry{
@@ -74,7 +59,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 			Set:      set,
 			Ctime:    ctime,
 			Mode:     os.ModePerm,
-			Md5:      md5Ret,
+			Md5:      md5Hash.Sum(nil),
 			FileSize: size,
 			Fid:      fid,
 		}, true)

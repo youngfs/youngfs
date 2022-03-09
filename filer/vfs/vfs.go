@@ -23,7 +23,7 @@ func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine *storage_engine.Stor
 }
 
 // after insert entry, insert inode
-func (vfs VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) error {
+func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) error {
 	dirList := ent.SplitList()
 	for _, dir := range dirList {
 		err := vfs.insertInodeAndEntry(ctx, ent, dir, cover)
@@ -34,7 +34,7 @@ func (vfs VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) e
 	return nil
 }
 
-func (vfs VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
+func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
@@ -51,7 +51,7 @@ func (vfs VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath
 }
 
 // after delete entry, delete inode
-func (vfs VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
+func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
@@ -76,7 +76,7 @@ func (vfs VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullP
 	return nil
 }
 
-func (vfs VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
+func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
 	_, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {

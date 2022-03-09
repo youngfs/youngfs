@@ -8,7 +8,7 @@ import (
 	"icesos/set"
 )
 
-func (vfs VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
+func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
 	b, err := ent.EncodeProto()
 	if err != nil {
 		return err
@@ -17,7 +17,7 @@ func (vfs VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
 	return vfs.kvStore.KvPut(ctx, ent.Key(), b)
 }
 
-func (vfs VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
+func (vfs *VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
 	key := entry.EntryKey(set, fp)
 
 	b, err := vfs.kvStore.KvGet(ctx, key)
@@ -28,7 +28,7 @@ func (vfs VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath)
 	return entry.DecodeEntryProto(b)
 }
 
-func (vfs VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	key := entry.EntryKey(set, fp)
 
 	ent, err := vfs.getEntry(ctx, set, fp)
