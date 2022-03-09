@@ -27,6 +27,9 @@ func (svr *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Re
 	if err != nil {
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusCreated {
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]

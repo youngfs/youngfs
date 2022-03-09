@@ -53,6 +53,9 @@ func (svr *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint6
 	if resp.StatusCode != http.StatusAccepted {
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

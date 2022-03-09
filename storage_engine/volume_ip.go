@@ -29,6 +29,9 @@ func (svr *StorageEngine) GetVolumeIp(ctx context.Context, volumeId uint64) (str
 	if err != nil {
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

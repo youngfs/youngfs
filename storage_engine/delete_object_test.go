@@ -32,6 +32,9 @@ func TestDeleteObject(t *testing.T) {
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	err = client.DeleteObject(ctx, Fid)
 	assert.Equal(t, err, nil)
@@ -40,6 +43,9 @@ func TestDeleteObject(t *testing.T) {
 
 	resp, err = http.Get("http://" + url + "/" + Fid)
 	assert.Equal(t, err, nil)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	httpBody, err = ioutil.ReadAll(resp.Body)
 	assert.Equal(t, err, nil)

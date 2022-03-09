@@ -22,6 +22,9 @@ func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64) (*assig
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
