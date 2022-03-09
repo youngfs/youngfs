@@ -26,28 +26,28 @@ func TestDeleteObject(t *testing.T) {
 	url, err := client.GetVolumeIp(ctx, volumeId)
 	assert.Equal(t, err, nil)
 
-	resp, err := http.Get("http://" + url + "/" + Fid)
+	resp1, err := http.Get("http://" + url + "/" + Fid)
 	assert.Equal(t, err, nil)
+	defer func() {
+		_ = resp1.Body.Close()
+	}()
 
-	httpBody, err := ioutil.ReadAll(resp.Body)
+	httpBody, err := ioutil.ReadAll(resp1.Body)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 
 	err = client.DeleteObject(ctx, Fid)
 	assert.Equal(t, err, nil)
 
 	time.Sleep(3 * time.Second)
 
-	resp, err = http.Get("http://" + url + "/" + Fid)
+	resp2, err := http.Get("http://" + url + "/" + Fid)
 	assert.Equal(t, err, nil)
 	defer func() {
-		_ = resp.Body.Close()
+		_ = resp2.Body.Close()
 	}()
 
-	httpBody, err = ioutil.ReadAll(resp.Body)
+	httpBody, err = ioutil.ReadAll(resp2.Body)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, []byte{})
 }
