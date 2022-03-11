@@ -43,10 +43,6 @@ func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPat
 		return nil, err
 	}
 
-	if ent.IsDirectory() {
-		return nil, errors.ErrorCodeResponse[errors.ErrInvalidPath]
-	}
-
 	return ent, err
 }
 
