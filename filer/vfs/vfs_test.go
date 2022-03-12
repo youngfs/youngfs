@@ -23,19 +23,19 @@ func TestVFS(t *testing.T) {
 	storageEngine := storage_engine.NewStorageEngine(vars.MasterServer)
 	vfs := NewVFS(kvStore, storageEngine)
 
-	setName := set.Set("test")
-	mime := "text/plain"
+	setName := set.Set("test_vfs")
+	mime := "application/octet-stream"
 	size := uint64(5 * 1024)
-	inodesFiles := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff"}
-	inodeDirs := []full_path.FullPath{"/gg", "/aa/hh", "/aa/bb/ii", "/aa/bb/ee/jj"}
-	entryFiles := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff"}
-	entryDirs := []full_path.FullPath{"/", "/aa", "/aa/bb", "/aa/bb/cc", "/gg", "/aa/hh", "/aa/bb/ii", "/aa/bb/ee", "/aa/bb/ee/jj"}
-	ct1 := time.Unix(time.Now().Unix(), 0) // windows: precision to s
+	insertFiles := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff", "/ll"}
+	insertDirs := []full_path.FullPath{"/gg", "/bb/hh", "/aa/bb/ii", "/aa/bb/ee/jj", "/kk"}
+	Files := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff", "/ll"}
+	Dirs := []full_path.FullPath{"/", "/aa", "/aa/bb", "/aa/bb/cc", "/gg", "/bb/hh", "/aa/bb/ii", "/aa/bb/ee", "/aa/bb/ee/jj", "/kk"}
+	time1 := time.Unix(time.Now().Unix(), 0)
 	ctx := context.Background()
 
 	fidMap := make(map[full_path.FullPath]string)
 
-	for _, fp := range inodesFiles {
+	for _, fp := range insertFiles {
 		fid := putObject(t, ctx, vfs, size)
 		fidMap[fp] = fid
 
@@ -44,7 +44,8 @@ func TestVFS(t *testing.T) {
 			&entry.Entry{
 				FullPath: fp,
 				Set:      setName,
-				Ctime:    ct1,
+				Mtime:    time1,
+				Ctime:    time1,
 				Mode:     os.ModePerm,
 				Mime:     mime,
 				FileSize: size,
@@ -53,24 +54,26 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, err, nil)
 	}
 
-	for _, fp := range inodeDirs {
+	for _, fp := range insertDirs {
 		err := vfs.InsertObject(ctx,
 			&entry.Entry{
 				FullPath: fp,
 				Set:      setName,
-				Ctime:    ct1,
+				Mtime:    time1,
+				Ctime:    time1,
 				Mode:     os.ModeDir,
 			}, true)
 		assert.Equal(t, err, nil)
 	}
 
-	for _, fp := range entryFiles {
+	for _, fp := range Files {
 		ent, err := vfs.GetObject(ctx, setName, fp)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
@@ -82,7 +85,8 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
@@ -90,31 +94,39 @@ func TestVFS(t *testing.T) {
 		})
 	}
 
-	for _, fp := range entryDirs {
+	for _, fp := range Dirs {
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModeDir,
 		})
 	}
 
-	err := vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), false)
+	err := vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), false, time1)
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidDelete])
 
-	for _, fp := range entryFiles {
+	for _, fp := range Files {
 		ent, err := vfs.GetObject(ctx, setName, fp)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
@@ -126,7 +138,8 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
@@ -134,123 +147,178 @@ func TestVFS(t *testing.T) {
 		})
 	}
 
-	for _, fp := range entryDirs {
+	for _, fp := range Dirs {
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModeDir,
 		})
-	}
-
-	err = vfs.InsertObject(ctx,
-		&entry.Entry{
-			FullPath: "/aa/hh",
-			Set:      setName,
-			Ctime:    ct1,
-			Mode:     os.ModeDir,
-		}, false)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-
-	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa/bb"), true)
-	assert.Equal(t, err, nil)
-
-	entryFiles1 := []full_path.FullPath{"/aa/ee", "/ff"}            //ctime: time1
-	entryDirs1 := []full_path.FullPath{"/", "/aa", "/gg", "/aa/hh"} //ctime: time1
-	set1 := make(map[full_path.FullPath]bool)
-	for _, dir := range entryFiles1 {
-		set1[dir] = true
-	}
-
-	set2 := make(map[full_path.FullPath]bool)
-	for _, dir := range entryDirs1 {
-		set2[dir] = true
-	}
-
-	for _, fp := range entryFiles {
-		if set1[fp] {
-			continue
-		}
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
-		assert.Equal(t, ent, nil)
-	}
-
-	for _, fp := range entryDirs {
-		if set2[fp] {
-			continue
-		}
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
-		assert.Equal(t, ent, nil)
-	}
-
-	for _, fp := range entryFiles1 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct1,
-			Mode:     os.ModePerm,
-			Mime:     mime,
-			FileSize: size,
-			Fid:      fidMap[fp],
-		})
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, ent, &entry.Entry{
 			FullPath: fp,
 			Set:      setName,
-			Ctime:    ct1,
-			Mode:     os.ModePerm,
-			Mime:     mime,
-			FileSize: size,
-			Fid:      fidMap[fp],
-		})
-	}
-
-	for _, fp := range entryDirs1 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time1,
+			Ctime:    time1,
 			Mode:     os.ModeDir,
 		})
 	}
 
 	time.Sleep(time.Duration(2) * time.Second)
-	ct2 := time.Unix(time.Now().Unix(), 0) // windows: precision to s
-
-	fid := putObject(t, ctx, vfs, size)
-	fidMap["/aa/ee/kk"] = fid
+	time2 := time.Unix(time.Now().Unix(), 0)
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
-			FullPath: "/aa/ee/kk",
+			FullPath: "/bb/hh",
 			Set:      setName,
-			Ctime:    ct2,
+			Mtime:    time2,
+			Ctime:    time2,
+			Mode:     os.ModeDir,
+		}, false)
+	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+
+	err = vfs.InsertObject(ctx,
+		&entry.Entry{
+			FullPath: "/aa",
+			Set:      setName,
+			Mtime:    time2,
+			Ctime:    time2,
+			Mode:     os.ModeDir,
+		}, false)
+	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+
+	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa/bb"), true, time2)
+	assert.Equal(t, err, nil)
+
+	Files1 := []full_path.FullPath{"/aa/ee", "/ff", "/ll"}            //mtime: time1 ctime: time1
+	Dirs1 := []full_path.FullPath{"/", "/gg", "/bb", "/bb/hh", "/kk"} //mtime: time1 ctime: time1
+	Dirs2 := []full_path.FullPath{"/aa"}                              //mtime: time2 ctime: time1
+	exist := make(map[full_path.FullPath]bool)
+	for _, dir := range Files1 {
+		exist[dir] = true
+	}
+	for _, dir := range Dirs1 {
+		exist[dir] = true
+	}
+	for _, dir := range Dirs2 {
+		exist[dir] = true
+	}
+
+	for _, fp := range Files {
+		if exist[fp] {
+			continue
+		}
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, ent, nil)
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, ent, nil)
+	}
+
+	for _, fp := range Dirs {
+		if exist[fp] {
+			continue
+		}
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, ent, nil)
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, ent, nil)
+	}
+
+	for _, fp := range Files1 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+	}
+
+	for _, fp := range Dirs1 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+	}
+
+	for _, fp := range Dirs2 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time2,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time2,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+	}
+
+	time.Sleep(time.Duration(2) * time.Second)
+	time3 := time.Unix(time.Now().Unix(), 0)
+
+	fid := putObject(t, ctx, vfs, size)
+	fidMap["/aa/ee/ll/mm"] = fid
+
+	err = vfs.InsertObject(ctx,
+		&entry.Entry{
+			FullPath: "/aa/ee/ll/mm",
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
@@ -260,156 +328,79 @@ func TestVFS(t *testing.T) {
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
-			FullPath: "/aa/ll",
+			FullPath: "/bb/hh/nn/oo",
 			Set:      setName,
-			Ctime:    ct2,
+			Mtime:    time3,
+			Ctime:    time3,
 			Mode:     os.ModeDir,
 		}, true)
 	assert.Equal(t, err, nil)
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
-			FullPath: "/gg",
+			FullPath: "/gg/pp",
 			Set:      setName,
-			Ctime:    ct2,
+			Mtime:    time3,
+			Ctime:    time3,
 			Mode:     os.ModeDir,
 		}, true)
 	assert.Equal(t, err, nil)
 
-	entryFiles1 = []full_path.FullPath{"/ff"}                                         //ctime: time1
-	entryFiles2 := []full_path.FullPath{"/aa/ee/kk"}                                  //ctime: time2
-	entryDirs1 = []full_path.FullPath{"/", "/aa", "/aa/hh"}                           //ctime: time1
-	entryDirs2 := []full_path.FullPath{"/gg", "/aa/ee", "/aa/ll"}                     //ctime: time2
-	entryFiles = []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/ff", "aa/ee/kk"} // delete /aa/ee
-	entryDirs = []full_path.FullPath{"/", "/aa", "/aa/bb", "/aa/bb/cc", "/gg", "/aa/hh", "/aa/bb/ii", "/aa/bb/ee", "/aa/bb/ee/jj", "/aa/ee", "/aa/ll"}
-	set1 = make(map[full_path.FullPath]bool)
-	for _, dir := range entryFiles1 {
-		set1[dir] = true
-	}
-	for _, dir := range entryFiles2 {
-		set1[dir] = true
-	}
+	fid = putObject(t, ctx, vfs, size)
+	fidMap["/kk"] = fid
 
-	set2 = make(map[full_path.FullPath]bool)
-	for _, dir := range entryDirs1 {
-		set2[dir] = true
-	}
-	for _, dir := range entryDirs2 {
-		set2[dir] = true
-	}
-
-	for _, fp := range entryFiles {
-		if set1[fp] {
-			continue
-		}
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
-		assert.Equal(t, ent, nil)
-	}
-
-	for _, fp := range entryDirs {
-		if set2[fp] {
-			continue
-		}
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
-		assert.Equal(t, ent, nil)
-	}
-
-	for _, fp := range entryFiles1 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
+	err = vfs.InsertObject(ctx,
+		&entry.Entry{
+			FullPath: "/kk",
 			Set:      setName,
-			Ctime:    ct1,
+			Mtime:    time3,
+			Ctime:    time3,
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
-		})
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct1,
-			Mode:     os.ModePerm,
-			Mime:     mime,
-			FileSize: size,
-			Fid:      fidMap[fp],
-		})
-	}
-
-	for _, fp := range entryFiles2 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct2,
-			Mode:     os.ModePerm,
-			Mime:     mime,
-			FileSize: size,
-			Fid:      fidMap[fp],
-		})
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct2,
-			Mode:     os.ModePerm,
-			Mime:     mime,
-			FileSize: size,
-			Fid:      fidMap[fp],
-		})
-	}
-
-	for _, fp := range entryDirs1 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct1,
-			Mode:     os.ModeDir,
-		})
-	}
-
-	for _, fp := range entryDirs2 {
-		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
-		assert.Equal(t, ent, nil)
-
-		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ent, &entry.Entry{
-			FullPath: fp,
-			Set:      setName,
-			Ctime:    ct2,
-			Mode:     os.ModeDir,
-		})
-	}
-
-	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true)
+			Fid:      fid,
+		}, true)
 	assert.Equal(t, err, nil)
 
-	for _, fp := range entryFiles {
+	err = vfs.InsertObject(ctx,
+		&entry.Entry{
+			FullPath: "/ll/rr",
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
+			Mode:     os.ModeDir,
+		}, true)
+	assert.Equal(t, err, nil)
+
+	Files1 = []full_path.FullPath{"/ff"}                                                                         //mtime:time1 ctime: time1
+	Files2 := []full_path.FullPath{"/aa/ee/ll/mm", "/kk"}                                                        //mtime:time3 ctime: time3
+	Dirs1 = []full_path.FullPath{"/bb"}                                                                          //mtime:time1 ctime: time1
+	Dirs2 = []full_path.FullPath{"/", "/aa", "/gg", "/bb/hh"}                                                    //mtime:time3 ctime: time1
+	Dirs3 := []full_path.FullPath{"/aa/ee", "/aa/ee/ll", "/bb/hh/nn", "/bb/hh/nn/oo", "/gg/pp", "/ll", "/ll/rr"} //mtime:time3 ctime: time3
+	Files = []full_path.FullPath{"/ff", "/aa/ee/ll/mm", "/kk", "/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ll"}
+	Dirs = []full_path.FullPath{"/bb", "/", "/aa", "/gg", "/bb/hh", "/aa/ee", "/aa/ee/ll", "/bb/hh/nn", "/bb/hh/nn/oo", "/gg/pp", "/ll", "/ll/rr",
+		"/aa/bb", "/aa/bb/cc", "/aa/bb/ii", "/aa/bb/ee", "/aa/bb/ee/jj", "/kk"}
+	exist = make(map[full_path.FullPath]bool)
+	for _, dir := range Files1 {
+		exist[dir] = true
+	}
+	for _, dir := range Files2 {
+		exist[dir] = true
+	}
+	for _, dir := range Dirs1 {
+		exist[dir] = true
+	}
+	for _, dir := range Dirs2 {
+		exist[dir] = true
+	}
+	for _, dir := range Dirs3 {
+		exist[dir] = true
+	}
+
+	for _, fp := range Files {
+		if exist[fp] {
+			continue
+		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
 		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
 		assert.Equal(t, ent, nil)
@@ -419,7 +410,10 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 	}
 
-	for _, fp := range entryDirs {
+	for _, fp := range Dirs {
+		if exist[fp] {
+			continue
+		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
 		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
 		assert.Equal(t, ent, nil)
@@ -429,10 +423,155 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 	}
 
-	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true)
+	for _, fp := range Files1 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+	}
+
+	for _, fp := range Files2 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
+			Mode:     os.ModePerm,
+			Mime:     mime,
+			FileSize: size,
+			Fid:      fidMap[fp],
+		})
+	}
+
+	for _, fp := range Dirs1 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time1,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+	}
+
+	for _, fp := range Dirs2 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time1,
+			Mode:     os.ModeDir,
+		})
+	}
+
+	for _, fp := range Dirs3 {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
+			Mode:     os.ModeDir,
+		})
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ent, &entry.Entry{
+			FullPath: fp,
+			Set:      setName,
+			Mtime:    time3,
+			Ctime:    time3,
+			Mode:     os.ModeDir,
+		})
+	}
+
+	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true, time3)
+	assert.Equal(t, err, nil)
+
+	for _, fp := range Files {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, ent, nil)
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, ent, nil)
+	}
+
+	for _, fp := range Dirs {
+		ent, err := vfs.GetObject(ctx, setName, fp)
+		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, ent, nil)
+
+		ent, err = vfs.getEntry(ctx, setName, fp)
+		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, ent, nil)
+	}
+
+	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true, time3)
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
 
-	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa"), true)
+	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa"), true, time3)
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
 
 	time.Sleep(3 * time.Second)

@@ -10,9 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
-
-const timeFormat = "2006-01-02 15:04:05"
 
 func HeadObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
@@ -42,7 +41,8 @@ func HeadObjectHandler(c *gin.Context) {
 	c.Header("Full-Path", (&url.URL{Path: string(ent.FullPath)}).String())
 	// url encode and code /
 	c.Header("Set", url.PathEscape(string(ent.Set)))
-	c.Header("Creation-Time", ent.Ctime.Format(timeFormat))
+	c.Header("Last-Modified-Time", ent.Mtime.Format(time.RFC3339))
+	c.Header("Creation-Time", ent.Ctime.Format(time.RFC3339))
 	c.Header("Mode", strconv.FormatUint(uint64(ent.Mode), 10))
 	c.Header("Mime", ent.Mime)
 	c.Header("Md5", hex.EncodeToString(ent.Md5))

@@ -8,6 +8,7 @@ import (
 	"icesos/full_path"
 	"icesos/set"
 	"icesos/storage_engine"
+	"icesos/util"
 	"io"
 	"os"
 	"time"
@@ -35,6 +36,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 			&entry.Entry{
 				FullPath: fp,
 				Set:      set,
+				Mtime:    ctime,
 				Ctime:    ctime,
 				Mode:     os.ModeDir,
 				FileSize: size,
@@ -44,6 +46,8 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 		}
 		return nil
 	}
+
+	mime, file := util.MimeDetect(file)
 
 	md5Hash := md5.New()
 	file = io.TeeReader(file, md5Hash)
@@ -57,8 +61,10 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 		&entry.Entry{
 			FullPath: fp,
 			Set:      set,
+			Mtime:    ctime,
 			Ctime:    ctime,
 			Mode:     os.ModePerm,
+			Mime:     mime,
 			Md5:      md5Hash.Sum(nil),
 			FileSize: size,
 			Fid:      fid,
@@ -79,5 +85,6 @@ func (svr Server) ListObejcts(ctx context.Context, set set.Set, fp full_path.Ful
 }
 
 func (svr Server) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
-	return svr.FilerStore.DeleteObject(ctx, set, fp, recursive)
+	mtime := time.Unix(time.Now().Unix(), 0)
+	return svr.FilerStore.DeleteObject(ctx, set, fp, recursive, mtime)
 }

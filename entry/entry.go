@@ -10,6 +10,7 @@ import (
 type Entry struct {
 	full_path.FullPath             // file full full_path
 	set.Set                        // own set
+	Mtime              time.Time   // time of last modification
 	Ctime              time.Time   // time of creation
 	Mode               os.FileMode // file mode
 	Mime               string      // MIME type

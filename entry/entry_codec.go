@@ -18,6 +18,7 @@ func (ent *Entry) ToPb() *entry_pb.Entry {
 	return &entry_pb.Entry{
 		FullPath: string(ent.FullPath),
 		Set:      string(ent.Set),
+		Mtime:    ent.Mtime.Unix(),
 		Ctime:    ent.Ctime.Unix(),
 		Mode:     uint32(ent.Mode),
 		Mine:     ent.Mime,
@@ -35,6 +36,7 @@ func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
 	return &Entry{
 		FullPath: full_path.FullPath(pb.FullPath),
 		Set:      set.Set(pb.Set),
+		Mtime:    time.Unix(pb.Mtime, 0),
 		Ctime:    time.Unix(pb.Ctime, 0),
 		Mode:     os.FileMode(pb.Mode),
 		Mime:     pb.Mine,

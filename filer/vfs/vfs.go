@@ -8,6 +8,7 @@ import (
 	"icesos/kv"
 	"icesos/set"
 	"icesos/storage_engine"
+	"time"
 )
 
 type VFS struct {
@@ -22,13 +23,23 @@ func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine *storage_engine.Stor
 	}
 }
 
-// after insert entry, insert inode
 func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) error {
 	dirList := ent.SplitList()
+	isUpdateMtime := false
 	for _, dir := range dirList {
-		err := vfs.insertInodeAndEntry(ctx, ent, dir, cover)
+		isCreate, err := vfs.insertInodeAndEntry(ctx, ent, dir, cover)
 		if err != nil {
 			return err
+		}
+
+		if !isUpdateMtime && isCreate {
+			isUpdateMtime = true
+			if dir != inodeRoot {
+				err := vfs.updateMtime(ctx, ent.Set, dir.Dir(), ent.Mtime)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -47,7 +58,7 @@ func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPat
 }
 
 // after delete entry, delete inode
-func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
+func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool, mtime time.Time) error {
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.KvNotFound {
@@ -69,6 +80,14 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 	if err != nil {
 		return err
 	}
+
+	if fp != inodeRoot {
+		err := vfs.updateMtime(ctx, set, fp.Dir(), mtime)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

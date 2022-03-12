@@ -22,7 +22,7 @@ func TestEntry(t *testing.T) {
 	vfs := NewVFS(kvStore, storageEngine)
 
 	fp := full_path.FullPath("/aa/bb/cc")
-	setName := set.Set("test")
+	setName := set.Set("test_vfs_entry")
 	ctx := context.Background()
 
 	size := uint64(5 * 1024)
@@ -32,9 +32,10 @@ func TestEntry(t *testing.T) {
 	ent := &entry.Entry{
 		FullPath: fp,
 		Set:      setName,
-		Ctime:    time.Unix(time.Now().Unix(), 0), // windows: precision to s
+		Mtime:    time.Unix(time.Now().Unix(), 0),
+		Ctime:    time.Unix(time.Now().Unix(), 0),
 		Mode:     os.ModePerm,
-		Mime:     "",
+		Mime:     "text/plain",
 		Md5:      util.RandMd5(),
 		FileSize: size,
 		Fid:      fid,
