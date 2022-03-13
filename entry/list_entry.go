@@ -1,7 +1,6 @@
 package entry
 
 import (
-	"crypto/md5"
 	"encoding/hex"
 	"icesos/full_path"
 	"icesos/set"
@@ -22,11 +21,6 @@ type ListEntry struct {
 }
 
 func (ent *Entry) ToListEntry() *ListEntry {
-	md5Str := ""
-	if len(ent.Md5) == md5.Size {
-		md5Str = hex.EncodeToString(ent.Md5)
-	}
-
 	return &ListEntry{
 		FullPath: ent.FullPath,
 		Set:      ent.Set,
@@ -34,7 +28,7 @@ func (ent *Entry) ToListEntry() *ListEntry {
 		Ctime:    ent.Ctime.Format(time.RFC3339),
 		Mode:     ent.Mode,
 		Mime:     ent.Mime,
-		Md5:      md5Str,
+		Md5:      hex.EncodeToString(ent.Md5),
 		FileSize: ent.FileSize,
 		Fid:      ent.Fid,
 	}
