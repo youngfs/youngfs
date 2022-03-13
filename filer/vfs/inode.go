@@ -133,11 +133,9 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 			}
 		}
 
-		if dir != inodeRoot {
-			err := vfs.insertInodeFa(ctx, ent.Set, dir)
-			if err != nil {
-				return false, err
-			}
+		err := vfs.insertInodeFa(ctx, ent.Set, dir)
+		if err != nil {
+			return false, err
 		}
 
 		return true, nil
@@ -170,11 +168,9 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 				}
 			}
 
-			if dir != inodeRoot {
-				err := vfs.insertInodeFa(ctx, ent.Set, dir)
-				if err != nil {
-					return false, err
-				}
+			err := vfs.insertInodeFa(ctx, ent.Set, dir)
+			if err != nil {
+				return false, err
 			}
 
 			return true, nil
@@ -219,6 +215,7 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 		}
 	}
 
+	// fp != /  delete fp.dir inode -> fp
 	if fp != inodeRoot {
 		err := vfs.deleteInodeFa(ctx, set, fp)
 		if err != nil {
@@ -231,9 +228,12 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 		return err
 	}
 
-	err = vfs.deleteEntry(ctx, set, fp)
-	if err != nil {
-		return err
+	// fp != /  delete fp
+	if fp != inodeRoot {
+		err = vfs.deleteEntry(ctx, set, fp)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

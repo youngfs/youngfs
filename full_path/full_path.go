@@ -65,6 +65,43 @@ func (fp FullPath) IsLegal() bool {
 			return false
 		}
 	}
+	return true
+}
+
+func (fp FullPath) IsLegalObjectName() bool {
+	if !utf8.ValidString(string(fp)) {
+		return false
+	}
+
+	if fp == "" {
+		return false
+	}
+	if fp[0] != '/' || fp[len(fp)-1] == '/' {
+		return false
+	}
+	set := make(map[int32]bool)
+	for _, ch := range "<>\\|:*?" {
+		set[ch] = true
+	}
+	for _, ch := range fp {
+		if set[ch] == true {
+			return false
+		}
+	}
+	if strings.Contains(string(fp), "//") || strings.Contains(string(fp), "...") {
+		return false
+	}
+	cnt := 0
+	for _, str := range strings.Split(string(fp), "/") {
+		if str == ".." {
+			cnt--
+		} else if str != "." && str != "" {
+			cnt++
+		}
+		if cnt < 0 {
+			return false
+		}
+	}
 	if cnt <= 0 {
 		return false
 	}
@@ -108,7 +145,6 @@ func (fp FullPath) Clean() FullPath {
 func (fp FullPath) DirAndName() (FullPath, string) {
 	// fp = fp.Clean()
 	dir, name := filepath.Split(string(fp))
-	name = strings.ToValidUTF8(name, "?")
 	if dir != "/" {
 		dir = dir[:len(dir)-1]
 	}

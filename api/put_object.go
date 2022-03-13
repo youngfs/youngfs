@@ -44,7 +44,7 @@ func PutObjectHandler(c *gin.Context) {
 		)
 		return
 	}
-	if !fp.IsLegal() {
+	if !fp.IsLegalObjectName() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(
 			err.HTTPStatusCode,
