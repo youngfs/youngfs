@@ -10,7 +10,9 @@ import (
 	"icesos/storage_engine"
 	"icesos/util"
 	"io"
+	"mime"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -47,7 +49,11 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 		return nil
 	}
 
-	mime, file := util.MimeDetect(file)
+	ext := filepath.Ext(string(fp))
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType, file = util.FileMimeDetect(file)
+	}
 
 	md5Hash := md5.New()
 	file = io.TeeReader(file, md5Hash)
@@ -64,7 +70,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 			Mtime:    ctime,
 			Ctime:    ctime,
 			Mode:     os.ModePerm,
-			Mime:     mime,
+			Mime:     mimeType,
 			Md5:      md5Hash.Sum(nil),
 			FileSize: size,
 			Fid:      fid,

@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func MimeDetect(file io.Reader) (string, io.Reader) {
+func FileMimeDetect(file io.Reader) (string, io.Reader) {
 	mimeBuffer := make([]byte, 512)
 	size, _ := file.Read(mimeBuffer)
 	if size > 0 {
