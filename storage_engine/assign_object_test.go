@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestAssignObject(t *testing.T) {
+func TestStorageEngine_AssignObject(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	info, err := client.AssignObject(context.Background(), 5*1024)
 	assert.Equal(t, err, nil)
@@ -15,7 +15,7 @@ func TestAssignObject(t *testing.T) {
 	assert.Equal(t, info.Count, int64(1))
 }
 
-func TestSplitFid(t *testing.T) {
+func TestStorageEngine_SplitFid(t *testing.T) {
 	volumeId, fid := SplitFid("3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")

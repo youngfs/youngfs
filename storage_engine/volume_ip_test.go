@@ -9,7 +9,7 @@ import (
 )
 
 // test master: 10.249.177.55:9333
-func TestGetVolumeIp(t *testing.T) {
+func TestStorageEngine_GetVolumeIp(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	ctx := context.Background()
 
