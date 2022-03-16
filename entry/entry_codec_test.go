@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func TestObject_EnDecodeProto(t *testing.T) {
+func TestEntry_EnDecodeProto(t *testing.T) {
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",

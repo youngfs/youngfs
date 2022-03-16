@@ -22,6 +22,9 @@ func ListObjectHandler(c *gin.Context) {
 		)
 		return
 	}
+	if fp != "/" && fp[len(fp)-1] == '/' {
+		fp = fp[:len(fp)-1]
+	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 		c.JSON(
@@ -51,13 +54,30 @@ func ListObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(
+	accepts := c.Request.Header.Values("Accept")
+	for _, str := range accepts {
+		if str == "application/json" {
+			c.JSON(
+				http.StatusOK,
+				gin.H{
+					"Path":    fp,
+					"Set":     setName,
+					"Entries": ents,
+				},
+			)
+			return
+		}
+	}
+
+	c.HTML(
 		http.StatusOK,
+		"ui",
 		gin.H{
-			"Path":    fp,
-			"Entries": ents,
+			"FullPath":  string(fp),
+			"Set":       string(setName),
+			"PathLinks": fp.ToPathLink(),
+			"Entries":   ents,
 		},
 	)
-
 	return
 }

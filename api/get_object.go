@@ -12,6 +12,12 @@ import (
 
 func GetObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	if fp == "/" || fp[len(fp)-1] == '/' {
+		//redirect to list object
+		ListObjectHandler(c)
+		return
+	}
+
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
 		c.JSON(
@@ -54,22 +60,7 @@ func GetObjectHandler(c *gin.Context) {
 
 	if ent.IsDirectory() {
 		//redirect to list object
-		accepts := c.Request.Header.Values("Accept")
-		for _, str := range accepts {
-			if str == "application/json" {
-				ListObjectHandler(c)
-				return
-			}
-		}
-
-		err := errors.ErrorCodeResponse[errors.ErrInvalidPath]
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				"code":  err.ErrorCode,
-				"error": err.Error(),
-			},
-		)
+		ListObjectHandler(c)
 		return
 	}
 
