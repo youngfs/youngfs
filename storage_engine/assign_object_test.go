@@ -15,32 +15,32 @@ func TestStorageEngine_AssignObject(t *testing.T) {
 	assert.Equal(t, info.Count, int64(1))
 }
 
-func TestStorageEngine_SplitFid(t *testing.T) {
-	volumeId, fid := SplitFid("3,3fd41bd1da80")
+func TestStorageEngine_ParseFid(t *testing.T) {
+	volumeId, fid := ParseFid("3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")
 
-	volumeId, fid = SplitFid("3,3fd41bd1da80,3")
+	volumeId, fid = ParseFid("3,3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = SplitFid("3fd41bd1da80")
+	volumeId, fid = ParseFid("3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = SplitFid("")
+	volumeId, fid = ParseFid("")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = SplitFid("-3,3fd41bd1da80")
+	volumeId, fid = ParseFid("-3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = SplitFid("3fd41bd1da80,3")
+	volumeId, fid = ParseFid("3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 
-	volumeId, fid = SplitFid("3fd41bd1da80.3")
+	volumeId, fid = ParseFid("3fd41bd1da80.3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 }

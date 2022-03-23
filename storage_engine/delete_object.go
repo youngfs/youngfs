@@ -25,7 +25,7 @@ func (svr *StorageEngine) loopProcessingDeletion() {
 		deleteCnt = 0
 		svr.DeletionQueue.Consume(func(fids []string) {
 			for _, fid := range fids {
-				volumeId, fid := SplitFid(fid)
+				volumeId, fid := ParseFid(fid)
 				_ = svr.deleteActualObject(context.Background(), volumeId, fid)
 				deleteCnt++
 			}

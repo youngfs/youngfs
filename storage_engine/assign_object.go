@@ -40,7 +40,7 @@ func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64) (*assig
 	return assignFileInfo, nil
 }
 
-func SplitFid(fullFid string) (uint64, string) {
+func ParseFid(fullFid string) (uint64, string) {
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
 		return 0, ""
