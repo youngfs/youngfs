@@ -22,6 +22,11 @@ type KvStore interface {
 	ZRem(ctx context.Context, key, member string) (bool, error)
 	ZRangeByLex(ctx context.Context, key, min, max string) ([]string, error)
 	ZRemRangeByLex(ctx context.Context, key, min, max string) (bool, error)
+	Incr(ctx context.Context, key string) (int64, error)
+	Decr(ctx context.Context, key string) (int64, error)
+	GetNum(ctx context.Context, key string) (int64, error)
+	SetNum(ctx context.Context, key string, num int64) error
+	ClrNum(ctx context.Context, key string) (bool, error)
 }
 
 type KvStoreWithRedisMutex interface {
@@ -40,6 +45,11 @@ type KvStoreWithRedisMutex interface {
 	ZRem(ctx context.Context, key, member string) (bool, error)
 	ZRangeByLex(ctx context.Context, key, min, max string) ([]string, error)
 	ZRemRangeByLex(ctx context.Context, key, min, max string) (bool, error)
+	Incr(ctx context.Context, key string) (int64, error)
+	Decr(ctx context.Context, key string) (int64, error)
+	GetNum(ctx context.Context, key string) (int64, error)
+	SetNum(ctx context.Context, key string, num int64) error
+	ClrNum(ctx context.Context, key string) (bool, error)
 }
 
 var KvNotFound = errors.APIError{
