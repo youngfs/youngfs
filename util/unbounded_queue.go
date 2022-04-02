@@ -30,8 +30,8 @@ func (q *UnboundedQueue) Consume(fn func([]string)) {
 
 	if len(q.outbound) == 0 {
 		q.inboundLock.Lock()
-		inbountLen := len(q.inbound)
-		if inbountLen > 0 {
+		inboundLen := len(q.inbound)
+		if inboundLen > 0 {
 			q.inbound, q.outbound = q.outbound, q.inbound
 		}
 		q.inboundLock.Unlock()
