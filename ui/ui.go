@@ -28,4 +28,4 @@ var Static embed.FS
 //go:embed static/images/favicon.ico
 var Favicon []byte
 
-var StatusTpl = template.Must(template.New("ui").Funcs(FuncMap).Parse(uiHtml))
+var StatusTpl = template.Must(template.New(UIName).Funcs(FuncMap).Parse(uiHtml))

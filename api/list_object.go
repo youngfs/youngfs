@@ -6,6 +6,7 @@ import (
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
+	"icesos/ui"
 	"net/http"
 )
 
@@ -71,7 +72,7 @@ func ListObjectHandler(c *gin.Context) {
 
 	c.HTML(
 		http.StatusOK,
-		"ui",
+		ui.UIName,
 		gin.H{
 			"FullPath":  string(fp),
 			"Set":       string(setName),
