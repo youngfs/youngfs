@@ -76,6 +76,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 			Fid:      fid,
 		}, true)
 	if err != nil {
+		_ = svr.StorageEngine.DeleteObject(ctx, fid)
 		return err
 	}
 
