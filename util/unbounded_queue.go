@@ -4,19 +4,19 @@ import (
 	"sync"
 )
 
-type UnboundedQueue struct {
-	outbound     []string
+type UnboundedQueue[T any] struct {
+	outbound     []T
 	outboundLock sync.RWMutex
-	inbound      []string
+	inbound      []T
 	inboundLock  sync.RWMutex
 }
 
-func NewUnboundedQueue() *UnboundedQueue {
-	q := &UnboundedQueue{}
+func NewUnboundedQueue[T any]() *UnboundedQueue[T] {
+	q := &UnboundedQueue[T]{}
 	return q
 }
 
-func (q *UnboundedQueue) EnQueue(items ...string) {
+func (q *UnboundedQueue[T]) EnQueue(items ...T) {
 	q.inboundLock.Lock()
 	defer q.inboundLock.Unlock()
 
@@ -24,7 +24,7 @@ func (q *UnboundedQueue) EnQueue(items ...string) {
 
 }
 
-func (q *UnboundedQueue) Consume(fn func([]string)) {
+func (q *UnboundedQueue[T]) Consume(fn func([]T)) {
 	q.outboundLock.Lock()
 	defer q.outboundLock.Unlock()
 
