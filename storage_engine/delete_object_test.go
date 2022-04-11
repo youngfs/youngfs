@@ -21,7 +21,8 @@ func TestStorageEngine_DeleteObject(t *testing.T) {
 
 	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 
-	volumeId, _ := ParseFid(Fid)
+	volumeId, _, err := ParseFid(Fid)
+	assert.Equal(t, err, nil)
 
 	url, err := client.GetVolumeIp(ctx, volumeId)
 	assert.Equal(t, err, nil)

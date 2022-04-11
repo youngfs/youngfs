@@ -40,14 +40,14 @@ func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64) (*assig
 	return assignFileInfo, nil
 }
 
-func ParseFid(fullFid string) (uint64, string) {
+func ParseFid(fullFid string) (uint64, string, error) {
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
-		return 0, ""
+		return 0, "", errors.ErrorCodeResponse[errors.ErrParseFid]
 	}
 	volumeId, err := strconv.ParseUint(ret[0], 10, 64)
 	if err != nil {
-		return 0, ""
+		return 0, "", errors.ErrorCodeResponse[errors.ErrParseFid]
 	}
-	return volumeId, ret[1]
+	return volumeId, ret[1], nil
 }

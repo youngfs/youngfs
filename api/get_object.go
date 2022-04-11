@@ -64,7 +64,21 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	volumeId, _ := storage_engine.ParseFid(ent.Fid)
+	volumeId, _, err := storage_engine.ParseFid(ent.Fid)
+	if err != nil {
+		err, ok := err.(errors.APIError)
+		if ok != true {
+			err = errors.ErrorCodeResponse[errors.ErrServer]
+		}
+		c.JSON(
+			err.HTTPStatusCode,
+			gin.H{
+				"code":  err.ErrorCode,
+				"error": err.Error(),
+			},
+		)
+	}
+
 	url, err := server.Svr.StorageEngine.GetVolumeIp(c, volumeId)
 	if err != nil {
 		err, ok := err.(errors.APIError)
