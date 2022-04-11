@@ -20,6 +20,7 @@ func TestStorageEngine_DeleteObject(t *testing.T) {
 	b := util.RandByte(size)
 
 	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
+	assert.Equal(t, err, nil)
 
 	volumeId, _, err := ParseFid(Fid)
 	assert.Equal(t, err, nil)

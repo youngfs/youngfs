@@ -5,6 +5,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"icesos/errors"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,8 +18,14 @@ type assignObjectInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64) (*assignObjectInfo, error) {
-	resp, err := http.Get("http://" + svr.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10))
+func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64, hosts ...string) (*assignObjectInfo, error) {
+	hostReq, host := "", ""
+	if len(hosts) > 0 {
+		host = hosts[rand.Intn(len(hosts))]
+		hostReq = "&dataCenter=DefaultDataCenter&rack=DefaultRack&dataNode=" + host
+	}
+
+	resp, err := http.Get("http://" + svr.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10) + hostReq)
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
@@ -35,6 +42,12 @@ func (svr *StorageEngine) AssignObject(ctx context.Context, size uint64) (*assig
 	err = jsoniter.Unmarshal(httpBody, assignFileInfo)
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+	}
+
+	if host != "" {
+		if host != assignFileInfo.Url && host != assignFileInfo.PublicUrl {
+			return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+		}
 	}
 
 	return assignFileInfo, nil

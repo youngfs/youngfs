@@ -12,8 +12,8 @@ type PutObjectInfo struct {
 	ETag string `json:"eTag"`
 }
 
-func (svr *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Reader) (string, error) {
-	info, err := svr.AssignObject(ctx, size)
+func (svr *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Reader, hosts ...string) (string, error) {
+	info, err := svr.AssignObject(ctx, size, hosts...)
 	if err != nil {
 		return "", err
 	}
