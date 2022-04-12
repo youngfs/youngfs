@@ -63,7 +63,7 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	url, err := server.Svr.GetFidHost(c, ent.Fid)
+	url, err := server.Svr.GetFidUrl(c, ent.Fid)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
@@ -79,6 +79,6 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, "http://"+url+"/"+ent.Fid)
+	c.Redirect(http.StatusMovedPermanently, url)
 	return
 }

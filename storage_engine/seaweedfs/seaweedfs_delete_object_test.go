@@ -22,7 +22,7 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 	assert.Equal(t, err, nil)
 
-	url, err := client.GetFidHost(ctx, Fid)
+	url, err := client.GetFidUrl(ctx, Fid)
 	assert.Equal(t, err, nil)
 
 	resp1, err := http.Get("http://" + url + "/" + Fid)

@@ -96,6 +96,6 @@ func (svr Server) DeleteObject(ctx context.Context, set set.Set, fp full_path.Fu
 	return svr.filerStore.DeleteObject(ctx, set, fp, recursive, mtime)
 }
 
-func (svr Server) GetFidHost(ctx context.Context, fid string) (string, error) {
-	return svr.storageEngine.GetFidHost(ctx, fid)
+func (svr Server) GetFidUrl(ctx context.Context, fid string) (string, error) {
+	return svr.storageEngine.GetFidUrl(ctx, fid)
 }
