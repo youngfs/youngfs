@@ -25,6 +25,7 @@ func (ent *Entry) ToPb() *entry_pb.Entry {
 		Md5:      ent.Md5,
 		FileSize: ent.FileSize,
 		Fid:      ent.Fid,
+		ECid:     ent.ECid,
 	}
 }
 
@@ -43,6 +44,7 @@ func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
 		Md5:      pb.Md5,
 		FileSize: pb.FileSize,
 		Fid:      pb.Fid,
+		ECid:     pb.ECid,
 	}
 }
 

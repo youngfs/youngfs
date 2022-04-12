@@ -21,12 +21,32 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 		Md5:      util.RandMd5(),
 		FileSize: uint64(rand.Int63()),
 		Fid:      strconv.Itoa(rand.Int()),
+		ECid:     strconv.FormatInt(rand.Int63(), 10),
 	}
 
 	b, err := val.EncodeProto()
 	assert.Equal(t, err, nil)
 
 	val2, err := DecodeEntryProto(b)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, val2, val)
+
+	val = &Entry{
+		FullPath: "/aa/bb/cc",
+		Set:      "test",
+		Mtime:    time.Unix(time.Now().Unix(), 0),
+		Ctime:    time.Unix(time.Now().Unix(), 0),
+		Mode:     os.ModePerm,
+		Mime:     "",
+		FileSize: uint64(rand.Int63()),
+		Fid:      strconv.Itoa(rand.Int()),
+		ECid:     strconv.FormatInt(rand.Int63(), 10),
+	}
+
+	b, err = val.EncodeProto()
+	assert.Equal(t, err, nil)
+
+	val2, err = DecodeEntryProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

@@ -12,4 +12,5 @@ message Entry{
   bytes md5 = 7;
   uint64 file_size = 8;
   string fid = 9;
+  string ECid = 10;
 }

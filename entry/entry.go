@@ -17,6 +17,7 @@ type Entry struct {
 	Md5                []byte      // MD5
 	FileSize           uint64      // file size
 	Fid                string      // fid
+	ECid               string      // erasure code id
 }
 
 func (ent *Entry) Key() string {

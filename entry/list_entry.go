@@ -16,6 +16,7 @@ type ListEntry struct {
 	Md5      string      // MD5
 	FileSize uint64      // file size
 	Fid      string      // fid
+	ECid     string      // erasure code id
 }
 
 func (ent *Entry) ToListEntry() *ListEntry {
@@ -29,6 +30,7 @@ func (ent *Entry) ToListEntry() *ListEntry {
 		Md5:      hex.EncodeToString(ent.Md5),
 		FileSize: ent.FileSize,
 		Fid:      ent.Fid,
+		ECid:     ent.ECid,
 	}
 }
 
