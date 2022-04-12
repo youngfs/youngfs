@@ -1,4 +1,4 @@
-package storage_engine
+package seaweedfs
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func (svr *StorageEngine) loopProcessingDeletion() {
 		deleteCnt = 0
 		svr.DeletionQueue.Consume(func(fids []string) {
 			for _, fid := range fids {
-				volumeId, fid, err := ParseFid(fid)
+				volumeId, fid, err := svr.parseFid(fid)
 				if err != nil {
 					//todo: add log
 					continue
@@ -41,7 +41,7 @@ func (svr *StorageEngine) loopProcessingDeletion() {
 }
 
 func (svr *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64, fid string) error {
-	volumeIp, err := svr.GetVolumeIp(ctx, volumeId)
+	volumeIp, err := svr.getVolumeHost(ctx, volumeId)
 	if err != nil || volumeIp == "" {
 		return err
 	}

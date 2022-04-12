@@ -1,4 +1,4 @@
-package storage_engine
+package seaweedfs
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type PutObjectInfo struct {
 }
 
 func (svr *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Reader, hosts ...string) (string, error) {
-	info, err := svr.AssignObject(ctx, size, hosts...)
+	info, err := svr.assignObject(ctx, size, hosts...)
 	if err != nil {
 		return "", err
 	}

@@ -1,4 +1,4 @@
-package storage_engine
+package seaweedfs
 
 import (
 	"context"
@@ -8,46 +8,47 @@ import (
 	"testing"
 )
 
-func TestStorageEngine_AssignObject(t *testing.T) {
+func TestStorageEngine_assignObject(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
-	info, err := client.AssignObject(context.Background(), 5*1024)
+	info, err := client.assignObject(context.Background(), 5*1024)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, info.Url, info.PublicUrl)
 	assert.Equal(t, info.Count, int64(1))
 }
 
-func TestStorageEngine_ParseFid(t *testing.T) {
-	volumeId, fid, err := ParseFid("3,3fd41bd1da80")
+func TestStorageEngine_parseFid(t *testing.T) {
+	client := NewStorageEngine(vars.MasterServer)
+	volumeId, fid, err := client.parseFid("3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")
 	assert.Equal(t, err, nil)
 
-	volumeId, fid, err = ParseFid("3,3fd41bd1da80,3")
+	volumeId, fid, err = client.parseFid("3,3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = ParseFid("3fd41bd1da80")
+	volumeId, fid, err = client.parseFid("3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = ParseFid("")
+	volumeId, fid, err = client.parseFid("")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = ParseFid("-3,3fd41bd1da80")
+	volumeId, fid, err = client.parseFid("-3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = ParseFid("3fd41bd1da80,3")
+	volumeId, fid, err = client.parseFid("3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = ParseFid("3fd41bd1da80.3")
+	volumeId, fid, err = client.parseFid("3fd41bd1da80.3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])

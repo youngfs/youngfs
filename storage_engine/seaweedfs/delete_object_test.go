@@ -1,4 +1,4 @@
-package storage_engine
+package seaweedfs
 
 import (
 	"bytes"
@@ -22,10 +22,7 @@ func TestStorageEngine_DeleteObject(t *testing.T) {
 	Fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 	assert.Equal(t, err, nil)
 
-	volumeId, _, err := ParseFid(Fid)
-	assert.Equal(t, err, nil)
-
-	url, err := client.GetVolumeIp(ctx, volumeId)
+	url, err := client.GetFidHost(ctx, Fid)
 	assert.Equal(t, err, nil)
 
 	resp1, err := http.Get("http://" + url + "/" + Fid)

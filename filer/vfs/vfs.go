@@ -13,10 +13,10 @@ import (
 
 type VFS struct {
 	kvStore       kv.KvStoreWithRedisMutex
-	storageEngine *storage_engine.StorageEngine
+	storageEngine storage_engine.StorageEngine
 }
 
-func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine *storage_engine.StorageEngine) *VFS {
+func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine storage_engine.StorageEngine) *VFS {
 	return &VFS{
 		kvStore:       kvStore,
 		storageEngine: storageEngine,

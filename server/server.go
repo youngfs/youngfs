@@ -17,16 +17,16 @@ import (
 )
 
 type Server struct {
-	FilerStore    filer.FilerStore
-	StorageEngine *storage_engine.StorageEngine
+	filerStore    filer.FilerStore
+	storageEngine storage_engine.StorageEngine
 }
 
 var Svr *Server
 
-func NewServer(filer filer.FilerStore, storageEngine *storage_engine.StorageEngine) *Server {
+func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine) *Server {
 	return &Server{
-		FilerStore:    filer,
-		StorageEngine: storageEngine,
+		filerStore:    filer,
+		storageEngine: storageEngine,
 	}
 }
 
@@ -34,7 +34,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
-		err := svr.FilerStore.InsertObject(ctx,
+		err := svr.filerStore.InsertObject(ctx,
 			&entry.Entry{
 				FullPath: fp,
 				Set:      set,
@@ -58,12 +58,12 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 	md5Hash := md5.New()
 	file = io.TeeReader(file, md5Hash)
 
-	fid, err := svr.StorageEngine.PutObject(ctx, size, file)
+	fid, err := svr.storageEngine.PutObject(ctx, size, file)
 	if err != nil {
 		return err
 	}
 
-	err = svr.FilerStore.InsertObject(ctx,
+	err = svr.filerStore.InsertObject(ctx,
 		&entry.Entry{
 			FullPath: fp,
 			Set:      set,
@@ -76,7 +76,7 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 			Fid:      fid,
 		}, true)
 	if err != nil {
-		_ = svr.StorageEngine.DeleteObject(ctx, fid)
+		_ = svr.storageEngine.DeleteObject(ctx, fid)
 		return err
 	}
 
@@ -84,14 +84,18 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 }
 
 func (svr Server) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
-	return svr.FilerStore.GetObject(ctx, set, fp)
+	return svr.filerStore.GetObject(ctx, set, fp)
 }
 
 func (svr Server) ListObejcts(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
-	return svr.FilerStore.ListObjects(ctx, set, fp)
+	return svr.filerStore.ListObjects(ctx, set, fp)
 }
 
 func (svr Server) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
 	mtime := time.Unix(time.Now().Unix(), 0)
-	return svr.FilerStore.DeleteObject(ctx, set, fp, recursive, mtime)
+	return svr.filerStore.DeleteObject(ctx, set, fp, recursive, mtime)
+}
+
+func (svr Server) GetFidHost(ctx context.Context, fid string) (string, error) {
+	return svr.storageEngine.GetFidHost(ctx, fid)
 }

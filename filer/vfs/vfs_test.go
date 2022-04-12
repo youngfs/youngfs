@@ -11,7 +11,7 @@ import (
 	"icesos/kv"
 	"icesos/kv/redis_store"
 	"icesos/set"
-	"icesos/storage_engine"
+	"icesos/storage_engine/seaweedfs"
 	"icesos/util"
 	"os"
 	"testing"
@@ -20,7 +20,7 @@ import (
 
 func TestVFS(t *testing.T) {
 	kvStore := redis_store.NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := storage_engine.NewStorageEngine(vars.MasterServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
 	vfs := NewVFS(kvStore, storageEngine)
 
 	setName := set.Set("test_vfs")

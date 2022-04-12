@@ -1,4 +1,4 @@
-package storage_engine
+package seaweedfs
 
 import (
 	"context"
@@ -15,12 +15,12 @@ type volumeUrl struct {
 }
 
 type volumeIpInfo struct {
-	VolumeOrFileId string       `json:"volumeOrFileId"`
-	Locations      []*volumeUrl `json:"locations"`
-	Error          string       `json:"error"`
+	VolumeOrFileId string      `json:"volumeOrFileId"`
+	Locations      []volumeUrl `json:"locations"`
+	Error          string      `json:"error"`
 }
 
-func (svr *StorageEngine) GetVolumeIp(ctx context.Context, volumeId uint64) (string, error) {
+func (svr *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (string, error) {
 	if svr.volumeIpMap[volumeId] != "" {
 		return svr.volumeIpMap[volumeId], nil
 	}
