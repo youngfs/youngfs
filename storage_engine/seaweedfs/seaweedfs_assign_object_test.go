@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestStorageEngine_assignObject(t *testing.T) {
+func TestSeaweedFS_assignObject(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	info, err := client.assignObject(context.Background(), 5*1024)
 	assert.Equal(t, err, nil)
@@ -16,7 +16,7 @@ func TestStorageEngine_assignObject(t *testing.T) {
 	assert.Equal(t, info.Count, int64(1))
 }
 
-func TestStorageEngine_parseFid(t *testing.T) {
+func TestSeaweedFS_parseFid(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	volumeId, fid, err := client.parseFid("3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))

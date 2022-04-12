@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestStorageEngine_GetVolumeHost(t *testing.T) {
+func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	ctx := context.Background()
 

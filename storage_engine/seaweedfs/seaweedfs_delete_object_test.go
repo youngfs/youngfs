@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func TestStorageEngine_DeleteObject(t *testing.T) {
+func TestSeaweedFS_DeleteObject(t *testing.T) {
 	client := NewStorageEngine(vars.MasterServer)
 	size := uint64(5 * 1024)
 	ctx := context.Background()
