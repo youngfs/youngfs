@@ -1,0 +1,13 @@
+syntax = "proto3";
+package ec_pb;
+option go_package = "./ec_pb";
+
+message SetRules{
+  string set = 1;
+  repeated string hosts = 2;
+  uint64 data_shards = 3;
+  uint64 parity_shards = 4;
+  uint64 MAX_block_size = 5;
+  bool EC_mode = 6;
+  bool replication_mode = 7;
+}

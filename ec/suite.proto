@@ -1,0 +1,21 @@
+syntax = "proto3";
+package ec_pb;
+option go_package = "./ec_pb";
+
+message Frag{
+  string full_path = 1;
+  string set = 2;
+  uint64 file_size = 3;
+  string fid = 4;
+}
+
+message Shard {
+  string host = 1;
+  repeated Frag frags = 2;
+}
+
+message Suite{
+  string ECid = 1;
+  string fid = 2;
+  repeated Shard shards = 3;
+}
