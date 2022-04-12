@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (ent *Entry) ToPb() *entry_pb.Entry {
+func (ent *Entry) toPb() *entry_pb.Entry {
 	if ent == nil {
 		return nil
 	}
@@ -29,7 +29,7 @@ func (ent *Entry) ToPb() *entry_pb.Entry {
 	}
 }
 
-func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
+func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 	if pb == nil {
 		return nil
 	}
@@ -49,7 +49,7 @@ func EntryPbToInstance(pb *entry_pb.Entry) *Entry {
 }
 
 func (ent *Entry) EncodeProto() ([]byte, error) {
-	message := ent.ToPb()
+	message := ent.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrProto]
@@ -62,5 +62,5 @@ func DecodeEntryProto(b []byte) (*Entry, error) {
 	if err := proto.Unmarshal(b, message); err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
-	return EntryPbToInstance(message), nil
+	return entryPbToInstance(message), nil
 }
