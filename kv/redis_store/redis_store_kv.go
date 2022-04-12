@@ -7,7 +7,7 @@ import (
 	"icesos/kv"
 )
 
-func (store *redisStore) KvPut(ctx context.Context, key string, val []byte) error {
+func (store *RedisStore) KvPut(ctx context.Context, key string, val []byte) error {
 	_, err := store.client.Set(ctx, key, val, 0).Result()
 	if err != nil {
 		return errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -15,7 +15,7 @@ func (store *redisStore) KvPut(ctx context.Context, key string, val []byte) erro
 	return nil
 }
 
-func (store *redisStore) KvGet(ctx context.Context, key string) ([]byte, error) {
+func (store *RedisStore) KvGet(ctx context.Context, key string) ([]byte, error) {
 	val, err := store.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -27,7 +27,7 @@ func (store *redisStore) KvGet(ctx context.Context, key string) ([]byte, error) 
 	return []byte(val), nil
 }
 
-func (store *redisStore) KvDelete(ctx context.Context, key string) (bool, error) {
+func (store *RedisStore) KvDelete(ctx context.Context, key string) (bool, error) {
 	ret, err := store.client.Del(ctx, key).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]

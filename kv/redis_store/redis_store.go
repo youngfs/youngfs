@@ -6,13 +6,13 @@ import (
 	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
 )
 
-type redisStore struct {
+type RedisStore struct {
 	client  redis.UniversalClient
 	redSync *redsync.Redsync
 }
 
-func NewRedisStore(hostPort, password string, database int) *redisStore {
-	kvStore := &redisStore{}
+func NewRedisStore(hostPort, password string, database int) *RedisStore {
+	kvStore := &RedisStore{}
 	kvStore.client = redis.NewClient(
 		&redis.Options{
 			Addr:     hostPort,

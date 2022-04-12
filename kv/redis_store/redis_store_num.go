@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (store *redisStore) Incr(ctx context.Context, key string) (int64, error) {
+func (store *RedisStore) Incr(ctx context.Context, key string) (int64, error) {
 	ret, err := store.client.Incr(ctx, key).Result()
 	if err != nil {
 		return 0, errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -16,7 +16,7 @@ func (store *redisStore) Incr(ctx context.Context, key string) (int64, error) {
 	return ret, nil
 }
 
-func (store *redisStore) Decr(ctx context.Context, key string) (int64, error) {
+func (store *RedisStore) Decr(ctx context.Context, key string) (int64, error) {
 	ret, err := store.client.Decr(ctx, key).Result()
 	if err != nil {
 		return 0, errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -24,7 +24,7 @@ func (store *redisStore) Decr(ctx context.Context, key string) (int64, error) {
 	return ret, nil
 }
 
-func (store *redisStore) GetNum(ctx context.Context, key string) (int64, error) {
+func (store *RedisStore) GetNum(ctx context.Context, key string) (int64, error) {
 	val, err := store.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -42,7 +42,7 @@ func (store *redisStore) GetNum(ctx context.Context, key string) (int64, error) 
 	return ret, nil
 }
 
-func (store *redisStore) SetNum(ctx context.Context, key string, num int64) error {
+func (store *RedisStore) SetNum(ctx context.Context, key string, num int64) error {
 	val := strconv.FormatInt(num, 10)
 	_, err := store.client.Set(ctx, key, val, 0).Result()
 	if err != nil {
@@ -51,7 +51,7 @@ func (store *redisStore) SetNum(ctx context.Context, key string, num int64) erro
 	return nil
 }
 
-func (store *redisStore) ClrNum(ctx context.Context, key string) (bool, error) {
+func (store *RedisStore) ClrNum(ctx context.Context, key string) (bool, error) {
 	_, err := store.GetNum(ctx, key)
 	if err != nil {
 		return false, err

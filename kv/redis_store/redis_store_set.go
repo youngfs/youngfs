@@ -6,7 +6,7 @@ import (
 	"icesos/kv"
 )
 
-func (store *redisStore) SAdd(ctx context.Context, key string, member []byte) error {
+func (store *RedisStore) SAdd(ctx context.Context, key string, member []byte) error {
 	_, err := store.client.SAdd(ctx, key, member).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -14,7 +14,7 @@ func (store *redisStore) SAdd(ctx context.Context, key string, member []byte) er
 	return err
 }
 
-func (store *redisStore) SMembers(ctx context.Context, key string) ([][]byte, error) {
+func (store *RedisStore) SMembers(ctx context.Context, key string) ([][]byte, error) {
 	val, err := store.client.SMembers(ctx, key).Result()
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -31,7 +31,7 @@ func (store *redisStore) SMembers(ctx context.Context, key string) ([][]byte, er
 	return ret, nil
 }
 
-func (store *redisStore) SCard(ctx context.Context, key string) (int64, error) {
+func (store *RedisStore) SCard(ctx context.Context, key string) (int64, error) {
 	ret, err := store.client.SCard(ctx, key).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -39,7 +39,7 @@ func (store *redisStore) SCard(ctx context.Context, key string) (int64, error) {
 	return ret, err
 }
 
-func (store *redisStore) SRem(ctx context.Context, key string, member []byte) (bool, error) {
+func (store *RedisStore) SRem(ctx context.Context, key string, member []byte) (bool, error) {
 	ret, err := store.client.SRem(ctx, key, member).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -47,7 +47,7 @@ func (store *redisStore) SRem(ctx context.Context, key string, member []byte) (b
 	return ret != 0, err
 }
 
-func (store *redisStore) SIsMember(ctx context.Context, key string, member []byte) (bool, error) {
+func (store *RedisStore) SIsMember(ctx context.Context, key string, member []byte) (bool, error) {
 	ret, err := store.client.SIsMember(ctx, key, member).Result()
 	if err != nil {
 		return false, errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -56,7 +56,7 @@ func (store *redisStore) SIsMember(ctx context.Context, key string, member []byt
 }
 
 // delete all members of the set
-func (store *redisStore) SDelete(ctx context.Context, key string) (bool, error) {
+func (store *RedisStore) SDelete(ctx context.Context, key string) (bool, error) {
 	cnt, err := store.SCard(ctx, key)
 	if err != nil {
 		return false, errors.ErrorCodeResponse[errors.ErrKvSever]
