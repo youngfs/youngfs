@@ -15,7 +15,7 @@ type deleteObjectInfo struct {
 }
 
 func (svr *StorageEngine) DeleteObject(ctx context.Context, fid string) error {
-	svr.DeletionQueue.EnQueue(fid)
+	svr.deletionQueue.EnQueue(fid)
 	return nil
 }
 
@@ -23,7 +23,7 @@ func (svr *StorageEngine) loopProcessingDeletion() {
 	var deleteCnt int
 	for {
 		deleteCnt = 0
-		svr.DeletionQueue.Consume(func(fids []string) {
+		svr.deletionQueue.Consume(func(fids []string) {
 			for _, fid := range fids {
 				volumeId, fid, err := svr.parseFid(fid)
 				if err != nil {
