@@ -72,7 +72,7 @@ func ListObjectHandler(c *gin.Context) {
 
 	c.HTML(
 		http.StatusOK,
-		ui.UIName,
+		ui.UiName,
 		gin.H{
 			"FullPath":  string(fp),
 			"Set":       string(setName),

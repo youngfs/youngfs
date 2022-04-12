@@ -1,5 +1,5 @@
 package ui
 
 const (
-	UIName = "ui"
+	UiName = "ui"
 )
