@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"testing"
 )
 
-func TestRedisStore_Set(t *testing.T) {
-	client := NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+func TestRedis_Set(t *testing.T) {
+	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_set"
 	ctx := context.Background()
 
@@ -25,7 +25,7 @@ func TestRedisStore_Set(t *testing.T) {
 
 	// not add members
 	bList2, err := client.SMembers(ctx, key)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err := client.SCard(ctx, key)
@@ -126,7 +126,7 @@ func TestRedisStore_Set(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	bList2, err = client.SMembers(ctx, key)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err = client.SCard(ctx, key)

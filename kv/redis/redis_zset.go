@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"icesos/kv"
 )
 
-func (store *RedisStore) ZAdd(ctx context.Context, key, member string) error {
+func (store *KvStore) ZAdd(ctx context.Context, key, member string) error {
 	_, err := store.client.ZAdd(ctx, key, &redis.Z{Score: 0, Member: member}).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -15,7 +15,7 @@ func (store *RedisStore) ZAdd(ctx context.Context, key, member string) error {
 	return err
 }
 
-func (store *RedisStore) ZCard(ctx context.Context, key string) (int64, error) {
+func (store *KvStore) ZCard(ctx context.Context, key string) (int64, error) {
 	ret, err := store.client.ZCard(ctx, key).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -23,7 +23,7 @@ func (store *RedisStore) ZCard(ctx context.Context, key string) (int64, error) {
 	return ret, err
 }
 
-func (store *RedisStore) ZRem(ctx context.Context, key, member string) (bool, error) {
+func (store *KvStore) ZRem(ctx context.Context, key, member string) (bool, error) {
 	ret, err := store.client.ZRem(ctx, key, member).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -31,7 +31,7 @@ func (store *RedisStore) ZRem(ctx context.Context, key, member string) (bool, er
 	return ret != 0, err
 }
 
-func (store *RedisStore) ZIsMember(ctx context.Context, key, member string) (bool, error) {
+func (store *KvStore) ZIsMember(ctx context.Context, key, member string) (bool, error) {
 	ret, err := store.client.ZRangeByLex(ctx, key, &redis.ZRangeBy{
 		Min:    "[" + member,
 		Max:    "[" + member,
@@ -47,7 +47,7 @@ func (store *RedisStore) ZIsMember(ctx context.Context, key, member string) (boo
 //[min , max)
 //if min = "" : min = "-"
 //if max = "" : max = "+"
-func (store *RedisStore) ZRangeByLex(ctx context.Context, key, min, max string) ([]string, error) {
+func (store *KvStore) ZRangeByLex(ctx context.Context, key, min, max string) ([]string, error) {
 	if min == "" {
 		min = "-"
 	} else {
@@ -72,7 +72,7 @@ func (store *RedisStore) ZRangeByLex(ctx context.Context, key, min, max string) 
 	}
 
 	if len(members) == 0 {
-		err = kv.KvNotFound
+		err = kv.NotFound
 	}
 
 	return members, err
@@ -81,7 +81,7 @@ func (store *RedisStore) ZRangeByLex(ctx context.Context, key, min, max string) 
 //[min , max)
 //if min = "" : min = "-"
 //if max = "" : max = "+"
-func (store *RedisStore) ZRemRangeByLex(ctx context.Context, key, min, max string) (bool, error) {
+func (store *KvStore) ZRemRangeByLex(ctx context.Context, key, min, max string) (bool, error) {
 	if min == "" {
 		min = "-"
 	} else {

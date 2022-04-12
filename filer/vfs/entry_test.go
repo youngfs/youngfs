@@ -7,7 +7,7 @@ import (
 	"icesos/entry"
 	"icesos/full_path"
 	"icesos/kv"
-	"icesos/kv/redis_store"
+	"icesos/kv/redis"
 	"icesos/set"
 	"icesos/storage_engine/seaweedfs"
 	"icesos/util"
@@ -17,7 +17,7 @@ import (
 )
 
 func TestEntry(t *testing.T) {
-	kvStore := redis_store.NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
 	vfs := NewVFS(kvStore, storageEngine)
 
@@ -57,7 +57,7 @@ func TestEntry(t *testing.T) {
 	assert.Equal(t, err, nil)
 
 	entry3, err := vfs.getEntry(ctx, setName, fp)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, entry3, nil)
 
 	err = vfs.deleteEntry(ctx, setName, fp)

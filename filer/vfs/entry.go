@@ -33,7 +33,7 @@ func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullP
 
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
-		if err == kv.KvNotFound {
+		if err == kv.NotFound {
 			return nil
 		}
 		return err

@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"icesos/kv"
 )
 
-func (store *RedisStore) SAdd(ctx context.Context, key string, member []byte) error {
+func (store *KvStore) SAdd(ctx context.Context, key string, member []byte) error {
 	_, err := store.client.SAdd(ctx, key, member).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -14,13 +14,13 @@ func (store *RedisStore) SAdd(ctx context.Context, key string, member []byte) er
 	return err
 }
 
-func (store *RedisStore) SMembers(ctx context.Context, key string) ([][]byte, error) {
+func (store *KvStore) SMembers(ctx context.Context, key string) ([][]byte, error) {
 	val, err := store.client.SMembers(ctx, key).Result()
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrKvSever]
 	}
 	if len(val) == 0 {
-		return [][]byte{}, kv.KvNotFound
+		return [][]byte{}, kv.NotFound
 	}
 
 	ret := make([][]byte, len(val))
@@ -31,7 +31,7 @@ func (store *RedisStore) SMembers(ctx context.Context, key string) ([][]byte, er
 	return ret, nil
 }
 
-func (store *RedisStore) SCard(ctx context.Context, key string) (int64, error) {
+func (store *KvStore) SCard(ctx context.Context, key string) (int64, error) {
 	ret, err := store.client.SCard(ctx, key).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -39,7 +39,7 @@ func (store *RedisStore) SCard(ctx context.Context, key string) (int64, error) {
 	return ret, err
 }
 
-func (store *RedisStore) SRem(ctx context.Context, key string, member []byte) (bool, error) {
+func (store *KvStore) SRem(ctx context.Context, key string, member []byte) (bool, error) {
 	ret, err := store.client.SRem(ctx, key, member).Result()
 	if err != nil {
 		err = errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -47,7 +47,7 @@ func (store *RedisStore) SRem(ctx context.Context, key string, member []byte) (b
 	return ret != 0, err
 }
 
-func (store *RedisStore) SIsMember(ctx context.Context, key string, member []byte) (bool, error) {
+func (store *KvStore) SIsMember(ctx context.Context, key string, member []byte) (bool, error) {
 	ret, err := store.client.SIsMember(ctx, key, member).Result()
 	if err != nil {
 		return false, errors.ErrorCodeResponse[errors.ErrKvSever]
@@ -56,7 +56,7 @@ func (store *RedisStore) SIsMember(ctx context.Context, key string, member []byt
 }
 
 // delete all members of the set
-func (store *RedisStore) SDelete(ctx context.Context, key string) (bool, error) {
+func (store *KvStore) SDelete(ctx context.Context, key string) (bool, error) {
 	cnt, err := store.SCard(ctx, key)
 	if err != nil {
 		return false, errors.ErrorCodeResponse[errors.ErrKvSever]

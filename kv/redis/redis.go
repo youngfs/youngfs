@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"github.com/go-redis/redis/v8"
@@ -6,13 +6,13 @@ import (
 	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
 )
 
-type RedisStore struct {
+type KvStore struct {
 	client  redis.UniversalClient
 	redSync *redsync.Redsync
 }
 
-func NewRedisStore(hostPort, password string, database int) *RedisStore {
-	kvStore := &RedisStore{}
+func NewKvStore(hostPort, password string, database int) *KvStore {
+	kvStore := &KvStore{}
 	kvStore.client = redis.NewClient(
 		&redis.Options{
 			Addr:     hostPort,

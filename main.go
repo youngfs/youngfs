@@ -3,7 +3,7 @@ package main
 import (
 	"icesos/command/vars"
 	"icesos/filer/vfs"
-	"icesos/kv/redis_store"
+	"icesos/kv/redis"
 	"icesos/routers"
 	"icesos/server"
 	"icesos/storage_engine/seaweedfs"
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	kvStore := redis_store.NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
 	filerStore := vfs.NewVFS(kvStore, storageEngine)
 	server.Svr = server.NewServer(filerStore, storageEngine)

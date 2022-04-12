@@ -53,7 +53,7 @@ func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) 
 func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
-		if err == kv.KvNotFound {
+		if err == kv.NotFound {
 			return nil, errors.ErrorCodeResponse[errors.ErrInvalidPath]
 		}
 		return nil, err
@@ -72,7 +72,7 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 	} else {
 		ent, err := vfs.getEntry(ctx, set, fp)
 		if err != nil {
-			if err == kv.KvNotFound {
+			if err == kv.NotFound {
 				return errors.ErrorCodeResponse[errors.ErrInvalidPath]
 			}
 			return err
@@ -109,7 +109,7 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 	if fp != inodeRoot {
 		ent, err := vfs.getEntry(ctx, set, fp)
 		if err != nil {
-			if err == kv.KvNotFound {
+			if err == kv.NotFound {
 				return []entry.ListEntry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
 			}
 			return []entry.ListEntry{}, err
@@ -122,7 +122,7 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 
 	inodes, err := vfs.getInodeChs(ctx, set, fp)
 	if err != nil {
-		if err == kv.KvNotFound {
+		if err == kv.NotFound {
 			return []entry.ListEntry{}, nil //not found return not err
 		}
 		return []entry.ListEntry{}, err

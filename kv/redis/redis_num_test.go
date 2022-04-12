@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-func TestRedisStore_Num(t *testing.T) {
-	client := NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+func TestRedis_Num(t *testing.T) {
+	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_num"
 	ctx := context.Background()
 
@@ -22,7 +22,7 @@ func TestRedisStore_Num(t *testing.T) {
 
 	ret, err := client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	for i := 0; i < 1024; i++ {
 		rd := rand.Intn(2)
@@ -51,7 +51,7 @@ func TestRedisStore_Num(t *testing.T) {
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	err = client.SetNum(ctx, key, 128)
 	cnt = int64(128)
@@ -130,7 +130,7 @@ func TestRedisStore_Num(t *testing.T) {
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	for i := 0; i < 1024; i++ {
 		cnt := rand.Int63()
@@ -150,18 +150,18 @@ func TestRedisStore_Num(t *testing.T) {
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	ret3, err := client.KvGet(ctx, key)
 	assert.Equal(t, ret3, nil)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 }

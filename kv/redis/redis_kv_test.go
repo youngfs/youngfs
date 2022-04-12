@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -9,13 +9,13 @@ import (
 	"testing"
 )
 
-func TestRedisStore_Kv(t *testing.T) {
-	client := NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+func TestRedis_Kv(t *testing.T) {
+	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_kv"
 	ctx := context.Background()
 
 	b, err := client.KvGet(ctx, key)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, b, nil)
 
 	ret, err := client.KvDelete(ctx, key)
@@ -43,7 +43,7 @@ func TestRedisStore_Kv(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	b, err = client.KvGet(ctx, key)
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, b, nil)
 
 	ret, err = client.KvDelete(ctx, key)

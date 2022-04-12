@@ -9,7 +9,7 @@ import (
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/kv"
-	"icesos/kv/redis_store"
+	"icesos/kv/redis"
 	"icesos/set"
 	"icesos/storage_engine/seaweedfs"
 	"icesos/util"
@@ -19,7 +19,7 @@ import (
 )
 
 func TestVFS(t *testing.T) {
-	kvStore := redis_store.NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
 	vfs := NewVFS(kvStore, storageEngine)
 
@@ -125,7 +125,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, ent, nil)
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), false, time1)
@@ -190,7 +190,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, ent, nil)
 
 	time.Sleep(time.Duration(2) * time.Second)
@@ -242,7 +242,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
@@ -259,7 +259,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
@@ -348,7 +348,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, ent, nil)
 
 	time.Sleep(time.Duration(2) * time.Second)
@@ -450,7 +450,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
@@ -467,7 +467,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
@@ -610,7 +610,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, ent, nil)
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true, time3)
@@ -622,7 +622,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 	}
 
@@ -632,7 +632,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
-		assert.Equal(t, err, kv.KvNotFound)
+		assert.Equal(t, err, kv.NotFound)
 		assert.Equal(t, ent, nil)
 	}
 
@@ -641,7 +641,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 	assert.Equal(t, ent, nil)
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), true, time3)

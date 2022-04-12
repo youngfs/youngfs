@@ -86,7 +86,7 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
-		if err == kv.KvNotFound {
+		if err == kv.NotFound {
 			return errors.ErrorCodeResponse[errors.ErrServer]
 		}
 		return err
@@ -112,7 +112,7 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 	}()
 
 	dirEnt, err := vfs.getEntry(ctx, ent.Set, dir)
-	if err == kv.KvNotFound {
+	if err == kv.NotFound {
 		if dir != ent.FullPath {
 			err := vfs.insertEntry(ctx,
 				&entry.Entry{
@@ -192,7 +192,7 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 		}()
 	}
 	inodes, err := vfs.getInodeChs(ctx, set, fp)
-	if err != nil && err != kv.KvNotFound {
+	if err != nil && err != kv.NotFound {
 		return err
 	}
 

@@ -52,7 +52,7 @@ type KvStoreWithRedisMutex interface {
 	ClrNum(ctx context.Context, key string) (bool, error)
 }
 
-var KvNotFound = errors.APIError{
+var NotFound = errors.APIError{
 	ErrorCode:      errors.ErrKvNotFound,
 	Description:    "Kv not found",
 	HTTPStatusCode: http.StatusContinue,

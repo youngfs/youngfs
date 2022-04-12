@@ -1,4 +1,4 @@
-package redis_store
+package redis
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func TestRedisStore_ZSet(t *testing.T) {
-	client := NewRedisStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+func TestRedis_ZSet(t *testing.T) {
+	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_zset"
 	ctx := context.Background()
 
@@ -73,7 +73,7 @@ func TestRedisStore_ZSet(t *testing.T) {
 		ret, err := client.ZRangeByLex(ctx, key, string(rune('a'+x)), string(rune('a'+y)))
 		assert.Equal(t, ret, bList[x:y])
 		if x == y {
-			assert.Equal(t, err, kv.KvNotFound)
+			assert.Equal(t, err, kv.NotFound)
 		} else {
 			assert.Equal(t, err, nil)
 		}
@@ -81,7 +81,7 @@ func TestRedisStore_ZSet(t *testing.T) {
 
 	bList2, err := client.ZRangeByLex(ctx, key, "b", "b")
 	assert.Equal(t, bList2, []string{})
-	assert.Equal(t, err, kv.KvNotFound)
+	assert.Equal(t, err, kv.NotFound)
 
 	bList2, err = client.ZRangeByLex(ctx, key, "", "")
 	assert.Equal(t, bList2, bList)
