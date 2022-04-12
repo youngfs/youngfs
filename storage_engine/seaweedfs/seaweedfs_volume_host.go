@@ -20,12 +20,12 @@ type volumeIpInfo struct {
 	Error          string      `json:"error"`
 }
 
-func (svr *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (string, error) {
-	if svr.volumeIpMap[volumeId] != "" {
-		return svr.volumeIpMap[volumeId], nil
+func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (string, error) {
+	if se.volumeIpMap[volumeId] != "" {
+		return se.volumeIpMap[volumeId], nil
 	}
 
-	resp, err := http.Get("http://" + svr.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
+	resp, err := http.Get("http://" + se.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
 	if err != nil {
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
@@ -45,6 +45,6 @@ func (svr *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (s
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 
-	svr.volumeIpMap[volumeId] = info.Locations[0].Url
-	return svr.volumeIpMap[volumeId], nil
+	se.volumeIpMap[volumeId] = info.Locations[0].Url
+	return se.volumeIpMap[volumeId], nil
 }

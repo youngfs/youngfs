@@ -35,8 +35,8 @@ type dirStatue struct {
 	Topology topology `json:"Topology"`
 }
 
-func (svr *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
-	resp, err := http.Get("http://" + svr.masterServer + "//dir/status")
+func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
+	resp, err := http.Get("http://" + se.masterServer + "//dir/status")
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}

@@ -9,13 +9,13 @@ type StorageEngine struct {
 }
 
 func NewStorageEngine(masterServer string) *StorageEngine {
-	svr := &StorageEngine{
+	se := &StorageEngine{
 		masterServer:  masterServer,
 		volumeIpMap:   make(map[uint64]string),
 		deletionQueue: util.NewUnboundedQueue[string](),
 	}
 
-	go svr.loopProcessingDeletion()
+	go se.loopProcessingDeletion()
 
-	return svr
+	return se
 }

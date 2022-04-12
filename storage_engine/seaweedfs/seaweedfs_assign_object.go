@@ -18,14 +18,14 @@ type assignObjectInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func (svr *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ...string) (*assignObjectInfo, error) {
+func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ...string) (*assignObjectInfo, error) {
 	hostReq, host := "", ""
 	if len(hosts) > 0 {
 		host = hosts[rand.Intn(len(hosts))]
 		hostReq = "&dataCenter=DefaultDataCenter&rack=DefaultRack&dataNode=" + host
 	}
 
-	resp, err := http.Get("http://" + svr.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10) + hostReq)
+	resp, err := http.Get("http://" + se.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10) + hostReq)
 	if err != nil {
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
@@ -53,7 +53,7 @@ func (svr *StorageEngine) assignObject(ctx context.Context, size uint64, hosts .
 	return assignFileInfo, nil
 }
 
-func (svr *StorageEngine) parseFid(fullFid string) (uint64, string, error) {
+func (se *StorageEngine) parseFid(fullFid string) (uint64, string, error) {
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
 		return 0, "", errors.ErrorCodeResponse[errors.ErrParseFid]

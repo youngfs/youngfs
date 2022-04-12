@@ -14,23 +14,23 @@ type deleteObjectInfo struct {
 	Size uint64 `json:"size"`
 }
 
-func (svr *StorageEngine) DeleteObject(ctx context.Context, fid string) error {
-	svr.deletionQueue.EnQueue(fid)
+func (se *StorageEngine) DeleteObject(ctx context.Context, fid string) error {
+	se.deletionQueue.EnQueue(fid)
 	return nil
 }
 
-func (svr *StorageEngine) loopProcessingDeletion() {
+func (se *StorageEngine) loopProcessingDeletion() {
 	var deleteCnt int
 	for {
 		deleteCnt = 0
-		svr.deletionQueue.Consume(func(fids []string) {
+		se.deletionQueue.Consume(func(fids []string) {
 			for _, fid := range fids {
-				volumeId, fid, err := svr.parseFid(fid)
+				volumeId, fid, err := se.parseFid(fid)
 				if err != nil {
 					//todo: add log
 					continue
 				}
-				_ = svr.deleteActualObject(context.Background(), volumeId, fid)
+				_ = se.deleteActualObject(context.Background(), volumeId, fid)
 				deleteCnt++
 			}
 		})
@@ -40,8 +40,8 @@ func (svr *StorageEngine) loopProcessingDeletion() {
 	}
 }
 
-func (svr *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64, fid string) error {
-	volumeIp, err := svr.getVolumeHost(ctx, volumeId)
+func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64, fid string) error {
+	volumeIp, err := se.getVolumeHost(ctx, volumeId)
 	if err != nil || volumeIp == "" {
 		return err
 	}
