@@ -34,7 +34,7 @@ func (ent *Entry) ToListEntry() *ListEntry {
 	}
 }
 
-func ToListEntris(ents []Entry) []ListEntry {
+func ToListEntries(ents []Entry) []ListEntry {
 	ret := make([]ListEntry, len(ents))
 
 	for i, u := range ents {

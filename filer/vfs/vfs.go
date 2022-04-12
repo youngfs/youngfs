@@ -137,5 +137,5 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 		ret[i] = *ent
 	}
 
-	return entry.ToListEntris(ret), nil
+	return entry.ToListEntries(ret), nil
 }
