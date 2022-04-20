@@ -16,6 +16,7 @@ type Frag struct {
 type Shard struct {
 	Host  string // host
 	Frags []Frag // frags
+	Md5   []byte // MD5
 }
 
 //DataBlocks must not be []Shard{} (codec will become nill)

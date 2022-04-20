@@ -54,6 +54,7 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 		&Shard{
 			Host:  util.RandString(16),
 			Frags: []Frag{*frags[0], *frags[1]},
+			Md5:   util.RandMd5(),
 		},
 		&Shard{
 			Host:  util.RandString(16),

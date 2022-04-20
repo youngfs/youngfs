@@ -41,6 +41,7 @@ func (shard *Shard) toPb() *ec_pb.Shard {
 	return &ec_pb.Shard{
 		Host:  shard.Host,
 		Frags: fragsPb,
+		Md5:   shard.Md5,
 	}
 }
 
@@ -101,6 +102,7 @@ func shardPbToInstance(pb *ec_pb.Shard) *Shard {
 	return &Shard{
 		Host:  pb.Host,
 		Frags: frags,
+		Md5:   pb.Md5,
 	}
 }
 

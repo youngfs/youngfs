@@ -12,6 +12,7 @@ message Frag{
 message Shard {
   string host = 1;
   repeated Frag frags = 2;
+  bytes md5 = 3;
 }
 
 message Suite{
