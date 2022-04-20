@@ -7,3 +7,8 @@ var MasterServer = "10.249.177.55:9333"
 var RedisHostPost = "localhost:6379"
 var RedisPassword = ""
 var RedisDatabase = 0
+
+var Debug = true
+var UnitTest = false
+
+var ServerName = "icesos"

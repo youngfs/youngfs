@@ -25,7 +25,7 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 	url, err := client.GetFidUrl(ctx, Fid)
 	assert.Equal(t, err, nil)
 
-	resp1, err := http.Get("http://" + url + "/" + Fid)
+	resp1, err := http.Get(url)
 	assert.Equal(t, err, nil)
 	defer func() {
 		_ = resp1.Body.Close()
@@ -40,7 +40,7 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 
-	resp2, err := http.Get("http://" + url + "/" + Fid)
+	resp2, err := http.Get(url)
 	assert.Equal(t, err, nil)
 	defer func() {
 		_ = resp2.Body.Close()

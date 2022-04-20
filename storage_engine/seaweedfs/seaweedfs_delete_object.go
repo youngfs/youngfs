@@ -3,7 +3,9 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -25,12 +27,18 @@ func (se *StorageEngine) loopProcessingDeletion() {
 		deleteCnt = 0
 		se.deletionQueue.Consume(func(fids []string) {
 			for _, fid := range fids {
-				volumeId, fid, err := se.parseFid(fid)
+				ctx := context.Background()
+
+				volumeId, fid, err := se.parseFid(ctx, fid)
 				if err != nil {
-					//todo: add log
+					log.Errorw("seaweedfs delete object: parse fid error", vars.ErrorKey, err.Error(), "fid", fid)
 					continue
 				}
-				_ = se.deleteActualObject(context.Background(), volumeId, fid)
+				err = se.deleteActualObject(ctx, volumeId, fid)
+				if err != nil {
+					log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
+					continue
+				}
 				deleteCnt++
 			}
 		})
@@ -48,14 +56,17 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64
 
 	req, err := http.NewRequest("DELETE", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, nil)
 	if err != nil {
+		log.Errorw("seaweedfs delete actual object: new request delete error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid)
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Errorw("seaweedfs delete actual object: do request delete error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "request", req, "response", resp)
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 	if resp.StatusCode != http.StatusAccepted {
+		log.Errorw("seaweedfs delete actual object: request error", "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http code", resp.StatusCode, "request", req, "response", resp)
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 	defer func() {
@@ -64,12 +75,14 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "response", resp)
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 
 	info := &deleteObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
+		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http body", httpBody)
 		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
 	}
 

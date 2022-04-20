@@ -5,10 +5,16 @@ import (
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/log"
 	"testing"
 )
 
 func TestSeaweedFS_GetVolumeHost(t *testing.T) {
+	vars.UnitTest = true
+	vars.Debug = false
+	log.InitLogger()
+	defer log.Sync()
+
 	client := NewStorageEngine(vars.MasterServer)
 	ctx := context.Background()
 

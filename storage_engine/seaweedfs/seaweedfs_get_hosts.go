@@ -3,7 +3,9 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/log"
 	"io/ioutil"
 	"net/http"
 )
@@ -36,8 +38,9 @@ type dirStatue struct {
 }
 
 func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
-	resp, err := http.Get("http://" + se.masterServer + "//dir/status")
+	resp, err := http.Get("http://" + se.masterServer + "/dir/status")
 	if err != nil {
+		log.Errorw("seaweedfs get hosts : http get error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/status", "response", resp)
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 	defer func() {
@@ -46,11 +49,16 @@ func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Errorw("seaweedfs get hosts: get http body error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/status", "response", resp)
 		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 
 	info := &dirStatue{}
 	err = jsoniter.Unmarshal(httpBody, info)
+	if err != nil {
+		log.Errorw("seaweedfs assign object: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/status", "http body", httpBody)
+		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+	}
 
 	dataCenters := info.Topology.DataCenters
 	var racks []rack

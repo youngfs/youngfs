@@ -3,12 +3,16 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"icesos/api"
+	"icesos/command/vars"
+	"icesos/log"
 	"icesos/ui"
 	"io/fs"
 	"net/http"
 )
 
-func InitRouter() *gin.Engine {
+var router *gin.Engine
+
+func InitRouter() {
 	r := gin.Default()
 	//html template
 	r.SetFuncMap(ui.FuncMap)
@@ -30,10 +34,21 @@ func InitRouter() *gin.Engine {
 	r.HEAD("/favicon.ico", faviconHandler)
 
 	//api handler
-	r.PUT("/:set/*fp", api.PutObjectHandler)
-	r.POST("/:set/*fp", api.PutObjectHandler)
-	r.GET("/:set/*fp", api.GetObjectHandler)
-	r.DELETE("/:set/*fp", api.DeleteObjectHandler)
-	r.HEAD("/:set/*fp", api.HeadObjectHandler)
-	return r
+	r.PUT("/:set/*fp", Logger("put object"), api.PutObjectHandler)
+	r.POST("/:set/*fp", Logger("put object"), api.PutObjectHandler)
+	r.GET("/:set/*fp", Logger("get object"), api.GetObjectHandler)
+	r.DELETE("/:set/*fp", Logger("delete object"), api.DeleteObjectHandler)
+	r.HEAD("/:set/*fp", Logger("head object"), api.HeadObjectHandler)
+	router = r
+}
+
+func Run() {
+	if !vars.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	err := router.Run(":" + vars.Port)
+	if err != nil {
+		log.Errorw("gin router init failed", "error", err.Error())
+	}
 }

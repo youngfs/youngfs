@@ -1,6 +1,7 @@
 package ec
 
 import (
+	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/full_path"
 	"icesos/set"
@@ -13,6 +14,7 @@ import (
 
 func TestSuite_EnDecodeProto(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
+	ctx := context.Background()
 
 	frags := []*Frag{
 		&Frag{
@@ -36,10 +38,10 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 	}
 
 	for _, frag := range frags {
-		b, err := frag.EncodeProto()
+		b, err := frag.EncodeProto(ctx)
 		assert.Equal(t, err, nil)
 
-		val, err := DecodeFragProto(b)
+		val, err := DecodeFragProto(ctx, b)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, val, frag)
 	}
@@ -63,10 +65,10 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 	}
 
 	for _, shard := range shards {
-		b, err := shard.EncodeProto()
+		b, err := shard.EncodeProto(ctx)
 		assert.Equal(t, err, nil)
 
-		val, err := DecodeShardProto(b)
+		val, err := DecodeShardProto(ctx, b)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, val, shard)
 	}
@@ -94,10 +96,10 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 	}
 
 	for _, suit := range suits {
-		b, err := suit.EncodeProto()
+		b, err := suit.EncodeProto(ctx)
 		assert.Equal(t, err, nil)
 
-		val, err := DecodeSuiteProto(b)
+		val, err := DecodeSuiteProto(ctx, b)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, val, suit)
 	}

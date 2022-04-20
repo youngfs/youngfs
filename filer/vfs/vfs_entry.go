@@ -9,7 +9,7 @@ import (
 )
 
 func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
-	b, err := ent.EncodeProto()
+	b, err := ent.EncodeProto(ctx)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (vfs *VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath
 		return nil, err
 	}
 
-	return entry.DecodeEntryProto(b)
+	return entry.DecodeEntryProto(ctx, b)
 }
 
 func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {

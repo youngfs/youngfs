@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/log"
 	"testing"
 )
 
@@ -17,38 +18,45 @@ func TestSeaweedFS_assignObject(t *testing.T) {
 }
 
 func TestSeaweedFS_parseFid(t *testing.T) {
+	vars.UnitTest = true
+	vars.Debug = true
+	log.InitLogger()
+	defer log.Sync()
+
+	ctx := context.Background()
+
 	client := NewStorageEngine(vars.MasterServer)
-	volumeId, fid, err := client.parseFid("3,3fd41bd1da80")
+	volumeId, fid, err := client.parseFid(ctx, "3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")
 	assert.Equal(t, err, nil)
 
-	volumeId, fid, err = client.parseFid("3,3fd41bd1da80,3")
+	volumeId, fid, err = client.parseFid(ctx, "3,3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = client.parseFid("3fd41bd1da80")
+	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = client.parseFid("")
+	volumeId, fid, err = client.parseFid(ctx, "")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = client.parseFid("-3,3fd41bd1da80")
+	volumeId, fid, err = client.parseFid(ctx, "-3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = client.parseFid("3fd41bd1da80,3")
+	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
 
-	volumeId, fid, err = client.parseFid("3fd41bd1da80.3")
+	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80.3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
 	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])

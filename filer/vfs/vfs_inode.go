@@ -2,10 +2,12 @@ package vfs
 
 import (
 	"context"
+	"icesos/command/vars"
 	"icesos/entry"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/kv"
+	"icesos/log"
 	"icesos/set"
 	"os"
 	"time"
@@ -25,6 +27,7 @@ func inodeLockKey(set set.Set, fp full_path.FullPath) string {
 
 func (vfs *VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
+		log.Errorw("insert inode: inode root", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "set", set, "full path", fp)
 		return errors.ErrorCodeResponse[errors.ErrServer]
 	}
 
@@ -52,6 +55,7 @@ func (vfs *VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullP
 
 func (vfs *VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
+		log.Errorw("delete inode: inode root", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "set", set, "full path", fp)
 		return errors.ErrorCodeResponse[errors.ErrServer]
 	}
 
@@ -78,6 +82,7 @@ func (vfs *VFS) inodeCnt(ctx context.Context, set set.Set, fp full_path.FullPath
 func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullPath, mtime time.Time) error {
 	mutex := vfs.kvStore.NewMutex(inodeLockKey(set, fp))
 	if err := mutex.Lock(); err != nil {
+		log.Errorw("update mtime lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set, "full path", fp, "mtime", mtime)
 		return errors.ErrorCodeResponse[errors.ErrRedisSync]
 	}
 	defer func() {
@@ -87,6 +92,7 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.NotFound {
+			log.Errorw("update mtime entry not found", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "set", set, "full path", fp, "mtime", mtime)
 			return errors.ErrorCodeResponse[errors.ErrServer]
 		}
 		return err
@@ -105,6 +111,7 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir full_path.FullPath, cover bool) (bool, error) {
 	mutex := vfs.kvStore.NewMutex(inodeLockKey(ent.Set, dir))
 	if err := mutex.Lock(); err != nil {
+		log.Errorw("insert inode and entry lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "entry", ent, "full path", dir, "cover", cover)
 		return false, errors.ErrorCodeResponse[errors.ErrRedisSync]
 	}
 	defer func() {
@@ -185,6 +192,7 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 	if lock {
 		mutex := vfs.kvStore.NewMutex(inodeLockKey(set, fp))
 		if err := mutex.Lock(); err != nil {
+			log.Errorw("delete inode and entry lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set, "full path", fp, "lock", lock)
 			return errors.ErrorCodeResponse[errors.ErrRedisSync]
 		}
 		defer func() {

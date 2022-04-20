@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/hex"
 	"github.com/gin-gonic/gin"
+	"icesos/command/vars"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/server"
@@ -17,22 +18,28 @@ func HeadObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.Status(err.HTTPStatusCode)
 		return
 	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.Status(err.HTTPStatusCode)
 		return
 	}
 	fp = fp.Clean()
 
-	ent, err := server.Svr.GetObject(c, setName, fp)
+	ent, err := server.GetObject(c, setName, fp)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
 			err = errors.ErrorCodeResponse[errors.ErrServer]
 		}
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.Status(err.HTTPStatusCode)
 		return
 	}

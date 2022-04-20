@@ -1,9 +1,12 @@
 package ec
 
 import (
+	"context"
 	"github.com/golang/protobuf/proto"
+	"icesos/command/vars"
 	"icesos/ec/ec_pb"
 	"icesos/errors"
+	"icesos/log"
 	"icesos/set"
 )
 
@@ -39,18 +42,20 @@ func setRulesPbToInstance(pb *ec_pb.SetRules) *SetRules {
 	}
 }
 
-func (setRules *SetRules) EncodeProto() ([]byte, error) {
+func (setRules *SetRules) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := setRules.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
+		log.Errorw("encode set rules proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		err = errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return b, err
 }
 
-func DecodeSetRulesProto(b []byte) (*SetRules, error) {
+func DecodeSetRulesProto(ctx context.Context, b []byte) (*SetRules, error) {
 	message := &ec_pb.SetRules{}
 	if err := proto.Unmarshal(b, message); err != nil {
+		log.Errorw("decode set rules proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return setRulesPbToInstance(message), nil

@@ -1,10 +1,13 @@
 package ec
 
 import (
+	"context"
 	"github.com/golang/protobuf/proto"
+	"icesos/command/vars"
 	"icesos/ec/ec_pb"
 	"icesos/errors"
 	"icesos/full_path"
+	"icesos/log"
 	"icesos/set"
 )
 
@@ -114,52 +117,58 @@ func fragPbToInstance(pb *ec_pb.Frag) *Frag {
 	}
 }
 
-func (suite *Suite) EncodeProto() ([]byte, error) {
+func (suite *Suite) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := suite.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
+		log.Errorw("encode suite proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		err = errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return b, err
 }
 
-func (shard *Shard) EncodeProto() ([]byte, error) {
+func (shard *Shard) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := shard.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
+		log.Errorw("encode shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		err = errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return b, err
 }
 
-func (frag *Frag) EncodeProto() ([]byte, error) {
+func (frag *Frag) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := frag.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
+		log.Errorw("encode frag proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		err = errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return b, err
 }
 
-func DecodeSuiteProto(b []byte) (*Suite, error) {
+func DecodeSuiteProto(ctx context.Context, b []byte) (*Suite, error) {
 	message := &ec_pb.Suite{}
 	if err := proto.Unmarshal(b, message); err != nil {
+		log.Errorw("decode suite proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return suitePbToInstance(message), nil
 }
 
-func DecodeShardProto(b []byte) (*Shard, error) {
+func DecodeShardProto(ctx context.Context, b []byte) (*Shard, error) {
 	message := &ec_pb.Shard{}
 	if err := proto.Unmarshal(b, message); err != nil {
+		log.Errorw("decode shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return shardPbToInstance(message), nil
 }
 
-func DecodeFragProto(b []byte) (*Frag, error) {
+func DecodeFragProto(ctx context.Context, b []byte) (*Frag, error) {
 	message := &ec_pb.Frag{}
 	if err := proto.Unmarshal(b, message); err != nil {
+		log.Errorw("decode frag proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return fragPbToInstance(message), nil

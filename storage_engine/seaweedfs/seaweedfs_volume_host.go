@@ -3,7 +3,9 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -27,6 +29,7 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 
 	resp, err := http.Get("http://" + se.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
 	if err != nil {
+		log.Errorw("seaweedfs get volume host : http get error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10), "response", resp)
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 	defer func() {
@@ -35,13 +38,18 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Errorw("seaweedfs get volume host : get http body error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10), "response", resp)
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 
 	info := &volumeIpInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
+	if err != nil {
+		log.Errorw("seaweedfs get volume host : http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10), "http body", httpBody)
+	}
 
 	if info.Error != "" || len(info.Locations) != 1 {
+		log.Errorw("seaweedfs get volume host : server error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10), "volume ip info", info)
 		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
 	}
 

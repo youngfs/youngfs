@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"icesos/command/vars"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/server"
@@ -19,11 +20,14 @@ func DeleteObjectHandler(c *gin.Context) {
 	err := c.Bind(deleteObjectInfo)
 	if err != nil {
 		apiErr := errors.ErrorCodeResponse[errors.ErrRouter]
+		c.Set(vars.CodeKey, apiErr.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
 			apiErr.HTTPStatusCode,
 			gin.H{
-				"code":  apiErr.ErrorCode,
-				"error": err.Error(),
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  apiErr.ErrorCode,
+				vars.ErrorKey: err.Error(),
 			},
 		)
 		return
@@ -32,39 +36,48 @@ func DeleteObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
-				"code":  err.ErrorCode,
-				"error": err.Error(),
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  err.ErrorCode,
+				vars.ErrorKey: err.Error(),
 			},
 		)
 		return
 	}
 	if !fp.IsLegal() {
 		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
-				"code":  err.ErrorCode,
-				"error": err.Error(),
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  err.ErrorCode,
+				vars.ErrorKey: err.Error(),
 			},
 		)
 		return
 	}
 	fp = fp.Clean()
 
-	err = server.Svr.DeleteObject(c, setName, fp, deleteObjectInfo.Recursive)
+	err = server.DeleteObject(c, setName, fp, deleteObjectInfo.Recursive)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
 			err = errors.ErrorCodeResponse[errors.ErrServer]
 		}
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
 			err.HTTPStatusCode,
 			gin.H{
-				"code":  err.ErrorCode,
-				"error": err.Error(),
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  err.ErrorCode,
+				vars.ErrorKey: err.Error(),
 			},
 		)
 		return

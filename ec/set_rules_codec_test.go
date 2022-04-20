@@ -1,12 +1,15 @@
 package ec
 
 import (
+	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/util"
 	"testing"
 )
 
 func TestSetRules_EnDecodeProto(t *testing.T) {
+	ctx := context.Background()
+
 	val := &SetRules{
 		Set:             "test",
 		Hosts:           []string{util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16)},
@@ -17,10 +20,10 @@ func TestSetRules_EnDecodeProto(t *testing.T) {
 		ReplicationMode: true,
 	}
 
-	b, err := val.EncodeProto()
+	b, err := val.EncodeProto(ctx)
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeSetRulesProto(b)
+	val2, err := DecodeSetRulesProto(ctx, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

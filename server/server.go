@@ -21,7 +21,7 @@ type Server struct {
 	storageEngine storage_engine.StorageEngine
 }
 
-var Svr *Server
+var svr *Server
 
 func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine) *Server {
 	return &Server{
@@ -30,7 +30,7 @@ func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngin
 	}
 }
 
-func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file io.Reader) error {
+func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file io.Reader) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
@@ -83,19 +83,19 @@ func (svr Server) PutObject(ctx context.Context, set set.Set, fp full_path.FullP
 	return nil
 }
 
-func (svr Server) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
+func GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
 	return svr.filerStore.GetObject(ctx, set, fp)
 }
 
-func (svr Server) ListObejcts(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
+func ListObejcts(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
 	return svr.filerStore.ListObjects(ctx, set, fp)
 }
 
-func (svr Server) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
+func DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool) error {
 	mtime := time.Unix(time.Now().Unix(), 0)
 	return svr.filerStore.DeleteObject(ctx, set, fp, recursive, mtime)
 }
 
-func (svr Server) GetFidUrl(ctx context.Context, fid string) (string, error) {
+func GetFidUrl(ctx context.Context, fid string) (string, error) {
 	return svr.storageEngine.GetFidUrl(ctx, fid)
 }

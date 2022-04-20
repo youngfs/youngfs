@@ -2,10 +2,12 @@ package vfs
 
 import (
 	"context"
+	"icesos/command/vars"
 	"icesos/entry"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/kv"
+	"icesos/log"
 	"icesos/set"
 	"icesos/storage_engine"
 	"time"
@@ -25,6 +27,7 @@ func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine storage_engine.Stora
 
 func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) error {
 	if !ent.FullPath.IsLegalObjectName() {
+		log.Errorw("object full path is illegal", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "ent", ent, "cover", cover)
 		return errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
 	}
 
@@ -35,7 +38,6 @@ func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) 
 		if err != nil {
 			return err
 		}
-
 		if !isUpdateMtime && isCreate {
 			isUpdateMtime = true
 			//only dir.dir == /
@@ -132,6 +134,7 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 	for i, v := range inodes {
 		ent, err := vfs.getEntry(ctx, set, v)
 		if err != nil {
+			log.Errorw("list objects get entry error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set, "full path", fp)
 			return []entry.ListEntry{}, err
 		}
 		ret[i] = *ent

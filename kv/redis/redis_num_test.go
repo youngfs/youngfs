@@ -6,6 +6,7 @@ import (
 	"icesos/command/vars"
 	"icesos/errors"
 	"icesos/kv"
+	"icesos/log"
 	"icesos/util"
 	"math/rand"
 	"testing"
@@ -13,6 +14,11 @@ import (
 )
 
 func TestRedis_Num(t *testing.T) {
+	vars.UnitTest = true
+	vars.Debug = true
+	log.InitLogger()
+	defer log.Sync()
+
 	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_num"
 	ctx := context.Background()

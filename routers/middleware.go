@@ -2,10 +2,15 @@ package routers
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"icesos/command/vars"
+	"icesos/log"
 	"icesos/util"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func authorizationHeader(user, pw string) string {
@@ -35,6 +40,37 @@ func auth(realms ...string) gin.HandlerFunc {
 
 		// The user credentials was found, set user's id to key AuthUserKey in this context, the user's id can be read later using
 		// c.MustGet(gin.AuthUserKey).
-		c.Set(UserKey, "ices")
+		c.Set(vars.UserKey, "ices")
+	}
+}
+func Logger(reqs ...string) gin.HandlerFunc {
+	req := ""
+	for _, u := range reqs {
+		req += u
+	}
+
+	return func(c *gin.Context) {
+		fmt.Printf("%#v\n", c.Request)
+		c.Set(vars.UUIDKey, uuid.New().String())
+		startTime := time.Now()
+		log.Infow("request start",
+			vars.UUIDKey, c.Value(vars.UUIDKey),
+			requestNameKey, req,
+			requestUrlKey, c.Request.URL,
+			vars.UserKey, c.Value(vars.UserKey),
+			requestStartTimeKey, startTime.Format(timeFormat),
+		)
+		c.Next()
+		endTime := time.Now()
+		log.Infow("request finish",
+			vars.UUIDKey, c.Value(vars.UUIDKey),
+			requestNameKey, req,
+			vars.UserKey, c.Value(vars.UserKey),
+			requestFinishTimeKey, endTime.Format(timeFormat),
+			timeElapsedKey, endTime.Sub(startTime).Seconds(),
+			responseHTTPCodeKey, c.Writer.Status(),
+			vars.CodeKey, c.Value(vars.CodeKey),
+			vars.ErrorKey, c.Value(vars.ErrorKey),
+		)
 	}
 }

@@ -1,6 +1,7 @@
 package entry
 
 import (
+	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/util"
 	"math/rand"
@@ -11,6 +12,8 @@ import (
 )
 
 func TestEntry_EnDecodeProto(t *testing.T) {
+	ctx := context.Background()
+
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",
@@ -24,10 +27,10 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 		ECid:     strconv.FormatInt(rand.Int63(), 10),
 	}
 
-	b, err := val.EncodeProto()
+	b, err := val.EncodeProto(ctx)
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeEntryProto(b)
+	val2, err := DecodeEntryProto(ctx, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 
@@ -43,10 +46,10 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 		ECid:     strconv.FormatInt(rand.Int63(), 10),
 	}
 
-	b, err = val.EncodeProto()
+	b, err = val.EncodeProto(ctx)
 	assert.Equal(t, err, nil)
 
-	val2, err = DecodeEntryProto(b)
+	val2, err = DecodeEntryProto(ctx, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

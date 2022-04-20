@@ -1,10 +1,13 @@
 package entry
 
 import (
+	"context"
 	"github.com/golang/protobuf/proto"
+	"icesos/command/vars"
 	"icesos/entry/entry_pb"
 	"icesos/errors"
 	"icesos/full_path"
+	"icesos/log"
 	"icesos/set"
 	"os"
 	"time"
@@ -48,18 +51,20 @@ func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 	}
 }
 
-func (ent *Entry) EncodeProto() ([]byte, error) {
+func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := ent.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
+		log.Errorw("encode entry proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		err = errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return b, err
 }
 
-func DecodeEntryProto(b []byte) (*Entry, error) {
+func DecodeEntryProto(ctx context.Context, b []byte) (*Entry, error) {
 	message := &entry_pb.Entry{}
 	if err := proto.Unmarshal(b, message); err != nil {
+		log.Errorw("decode entry proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.ErrorCodeResponse[errors.ErrProto]
 	}
 	return entryPbToInstance(message), nil
