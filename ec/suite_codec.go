@@ -124,7 +124,7 @@ func (suite *Suite) EncodeProto(ctx context.Context) ([]byte, error) {
 	b, err := proto.Marshal(message)
 	if err != nil {
 		log.Errorw("encode suite proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		err = errors.ErrorCodeResponse[errors.ErrProto]
+		err = errors.GetAPIErr(errors.ErrProto)
 	}
 	return b, err
 }
@@ -134,7 +134,7 @@ func (shard *Shard) EncodeProto(ctx context.Context) ([]byte, error) {
 	b, err := proto.Marshal(message)
 	if err != nil {
 		log.Errorw("encode shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		err = errors.ErrorCodeResponse[errors.ErrProto]
+		err = errors.GetAPIErr(errors.ErrProto)
 	}
 	return b, err
 }
@@ -144,7 +144,7 @@ func (frag *Frag) EncodeProto(ctx context.Context) ([]byte, error) {
 	b, err := proto.Marshal(message)
 	if err != nil {
 		log.Errorw("encode frag proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		err = errors.ErrorCodeResponse[errors.ErrProto]
+		err = errors.GetAPIErr(errors.ErrProto)
 	}
 	return b, err
 }
@@ -153,7 +153,7 @@ func DecodeSuiteProto(ctx context.Context, b []byte) (*Suite, error) {
 	message := &ec_pb.Suite{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode suite proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		return nil, errors.ErrorCodeResponse[errors.ErrProto]
+		return nil, errors.GetAPIErr(errors.ErrProto)
 	}
 	return suitePbToInstance(message), nil
 }
@@ -162,7 +162,7 @@ func DecodeShardProto(ctx context.Context, b []byte) (*Shard, error) {
 	message := &ec_pb.Shard{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		return nil, errors.ErrorCodeResponse[errors.ErrProto]
+		return nil, errors.GetAPIErr(errors.ErrProto)
 	}
 	return shardPbToInstance(message), nil
 }
@@ -171,7 +171,7 @@ func DecodeFragProto(ctx context.Context, b []byte) (*Frag, error) {
 	message := &ec_pb.Frag{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode frag proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		return nil, errors.ErrorCodeResponse[errors.ErrProto]
+		return nil, errors.GetAPIErr(errors.ErrProto)
 	}
 	return fragPbToInstance(message), nil
 }

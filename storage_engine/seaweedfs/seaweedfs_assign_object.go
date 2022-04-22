@@ -30,7 +30,7 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 	resp, err := http.Get("http://" + se.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10) + hostReq)
 	if err != nil {
 		log.Errorw("seaweedfs assign object: http get error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq, "response", resp)
-		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+		return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -39,20 +39,20 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorw("seaweedfs assign object: get http body error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq, "response", resp)
-		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+		return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 	}
 
 	assignFileInfo := &assignObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, assignFileInfo)
 	if err != nil {
 		log.Errorw("seaweedfs assign object: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq, "http body", httpBody)
-		return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+		return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 	}
 
 	if host != "" {
 		if host != assignFileInfo.Url && host != assignFileInfo.PublicUrl {
 			log.Errorw("seaweedfs assign object: request host error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq, "request host", host, "request hosts", hosts, "assign file info", assignFileInfo)
-			return nil, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster]
+			return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 		}
 	}
 
@@ -63,12 +63,12 @@ func (se *StorageEngine) parseFid(ctx context.Context, fullFid string) (uint64, 
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
 		log.Errorw("seaweedfs parse fid error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "fid", fullFid)
-		return 0, "", errors.ErrorCodeResponse[errors.ErrParseFid]
+		return 0, "", errors.GetAPIErr(errors.ErrParseFid)
 	}
 	volumeId, err := strconv.ParseUint(ret[0], 10, 64)
 	if err != nil {
 		log.Errorw("seaweedfs parse fid error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "fid", fullFid)
-		return 0, "", errors.ErrorCodeResponse[errors.ErrParseFid]
+		return 0, "", errors.GetAPIErr(errors.ErrParseFid)
 	}
 	return volumeId, ret[1], nil
 }

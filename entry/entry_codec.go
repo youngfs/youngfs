@@ -56,7 +56,7 @@ func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
 	b, err := proto.Marshal(message)
 	if err != nil {
 		log.Errorw("encode entry proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		err = errors.ErrorCodeResponse[errors.ErrProto]
+		err = errors.GetAPIErr(errors.ErrProto)
 	}
 	return b, err
 }
@@ -65,7 +65,7 @@ func DecodeEntryProto(ctx context.Context, b []byte) (*Entry, error) {
 	message := &entry_pb.Entry{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode entry proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		return nil, errors.ErrorCodeResponse[errors.ErrProto]
+		return nil, errors.GetAPIErr(errors.ErrProto)
 	}
 	return entryPbToInstance(message), nil
 }

@@ -11,7 +11,7 @@ func (se *StorageEngine) GetFidUrl(ctx context.Context, fid string) (string, err
 	volumeId, _, err := se.parseFid(ctx, fid)
 	if err != nil {
 		log.Errorw("seaweedfs get fid url: parse fid error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "fid", fid)
-		return "", errors.ErrorCodeResponse[errors.ErrServer]
+		return "", errors.GetAPIErr(errors.ErrServer)
 	}
 
 	host, err := se.getVolumeHost(ctx, volumeId)

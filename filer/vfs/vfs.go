@@ -28,7 +28,7 @@ func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine storage_engine.Stora
 func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) error {
 	if !ent.FullPath.IsLegalObjectName() {
 		log.Errorw("object full path is illegal", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "ent", ent, "cover", cover)
-		return errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
+		return errors.GetAPIErr(errors.ErrIllegalObjectName)
 	}
 
 	dirList := ent.SplitList()
@@ -56,7 +56,7 @@ func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPat
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if err == kv.NotFound {
-			return nil, errors.ErrorCodeResponse[errors.ErrInvalidPath]
+			return nil, errors.GetAPIErr(errors.ErrInvalidPath)
 		}
 		return nil, err
 	}
@@ -69,13 +69,13 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 	// if fp == / think fp is a folder
 	if fp == inodeRoot {
 		if recursive == false {
-			return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+			return errors.GetAPIErr(errors.ErrInvalidDelete)
 		}
 	} else {
 		ent, err := vfs.getEntry(ctx, set, fp)
 		if err != nil {
 			if err == kv.NotFound {
-				return errors.ErrorCodeResponse[errors.ErrInvalidPath]
+				return errors.GetAPIErr(errors.ErrInvalidPath)
 			}
 			return err
 		}
@@ -86,7 +86,7 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 		}
 
 		if ent.IsDirectory() && recursive == false && inodeCnt != 0 {
-			return errors.ErrorCodeResponse[errors.ErrInvalidDelete]
+			return errors.GetAPIErr(errors.ErrInvalidDelete)
 		}
 	}
 
@@ -112,13 +112,13 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 		ent, err := vfs.getEntry(ctx, set, fp)
 		if err != nil {
 			if err == kv.NotFound {
-				return []entry.ListEntry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
+				return []entry.ListEntry{}, errors.GetAPIErr(errors.ErrInvalidPath)
 			}
 			return []entry.ListEntry{}, err
 		}
 
 		if ent.IsFile() {
-			return []entry.ListEntry{}, errors.ErrorCodeResponse[errors.ErrInvalidPath]
+			return []entry.ListEntry{}, errors.GetAPIErr(errors.ErrInvalidPath)
 		}
 	}
 

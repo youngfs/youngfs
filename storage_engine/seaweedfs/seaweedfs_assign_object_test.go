@@ -34,30 +34,30 @@ func TestSeaweedFS_parseFid(t *testing.T) {
 	volumeId, fid, err = client.parseFid(ctx, "3,3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 
 	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 
 	volumeId, fid, err = client.parseFid(ctx, "")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 
 	volumeId, fid, err = client.parseFid(ctx, "-3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 
 	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80,3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 
 	volumeId, fid, err = client.parseFid(ctx, "3fd41bd1da80.3")
 	assert.Equal(t, volumeId, uint64(0))
 	assert.Equal(t, fid, "")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrParseFid])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrParseFid))
 }

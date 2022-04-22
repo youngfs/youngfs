@@ -57,17 +57,17 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64
 	req, err := http.NewRequest("DELETE", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, nil)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: new request delete error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid)
-		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: do request delete error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "request", req, "response", resp)
-		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 	if resp.StatusCode != http.StatusAccepted {
 		log.Errorw("seaweedfs delete actual object: request error", "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http code", resp.StatusCode, "request", req, "response", resp)
-		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -76,14 +76,14 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64
 	httpBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "response", resp)
-		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
 	info := &deleteObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http body", httpBody)
-		return errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
 	return nil

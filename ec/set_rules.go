@@ -66,3 +66,8 @@ func (setRules *SetRules) IsLegal() bool {
 
 	return true
 }
+
+func (ec *EC) InsertSetRules(setRules *SetRules) error {
+
+	return nil
+}

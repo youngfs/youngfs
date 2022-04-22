@@ -14,7 +14,7 @@ import (
 func ListObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !setName.IsLegal() {
-		err := errors.ErrorCodeResponse[errors.ErrIllegalSetName]
+		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
@@ -31,7 +31,7 @@ func ListObjectHandler(c *gin.Context) {
 		fp = fp[:len(fp)-1]
 	}
 	if !fp.IsLegal() {
-		err := errors.ErrorCodeResponse[errors.ErrIllegalObjectName]
+		err := errors.GetAPIErr(errors.ErrIllegalObjectName)
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
@@ -50,7 +50,7 @@ func ListObjectHandler(c *gin.Context) {
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
-			err = errors.ErrorCodeResponse[errors.ErrServer]
+			err = errors.GetAPIErr(errors.ErrServer)
 		}
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())

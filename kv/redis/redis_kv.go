@@ -13,7 +13,7 @@ func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {
 	_, err := store.client.Set(ctx, key, val, 0).Result()
 	if err != nil {
 		log.Errorw("redis kv put error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key)
-		return errors.ErrorCodeResponse[errors.ErrKvSever]
+		return errors.GetAPIErr(errors.ErrKvSever)
 	}
 	return nil
 }
@@ -25,7 +25,7 @@ func (store *KvStore) KvGet(ctx context.Context, key string) ([]byte, error) {
 			return nil, kv.NotFound
 		} else {
 			log.Errorw("redis kv get error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key)
-			return nil, errors.ErrorCodeResponse[errors.ErrKvSever]
+			return nil, errors.GetAPIErr(errors.ErrKvSever)
 		}
 	}
 	return []byte(val), nil
@@ -35,7 +35,7 @@ func (store *KvStore) KvDelete(ctx context.Context, key string) (bool, error) {
 	ret, err := store.client.Del(ctx, key).Result()
 	if err != nil {
 		log.Errorw("redis kv delete error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key)
-		err = errors.ErrorCodeResponse[errors.ErrKvSever]
+		err = errors.GetAPIErr(errors.ErrKvSever)
 	}
 	return ret != 0, nil
 }

@@ -25,7 +25,8 @@ const (
 	ErrInvalidDelete        ErrorCode = 4002
 	ErrIllegalObjectName    ErrorCode = 4003
 	ErrIllegalSetName       ErrorCode = 4004
-	ErrRouter               ErrorCode = 4005
+	ErrIllegalSetRules      ErrorCode = 4005
+	ErrRouter               ErrorCode = 4006
 	ErrAdminAuthenticate    ErrorCode = 4100
 	ErrUserNotExist         ErrorCode = 4101
 	ErrUserAuthenticate     ErrorCode = 4102
@@ -41,7 +42,7 @@ const (
 	ErrServer               ErrorCode = 5007
 )
 
-var ErrorCodeResponse = map[ErrorCode]APIError{
+var errorCodeResponse = map[ErrorCode]APIError{
 	// 200
 	ErrNone: {
 		ErrorCode:      ErrNone,
@@ -72,6 +73,11 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 	ErrIllegalSetName: {
 		ErrorCode:      ErrIllegalSetName,
 		Description:    "Illegal set name",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrIllegalSetRules: {
+		ErrorCode:      ErrIllegalSetRules,
+		Description:    "Illegal set rules",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
 	ErrRouter: {
@@ -146,4 +152,8 @@ var ErrorCodeResponse = map[ErrorCode]APIError{
 		Description:    "icesos server error",
 		HTTPStatusCode: http.StatusInternalServerError,
 	},
+}
+
+func GetAPIErr(errorCode ErrorCode) APIError {
+	return errorCodeResponse[errorCode]
 }

@@ -94,7 +94,7 @@ func TestVFS(t *testing.T) {
 		})
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -121,7 +121,7 @@ func TestVFS(t *testing.T) {
 	}
 
 	ent, err := vfs.GetObject(ctx, setName, "/")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
@@ -129,7 +129,7 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, ent, nil)
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/"), false, time1)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidDelete])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidDelete))
 
 	for _, fp := range Files {
 		ent, err := vfs.GetObject(ctx, setName, fp)
@@ -159,7 +159,7 @@ func TestVFS(t *testing.T) {
 		})
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -186,7 +186,7 @@ func TestVFS(t *testing.T) {
 	}
 
 	ent, err = vfs.GetObject(ctx, setName, "/")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
@@ -204,7 +204,7 @@ func TestVFS(t *testing.T) {
 			Ctime:    time2,
 			Mode:     os.ModeDir,
 		}, false)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
@@ -214,7 +214,7 @@ func TestVFS(t *testing.T) {
 			Ctime:    time2,
 			Mode:     os.ModeDir,
 		}, false)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa/bb"), true, time2)
 	assert.Equal(t, err, nil)
@@ -238,7 +238,7 @@ func TestVFS(t *testing.T) {
 			continue
 		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -246,7 +246,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -255,7 +255,7 @@ func TestVFS(t *testing.T) {
 			continue
 		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -263,7 +263,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -295,7 +295,7 @@ func TestVFS(t *testing.T) {
 		})
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -344,7 +344,7 @@ func TestVFS(t *testing.T) {
 	}
 
 	ent, err = vfs.GetObject(ctx, setName, "/")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
@@ -446,7 +446,7 @@ func TestVFS(t *testing.T) {
 			continue
 		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -454,7 +454,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -463,7 +463,7 @@ func TestVFS(t *testing.T) {
 			continue
 		}
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -471,7 +471,7 @@ func TestVFS(t *testing.T) {
 		assert.Equal(t, ent, nil)
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -503,7 +503,7 @@ func TestVFS(t *testing.T) {
 		})
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -535,7 +535,7 @@ func TestVFS(t *testing.T) {
 		})
 
 		entries, err := vfs.ListObjects(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, entries, []entry.ListEntry{})
 	}
 
@@ -606,7 +606,7 @@ func TestVFS(t *testing.T) {
 	}
 
 	ent, err = vfs.GetObject(ctx, setName, "/")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
@@ -618,7 +618,7 @@ func TestVFS(t *testing.T) {
 
 	for _, fp := range Files {
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -628,7 +628,7 @@ func TestVFS(t *testing.T) {
 
 	for _, fp := range Dirs {
 		ent, err := vfs.GetObject(ctx, setName, fp)
-		assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+		assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 		assert.Equal(t, ent, nil)
 
 		ent, err = vfs.getEntry(ctx, setName, fp)
@@ -637,7 +637,7 @@ func TestVFS(t *testing.T) {
 	}
 
 	ent, err = vfs.GetObject(ctx, setName, "/")
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, ent, nil)
 
 	ent, err = vfs.getEntry(ctx, setName, "/")
@@ -648,14 +648,14 @@ func TestVFS(t *testing.T) {
 	assert.Equal(t, err, nil)
 
 	err = vfs.DeleteObject(ctx, setName, full_path.FullPath("/aa"), true, time3)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 
 	entries, err := vfs.ListObjects(ctx, setName, full_path.FullPath("/"))
 	assert.Equal(t, err, nil)
 	assert.Equal(t, entries, []entry.ListEntry{})
 
 	entries, err = vfs.ListObjects(ctx, setName, full_path.FullPath("/aa"))
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrInvalidPath])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrInvalidPath))
 	assert.Equal(t, entries, []entry.ListEntry{})
 
 	time.Sleep(3 * time.Second)

@@ -116,19 +116,19 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err := client.Incr(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrKvSever])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
 
 	ret2, err = client.Decr(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrKvSever])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrKvSever])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrKvSever])
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
 
 	ret, err = client.KvDelete(ctx, key)
 	assert.Equal(t, ret, true)

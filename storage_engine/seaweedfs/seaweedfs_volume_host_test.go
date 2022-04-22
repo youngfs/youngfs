@@ -44,7 +44,7 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 			assert.Equal(t, hostSet[host], true)
 			assert.Equal(t, err, nil)
 		} else {
-			assert.Equal(t, err, errors.ErrorCodeResponse[errors.ErrSeaweedFSMaster])
+			assert.Equal(t, err, errors.GetAPIErr(errors.ErrSeaweedFSMaster))
 			assert.Equal(t, client.volumeIpMap[i], "")
 		}
 	}

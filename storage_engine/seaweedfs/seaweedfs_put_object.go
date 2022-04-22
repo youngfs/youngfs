@@ -24,13 +24,13 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 	req, err := http.NewRequest("PUT", "http://"+info.Url+"/"+info.Fid, file)
 	if err != nil {
 		log.Errorw("seaweedfs put object: new request put error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+info.Url+"/"+info.Fid, "request", req)
-		return "", errors.ErrorCodeResponse[errors.ErrServer]
+		return "", errors.GetAPIErr(errors.ErrServer)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Errorw("seaweedfs put object: do request put error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+info.Url+"/"+info.Fid, "request", req, "response", resp)
-		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return "", errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -38,7 +38,7 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 
 	if resp.StatusCode != http.StatusCreated {
 		log.Errorw("seaweedfs put object: request error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "request url", "http://"+info.Url+"/"+info.Fid, "http code", resp.StatusCode, "request", req, "response", resp)
-		return "", errors.ErrorCodeResponse[errors.ErrSeaweedFSVolume]
+		return "", errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
 	return info.Fid, nil

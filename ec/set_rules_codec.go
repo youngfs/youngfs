@@ -47,7 +47,7 @@ func (setRules *SetRules) EncodeProto(ctx context.Context) ([]byte, error) {
 	b, err := proto.Marshal(message)
 	if err != nil {
 		log.Errorw("encode set rules proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		err = errors.ErrorCodeResponse[errors.ErrProto]
+		err = errors.GetAPIErr(errors.ErrProto)
 	}
 	return b, err
 }
@@ -56,7 +56,7 @@ func DecodeSetRulesProto(ctx context.Context, b []byte) (*SetRules, error) {
 	message := &ec_pb.SetRules{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode set rules proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
-		return nil, errors.ErrorCodeResponse[errors.ErrProto]
+		return nil, errors.GetAPIErr(errors.ErrProto)
 	}
 	return setRulesPbToInstance(message), nil
 }
