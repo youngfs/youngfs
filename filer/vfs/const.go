@@ -3,5 +3,5 @@ package vfs
 const (
 	inodeKv   = "_inode"
 	inodeRoot = "/"
-	inodeLock = "_inodeLock"
+	inodeLock = "_inode_lock"
 )
