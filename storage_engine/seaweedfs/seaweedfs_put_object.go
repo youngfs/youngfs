@@ -41,5 +41,11 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 		return "", errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
+	err = se.AddLink(ctx, info.Fid)
+	if err != nil {
+		log.Errorw("seaweedfs put object: add link", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "request url", "http://"+info.Url+"/"+info.Fid, "http code", resp.StatusCode, "request", req, "response", resp)
+		return "", err
+	}
+
 	return info.Fid, nil
 }

@@ -9,7 +9,7 @@ import (
 
 func InitServer() {
 	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
 	filerStore := vfs.NewVFS(kvStore, storageEngine)
 	svr = NewServer(filerStore, storageEngine)
 }

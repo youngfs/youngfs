@@ -18,7 +18,7 @@ import (
 
 func TestEntry(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
 	vfs := NewVFS(kvStore, storageEngine)
 
 	fp := full_path.FullPath("/aa/bb/cc")

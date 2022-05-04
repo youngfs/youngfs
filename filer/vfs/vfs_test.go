@@ -20,7 +20,7 @@ import (
 
 func TestVFS(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
 	vfs := NewVFS(kvStore, storageEngine)
 
 	setName := set.Set("test_vfs")

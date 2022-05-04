@@ -29,16 +29,22 @@ func (se *StorageEngine) loopProcessingDeletion() {
 			for _, fid := range fids {
 				ctx := context.Background()
 
-				volumeId, fid, err := se.parseFid(ctx, fid)
+				link, err := se.delLink(ctx, fid)
 				if err != nil {
-					log.Errorw("seaweedfs delete object: parse fid error", vars.ErrorKey, err.Error(), "fid", fid)
+					log.Errorw("seaweedfs delete object: get link error", vars.ErrorKey, err.Error(), "fid", fid)
 					continue
 				}
-				err = se.deleteActualObject(ctx, volumeId, fid)
-				if err != nil {
-					log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
-					continue
+
+				if link == 0 {
+					err = se.deleteActualObject(ctx, fid)
+					if err != nil {
+						log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
+						continue
+					}
+				} else if link < 0 {
+					log.Errorw("seaweedfs delete object: link < 0", vars.ErrorKey, "fid", fid, "link", link)
 				}
+
 				deleteCnt++
 			}
 		})
@@ -48,7 +54,13 @@ func (se *StorageEngine) loopProcessingDeletion() {
 	}
 }
 
-func (se *StorageEngine) deleteActualObject(ctx context.Context, volumeId uint64, fid string) error {
+func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string) error {
+	volumeId, fid, err := se.parseFid(ctx, fullFid)
+	if err != nil {
+		log.Errorw("seaweedfs delete actual object: parse fid error", vars.ErrorKey, err.Error(), "fid", fid)
+		return err
+	}
+
 	volumeIp, err := se.getVolumeHost(ctx, volumeId)
 	if err != nil || volumeIp == "" {
 		return err

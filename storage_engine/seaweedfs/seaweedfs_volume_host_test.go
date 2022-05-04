@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/kv/redis"
 	"icesos/log"
 	"testing"
 )
@@ -15,7 +16,8 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	log.InitLogger()
 	defer log.Sync()
 
-	client := NewStorageEngine(vars.MasterServer)
+	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	client := NewStorageEngine(vars.MasterServer, kvStore)
 	ctx := context.Background()
 
 	hosts, err := client.GetHosts(ctx)

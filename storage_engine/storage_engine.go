@@ -10,4 +10,5 @@ type StorageEngine interface {
 	DeleteObject(ctx context.Context, fid string) error
 	GetFidUrl(ctx context.Context, fid string) (string, error)
 	GetHosts(ctx context.Context) ([]string, error)
+	AddLink(ctx context.Context, fid string) error
 }
