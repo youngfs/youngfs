@@ -28,7 +28,7 @@ func TestRedis_Num(t *testing.T) {
 
 	ret, err := client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, err, nil)
 
 	for i := 0; i < 1024; i++ {
 		rd := rand.Intn(2)
@@ -57,7 +57,7 @@ func TestRedis_Num(t *testing.T) {
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, err, nil)
 
 	err = client.SetNum(ctx, key, 128)
 	cnt = int64(128)
@@ -160,7 +160,7 @@ func TestRedis_Num(t *testing.T) {
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, err, nil)
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))

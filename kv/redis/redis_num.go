@@ -39,9 +39,15 @@ func (store *KvStore) GetNum(ctx context.Context, key string) (int64, error) {
 		}
 	}
 
+	// val is too big, no parse
+	if len(val) > 1024 {
+		log.Errorw("", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "key", key)
+		return 0, errors.GetAPIErr(errors.ErrKvSever)
+	}
+
 	ret, err := strconv.ParseInt(val, 10, 64)
 	if err != nil {
-		log.Errorw("redis get num: not a number error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key)
+		log.Errorw("", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), "key", key) // val is too big, zap-log have bug  error also have val info
 		return 0, errors.GetAPIErr(errors.ErrKvSever)
 	}
 
@@ -52,7 +58,7 @@ func (store *KvStore) SetNum(ctx context.Context, key string, num int64) error {
 	val := strconv.FormatInt(num, 10)
 	_, err := store.client.Set(ctx, key, val, 0).Result()
 	if err != nil {
-		log.Errorw("redis set num: kv put error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key, "num", num)
+		log.Errorw("redis set num: kv put error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "key", key)
 		return errors.GetAPIErr(errors.ErrKvSever)
 	}
 	return nil
@@ -61,6 +67,9 @@ func (store *KvStore) SetNum(ctx context.Context, key string, num int64) error {
 func (store *KvStore) ClrNum(ctx context.Context, key string) (bool, error) {
 	_, err := store.GetNum(ctx, key)
 	if err != nil {
+		if err == kv.NotFound {
+			return false, nil
+		}
 		return false, err
 	}
 
