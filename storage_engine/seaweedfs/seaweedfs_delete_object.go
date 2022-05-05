@@ -98,5 +98,11 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string)
 		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 
+	_, err = se.kvStore.ClrNum(ctx, fidLinkKey(fullFid))
+	if err != nil {
+		log.Errorw("seaweedfs delete actual object: clear fid link", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid)
+		return err
+	}
+
 	return nil
 }
