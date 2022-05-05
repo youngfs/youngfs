@@ -21,7 +21,13 @@ type Shard struct {
 
 //DataBlocks must not be []Shard{} (codec will become nill)
 type Suite struct {
-	ECid   string  // erasure code id
-	Fid    string  // fid
-	Shards []Shard // data blocks
+	ECid               string  // erasure code id
+	full_path.FullPath         // full path
+	set.Set                    // set
+	OrigFid            string  // original fid
+	FileSize           uint64  // file size
+	BakHost            string  // backup host
+	BakFid             string  // backup fid
+	Next               string  // next ECid, if it's end,next = ""
+	Shards             []Shard // data blocks
 }

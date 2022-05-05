@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ec_pb;
+option go_package = "./ec_pb";
+
+message PlanShard{
+  string host = 1;
+  uint64 shard_size = 2;
+}
+
+message Plan{
+  string set = 1;
+  uint64 data_shards = 2;
+  repeated PlanShard shards = 3;
+}

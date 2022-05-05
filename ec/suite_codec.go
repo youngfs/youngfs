@@ -22,9 +22,15 @@ func (suite *Suite) toPb() *ec_pb.Suite {
 	}
 
 	return &ec_pb.Suite{
-		ECid:   suite.ECid,
-		Fid:    suite.Fid,
-		Shards: ShardPb,
+		ECid:     suite.ECid,
+		FullPath: string(suite.FullPath),
+		Set:      string(suite.Set),
+		OrigFid:  suite.OrigFid,
+		FileSize: suite.FileSize,
+		BakHost:  suite.BakHost,
+		BakFid:   suite.BakFid,
+		Next:     suite.Next,
+		Shards:   ShardPb,
 	}
 }
 
@@ -76,9 +82,15 @@ func suitePbToInstance(pb *ec_pb.Suite) *Suite {
 	}
 
 	return &Suite{
-		ECid:   pb.ECid,
-		Fid:    pb.Fid,
-		Shards: shards,
+		ECid:     pb.ECid,
+		FullPath: full_path.FullPath(pb.FullPath),
+		Set:      set.Set(pb.Set),
+		OrigFid:  pb.OrigFid,
+		FileSize: pb.FileSize,
+		BakHost:  pb.BakHost,
+		BakFid:   pb.BakFid,
+		Next:     pb.Next,
+		Shards:   shards,
 	}
 }
 

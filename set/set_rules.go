@@ -1,25 +1,13 @@
-package ec
-
-import (
-	"icesos/set"
-)
+package set
 
 type SetRules struct {
-	set.Set                  // set
-	Hosts           []string // hosts len(Hosts) >= DataShards + ParityShards
-	DataShards      uint64   // business data block number
-	ParityShards    uint64   // redundant data block number
-	MAXBlockSize    uint64   // max block size
-	ECMode          bool     // is EC mode on
-	ReplicationMode bool     // is Replication mode on
-}
-
-func (setRules *SetRules) Key() string {
-	return string(setRules.Set) + setRulesKey
-}
-
-func SetRulesKey(set set.Set) string {
-	return string(set) + setRulesKey
+	Set             `json:"Set"` // set
+	Hosts           []string     `json:"Hosts"`           // hosts len(Hosts) >= DataShards + ParityShards
+	DataShards      uint64       `json:"DataShards"`      // business data block number
+	ParityShards    uint64       `json:"ParityShards"`    // redundant data block number
+	MAXShardSize    uint64       `json:"MAXShardSize"`    // max shard size
+	ECMode          bool         `json:"ECMode"`          // is EC mode on
+	ReplicationMode bool         `json:"ReplicationMode"` // is Replication mode on
 }
 
 // still need to check hosts is legal
@@ -65,9 +53,4 @@ func (setRules *SetRules) IsLegal() bool {
 	}
 
 	return true
-}
-
-func (ec *EC) InsertSetRules(setRules *SetRules) error {
-
-	return nil
 }

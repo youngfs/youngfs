@@ -1,42 +1,41 @@
-package ec
+package set
 
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"icesos/command/vars"
-	"icesos/ec/ec_pb"
 	"icesos/errors"
 	"icesos/log"
-	"icesos/set"
+	"icesos/set/set_pb"
 )
 
-func (setRules *SetRules) toPb() *ec_pb.SetRules {
+func (setRules *SetRules) toPb() *set_pb.SetRules {
 	if setRules == nil {
 		return nil
 	}
 
-	return &ec_pb.SetRules{
+	return &set_pb.SetRules{
 		Set:             string(setRules.Set),
 		Hosts:           setRules.Hosts,
 		DataShards:      setRules.DataShards,
 		ParityShards:    setRules.ParityShards,
-		MAXBlockSize:    setRules.MAXBlockSize,
+		MAXShardSize:    setRules.MAXShardSize,
 		ECMode:          setRules.ECMode,
 		ReplicationMode: setRules.ReplicationMode,
 	}
 }
 
-func setRulesPbToInstance(pb *ec_pb.SetRules) *SetRules {
+func setRulesPbToInstance(pb *set_pb.SetRules) *SetRules {
 	if pb == nil {
 		return nil
 	}
 
 	return &SetRules{
-		Set:             set.Set(pb.Set),
+		Set:             Set(pb.Set),
 		Hosts:           pb.Hosts,
 		DataShards:      pb.DataShards,
 		ParityShards:    pb.ParityShards,
-		MAXBlockSize:    pb.MAXBlockSize,
+		MAXShardSize:    pb.MAXShardSize,
 		ECMode:          pb.ECMode,
 		ReplicationMode: pb.ReplicationMode,
 	}
@@ -53,7 +52,7 @@ func (setRules *SetRules) EncodeProto(ctx context.Context) ([]byte, error) {
 }
 
 func DecodeSetRulesProto(ctx context.Context, b []byte) (*SetRules, error) {
-	message := &ec_pb.SetRules{}
+	message := &set_pb.SetRules{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode set rules proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)

@@ -1,4 +1,4 @@
-package ec
+package set
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func TestSetRules_EnDecodeProto(t *testing.T) {
 		Hosts:           []string{util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16)},
 		DataShards:      4,
 		ParityShards:    2,
-		MAXBlockSize:    1024 * 1024 * 1024,
+		MAXShardSize:    1024 * 1024 * 1024,
 		ECMode:          true,
 		ReplicationMode: true,
 	}

@@ -2,4 +2,4 @@ all: gen
 
 gen:
 	protoc --go_out=. suite.proto
-	protoc --go_out=. set_rules.proto
+	protoc --go_out=. ec_plan.proto
