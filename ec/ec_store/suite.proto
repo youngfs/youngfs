@@ -1,12 +1,13 @@
 syntax = "proto3";
 package ec_pb;
-option go_package = "./ec_pb";
+option go_package = "./ec_store_pb";
 
 message Frag{
   string full_path = 1;
   string set = 2;
   string fid = 3;
   uint64 file_size = 4;
+  string oldEC_id = 5;
 }
 
 message Shard {
@@ -19,10 +20,11 @@ message Suite{
   string ECid = 1;
   string full_path = 2;
   string set = 3;
-  string orig_fid = 4;
-  uint64 file_size = 5;
-  string bak_host = 6;
-  string bak_fid = 7;
-  string next = 8;
-  repeated Shard shards = 9;
+  string orig_host = 4;
+  string orig_fid = 5;
+  uint64 file_size = 6;
+  string bak_host = 7;
+  string bak_fid = 8;
+  string next = 9;
+  repeated Shard shards = 10;
 }

@@ -1,4 +1,4 @@
-package ec
+package ec_store
 
 import (
 	"context"
@@ -22,18 +22,21 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 			Set:      set.Set(util.RandString(16)),
 			Fid:      util.RandString(16),
 			FileSize: rand.Uint64(),
+			OldECid:  util.RandString(16),
 		},
 		&Frag{
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
 			Fid:      util.RandString(16),
 			FileSize: rand.Uint64(),
+			OldECid:  util.RandString(16),
 		},
 		&Frag{
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
 			Fid:      util.RandString(16),
 			FileSize: rand.Uint64(),
+			OldECid:  util.RandString(16),
 		},
 	}
 
@@ -79,6 +82,7 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 			ECid:     strconv.FormatUint(rand.Uint64(), 10),
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
+			OrigHost: util.RandString(16),
 			OrigFid:  util.RandString(16),
 			FileSize: rand.Uint64(),
 			BakHost:  util.RandString(16),
@@ -90,6 +94,7 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 			ECid:     strconv.FormatUint(rand.Uint64(), 10),
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
+			OrigHost: util.RandString(16),
 			OrigFid:  util.RandString(16),
 			FileSize: rand.Uint64(),
 			BakHost:  util.RandString(16),
@@ -101,6 +106,7 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 			ECid:     strconv.FormatUint(rand.Uint64(), 10),
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
+			OrigHost: util.RandString(16),
 			OrigFid:  util.RandString(16),
 			FileSize: rand.Uint64(),
 			BakHost:  util.RandString(16),
@@ -112,6 +118,7 @@ func TestSuite_EnDecodeProto(t *testing.T) {
 			ECid:     strconv.FormatUint(rand.Uint64(), 10),
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set.Set(util.RandString(16)),
+			OrigHost: util.RandString(16),
 			OrigFid:  util.RandString(16),
 			FileSize: rand.Uint64(),
 			BakHost:  util.RandString(16),

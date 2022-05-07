@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
-func GetContentLength(r *http.Request) uint64 {
-	contentLength := r.Header.Get("Content-Length")
+func GetContentLength(h http.Header) uint64 {
+	contentLength := h.Get("Content-Length")
 	if contentLength != "" {
 		length, err := strconv.ParseUint(contentLength, 10, 64)
 		if err != nil {

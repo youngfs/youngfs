@@ -1,4 +1,4 @@
-package ec
+package ec_store
 
 import (
 	"context"
@@ -32,19 +32,52 @@ func setPlanLockKey(set set.Set) string {
 	return string(set) + setPlanLock
 }
 
-func (ec *EC) initPlan(ctx context.Context, setRules *set.SetRules) error {
-	mutex := ec.kvStore.NewMutex(setPlanLockKey(setRules.Set))
+func (ec *ECStore) insertPlan(ctx context.Context, plan *Plan) error {
+	proto, err := plan.EncodeProto(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = ec.kvStore.KvPut(ctx, setPlanKey(plan.Set), proto)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ec *ECStore) getPlan(ctx context.Context, set set.Set) (*Plan, error) {
+	proto, err := ec.kvStore.KvGet(ctx, setPlanKey(set))
+	if err != nil {
+		return nil, err
+	}
+
+	plan, err := DecodePlanProto(ctx, proto)
+	if err != nil {
+		return nil, err
+	}
+
+	return plan, nil
+}
+
+func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
+	mutex := ec.kvStore.NewMutex(setPlanLockKey(set))
 	if err := mutex.Lock(); err != nil {
-		log.Errorw("init plan lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setRules.Set)
+		log.Errorw("init plan lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set)
 		return errors.GetAPIErr(errors.ErrRedisSync)
 	}
 	defer func() {
 		_, _ = mutex.Unlock()
 	}()
 
-	turn, err := ec.kvStore.GetNum(ctx, setTurnKey(setRules.Set))
+	setRules, err := ec.GetSetRules(ctx, set, false)
 	if err != nil {
-		log.Errorw("init plan error: get set turns", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setRules.Set)
+		return err
+	}
+
+	turn, err := ec.kvStore.GetNum(ctx, setTurnKey(set))
+	if err != nil {
+		log.Errorw("init plan error: get set turns", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set)
 		return err
 	}
 
@@ -66,21 +99,12 @@ func (ec *EC) initPlan(ctx context.Context, setRules *set.SetRules) error {
 
 	}
 
-	plan := &Plan{
+	err = ec.insertPlan(ctx, &Plan{
 		Set:        setRules.Set,
 		DataShards: setRules.DataShards,
 		Shards:     shards,
-	}
-
-	proto, err := plan.EncodeProto(ctx)
+	})
 	if err != nil {
-		log.Errorw("init plan error: encode proto plan", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setRules.Set)
-		return err
-	}
-
-	err = ec.kvStore.KvPut(ctx, setPlanKey(setRules.Set), proto)
-	if err != nil {
-		log.Errorw("init plan error: kv put plan", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setRules.Set)
 		return err
 	}
 

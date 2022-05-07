@@ -23,7 +23,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	if err != nil {
 		file = c.Request.Body
-		contentLength = util.GetContentLength(c.Request)
+		contentLength = util.GetContentLength(c.Request.Header)
 		filename = ""
 	}
 	defer func() {

@@ -1,30 +1,31 @@
-package ec
+package ec_store
 
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"icesos/command/vars"
-	"icesos/ec/ec_pb"
+	"icesos/ec/ec_store/ec_store_pb"
 	"icesos/errors"
 	"icesos/full_path"
 	"icesos/log"
 	"icesos/set"
 )
 
-func (suite *Suite) toPb() *ec_pb.Suite {
+func (suite *Suite) toPb() *ec_store_pb.Suite {
 	if suite == nil {
 		return nil
 	}
 
-	ShardPb := make([]*ec_pb.Shard, len(suite.Shards))
+	ShardPb := make([]*ec_store_pb.Shard, len(suite.Shards))
 	for i, u := range suite.Shards {
 		ShardPb[i] = u.toPb()
 	}
 
-	return &ec_pb.Suite{
+	return &ec_store_pb.Suite{
 		ECid:     suite.ECid,
 		FullPath: string(suite.FullPath),
 		Set:      string(suite.Set),
+		OrigHost: suite.OrigHost,
 		OrigFid:  suite.OrigFid,
 		FileSize: suite.FileSize,
 		BakHost:  suite.BakHost,
@@ -34,37 +35,38 @@ func (suite *Suite) toPb() *ec_pb.Suite {
 	}
 }
 
-func (shard *Shard) toPb() *ec_pb.Shard {
+func (shard *Shard) toPb() *ec_store_pb.Shard {
 	if shard == nil {
 		return nil
 	}
 
-	fragsPb := make([]*ec_pb.Frag, len(shard.Frags))
+	fragsPb := make([]*ec_store_pb.Frag, len(shard.Frags))
 	for i, u := range shard.Frags {
 		fragsPb[i] = u.toPb()
 	}
 
-	return &ec_pb.Shard{
+	return &ec_store_pb.Shard{
 		Host:  shard.Host,
 		Frags: fragsPb,
 		Md5:   shard.Md5,
 	}
 }
 
-func (frag *Frag) toPb() *ec_pb.Frag {
+func (frag *Frag) toPb() *ec_store_pb.Frag {
 	if frag == nil {
 		return nil
 	}
 
-	return &ec_pb.Frag{
+	return &ec_store_pb.Frag{
 		FullPath: string(frag.FullPath),
 		Set:      string(frag.Set),
 		FileSize: frag.FileSize,
 		Fid:      frag.Fid,
+		OldECId:  frag.OldECid,
 	}
 }
 
-func suitePbToInstance(pb *ec_pb.Suite) *Suite {
+func suitePbToInstance(pb *ec_store_pb.Suite) *Suite {
 	if pb == nil {
 		return nil
 	}
@@ -85,6 +87,7 @@ func suitePbToInstance(pb *ec_pb.Suite) *Suite {
 		ECid:     pb.ECid,
 		FullPath: full_path.FullPath(pb.FullPath),
 		Set:      set.Set(pb.Set),
+		OrigHost: pb.OrigHost,
 		OrigFid:  pb.OrigFid,
 		FileSize: pb.FileSize,
 		BakHost:  pb.BakHost,
@@ -94,7 +97,7 @@ func suitePbToInstance(pb *ec_pb.Suite) *Suite {
 	}
 }
 
-func shardPbToInstance(pb *ec_pb.Shard) *Shard {
+func shardPbToInstance(pb *ec_store_pb.Shard) *Shard {
 	if pb == nil {
 		return nil
 	}
@@ -118,7 +121,7 @@ func shardPbToInstance(pb *ec_pb.Shard) *Shard {
 	}
 }
 
-func fragPbToInstance(pb *ec_pb.Frag) *Frag {
+func fragPbToInstance(pb *ec_store_pb.Frag) *Frag {
 	if pb == nil {
 		return nil
 	}
@@ -128,6 +131,7 @@ func fragPbToInstance(pb *ec_pb.Frag) *Frag {
 		Set:      set.Set(pb.Set),
 		Fid:      pb.Fid,
 		FileSize: pb.FileSize,
+		OldECid:  pb.OldECId,
 	}
 }
 
@@ -162,7 +166,7 @@ func (frag *Frag) EncodeProto(ctx context.Context) ([]byte, error) {
 }
 
 func DecodeSuiteProto(ctx context.Context, b []byte) (*Suite, error) {
-	message := &ec_pb.Suite{}
+	message := &ec_store_pb.Suite{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode suite proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)
@@ -171,7 +175,7 @@ func DecodeSuiteProto(ctx context.Context, b []byte) (*Suite, error) {
 }
 
 func DecodeShardProto(ctx context.Context, b []byte) (*Shard, error) {
-	message := &ec_pb.Shard{}
+	message := &ec_store_pb.Shard{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)
@@ -180,7 +184,7 @@ func DecodeShardProto(ctx context.Context, b []byte) (*Shard, error) {
 }
 
 func DecodeFragProto(ctx context.Context, b []byte) (*Frag, error) {
-	message := &ec_pb.Frag{}
+	message := &ec_store_pb.Frag{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode frag proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)

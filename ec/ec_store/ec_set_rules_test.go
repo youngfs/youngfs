@@ -1,4 +1,4 @@
-package ec
+package ec_store
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func TestSetRules_InsertDeleteGetSetRules(t *testing.T) {
 	err = client.InsertSetRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
-	setRules2, err := client.GetSetRules(ctx, setName)
+	setRules2, err := client.GetSetRules(ctx, setName, true)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, setRules2, setRules)
 
@@ -53,7 +53,7 @@ func TestSetRules_InsertDeleteGetSetRules(t *testing.T) {
 	err = client.InsertSetRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
-	setRules2, err = client.GetSetRules(ctx, setName)
+	setRules2, err = client.GetSetRules(ctx, setName, true)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, setRules2, setRules)
 
@@ -62,4 +62,8 @@ func TestSetRules_InsertDeleteGetSetRules(t *testing.T) {
 
 	err = client.DeleteSetRules(ctx, setName)
 	assert.Equal(t, err, nil)
+
+	setRules2, err = client.GetSetRules(ctx, setName, true)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, setRules2, nil)
 }

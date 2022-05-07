@@ -26,7 +26,9 @@ const (
 	ErrIllegalObjectName    ErrorCode = 4003
 	ErrIllegalSetName       ErrorCode = 4004
 	ErrIllegalSetRules      ErrorCode = 4005
-	ErrRouter               ErrorCode = 4006
+	ErrIllegalObjectSize    ErrorCode = 4006
+	ErrRouter               ErrorCode = 4007
+	ErrRecoverFailed        ErrorCode = 4008
 	ErrAdminAuthenticate    ErrorCode = 4100
 	ErrUserNotExist         ErrorCode = 4101
 	ErrUserAuthenticate     ErrorCode = 4102
@@ -80,9 +82,19 @@ var errorCodeResponse = map[ErrorCode]APIError{
 		Description:    "Illegal set rules",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
+	ErrIllegalObjectSize: {
+		ErrorCode:      ErrIllegalObjectSize,
+		Description:    "Illegal object size",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
 	ErrRouter: {
 		ErrorCode:      ErrRouter,
 		Description:    "Router problem",
+		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrRecoverFailed: {
+		ErrorCode:      ErrRouter,
+		Description:    "Object recover failed",
 		HTTPStatusCode: http.StatusBadRequest,
 	},
 	// iam

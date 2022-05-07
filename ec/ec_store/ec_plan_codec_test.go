@@ -1,4 +1,4 @@
-package ec
+package ec_store
 
 import (
 	"context"

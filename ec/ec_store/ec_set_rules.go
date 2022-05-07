@@ -1,4 +1,4 @@
-package ec
+package ec_store
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func setTurnKey(set set.Set) string {
 	return string(set) + setTurnsKv
 }
 
-func (ec *EC) InsertSetRules(ctx context.Context, setRules *set.SetRules) error {
+func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *set.SetRules) error {
 	mutex := ec.kvStore.NewMutex(setRulesLockKey(setRules.Set))
 	if err := mutex.Lock(); err != nil {
 		log.Errorw("insert set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setRules.Set)
@@ -74,20 +74,22 @@ func (ec *EC) InsertSetRules(ctx context.Context, setRules *set.SetRules) error 
 		return err
 	}
 
-	err = ec.initPlan(ctx, setRules)
+	_, err = ec.kvStore.KvDelete(ctx, setPlanKey(setRules.Set))
 	if err != nil {
 		return err
+	}
+
+	if setRules.ECMode {
+		err = ec.initPlan(ctx, setRules.Set)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (ec *EC) DeleteSetRules(ctx context.Context, set set.Set) error {
-	setRules, err := ec.GetSetRules(ctx, set)
-	if err != nil {
-		return err
-	}
-
+func (ec *ECStore) DeleteSetRules(ctx context.Context, set set.Set) error {
 	mutex := ec.kvStore.NewMutex(setRulesLockKey(set))
 	if err := mutex.Lock(); err != nil {
 		log.Errorw("delete set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set)
@@ -97,18 +99,26 @@ func (ec *EC) DeleteSetRules(ctx context.Context, set set.Set) error {
 		_, _ = mutex.Unlock()
 	}()
 
+	setRules, err := ec.GetSetRules(ctx, set, false)
+	if err != nil {
+		return err
+	}
+
+	// clear set rules map
+	ec.setRulesMap[set] = nil
+
 	_, err = ec.kvStore.KvDelete(ctx, setRulesKey(set))
 	if err != nil && err != kv.NotFound {
 		return err
 	}
 
 	_, err = ec.kvStore.ClrNum(ctx, setTurnKey(set))
-	if err != nil && err != kv.NotFound {
+	if err != nil {
 		return err
 	}
 
 	_, err = ec.kvStore.KvDelete(ctx, setPlanKey(set))
-	if err != nil && err != kv.NotFound {
+	if err != nil {
 		return err
 	}
 
@@ -126,15 +136,17 @@ func (ec *EC) DeleteSetRules(ctx context.Context, set set.Set) error {
 }
 
 // if don't have set rules, return nil,nil
-func (ec *EC) GetSetRules(ctx context.Context, setName set.Set) (*set.SetRules, error) {
-	mutex := ec.kvStore.NewMutex(setRulesLockKey(setName))
-	if err := mutex.Lock(); err != nil {
-		log.Errorw("get set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setName)
-		return nil, errors.GetAPIErr(errors.ErrRedisSync)
+func (ec *ECStore) GetSetRules(ctx context.Context, setName set.Set, lock bool) (*set.SetRules, error) {
+	if lock {
+		mutex := ec.kvStore.NewMutex(setRulesLockKey(setName))
+		if err := mutex.Lock(); err != nil {
+			log.Errorw("get set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", setName)
+			return nil, errors.GetAPIErr(errors.ErrRedisSync)
+		}
+		defer func() {
+			_, _ = mutex.Unlock()
+		}()
 	}
-	defer func() {
-		_, _ = mutex.Unlock()
-	}()
 
 	if ec.setRulesMap[setName] != nil {
 		return ec.setRulesMap[setName], nil

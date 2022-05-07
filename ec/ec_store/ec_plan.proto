@@ -1,6 +1,6 @@
 syntax = "proto3";
 package ec_pb;
-option go_package = "./ec_pb";
+option go_package = "./ec_store_pb";
 
 message PlanShard{
   string host = 1;

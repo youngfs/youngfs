@@ -2,7 +2,6 @@ package routers
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"icesos/command/vars"
@@ -50,7 +49,6 @@ func Logger(reqs ...string) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		fmt.Printf("%#v\n", c.Request)
 		c.Set(vars.UUIDKey, uuid.New().String())
 		startTime := time.Now()
 		log.Infow("request start",

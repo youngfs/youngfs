@@ -1,44 +1,44 @@
-package ec
+package ec_store
 
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"icesos/command/vars"
-	"icesos/ec/ec_pb"
+	"icesos/ec/ec_store/ec_store_pb"
 	"icesos/errors"
 	"icesos/log"
 	"icesos/set"
 )
 
-func (shard *PlanShard) toPb() *ec_pb.PlanShard {
+func (shard *PlanShard) toPb() *ec_store_pb.PlanShard {
 	if shard == nil {
 		return nil
 	}
 
-	return &ec_pb.PlanShard{
+	return &ec_store_pb.PlanShard{
 		Host:      shard.Host,
 		ShardSize: shard.ShardSize,
 	}
 }
 
-func (plan *Plan) toPb() *ec_pb.Plan {
+func (plan *Plan) toPb() *ec_store_pb.Plan {
 	if plan == nil {
 		return nil
 	}
 
-	shardsPb := make([]*ec_pb.PlanShard, len(plan.Shards))
+	shardsPb := make([]*ec_store_pb.PlanShard, len(plan.Shards))
 	for i, u := range plan.Shards {
 		shardsPb[i] = u.toPb()
 	}
 
-	return &ec_pb.Plan{
+	return &ec_store_pb.Plan{
 		Set:        string(plan.Set),
 		DataShards: plan.DataShards,
 		Shards:     shardsPb,
 	}
 }
 
-func planShardPbToInstance(pb *ec_pb.PlanShard) *PlanShard {
+func planShardPbToInstance(pb *ec_store_pb.PlanShard) *PlanShard {
 	if pb == nil {
 		return nil
 	}
@@ -49,7 +49,7 @@ func planShardPbToInstance(pb *ec_pb.PlanShard) *PlanShard {
 	}
 }
 
-func planPbToInstance(pb *ec_pb.Plan) *Plan {
+func planPbToInstance(pb *ec_store_pb.Plan) *Plan {
 	if pb == nil {
 		return nil
 	}
@@ -94,7 +94,7 @@ func (plan *Plan) EncodeProto(ctx context.Context) ([]byte, error) {
 }
 
 func DecodePlanShardProto(ctx context.Context, b []byte) (*PlanShard, error) {
-	message := &ec_pb.PlanShard{}
+	message := &ec_store_pb.PlanShard{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode plan shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)
@@ -103,7 +103,7 @@ func DecodePlanShardProto(ctx context.Context, b []byte) (*PlanShard, error) {
 }
 
 func DecodePlanProto(ctx context.Context, b []byte) (*Plan, error) {
-	message := &ec_pb.Plan{}
+	message := &ec_store_pb.Plan{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		log.Errorw("decode plan shard proto error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error())
 		return nil, errors.GetAPIErr(errors.ErrProto)
