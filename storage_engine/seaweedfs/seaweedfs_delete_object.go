@@ -42,7 +42,7 @@ func (se *StorageEngine) loopProcessingDeletion() {
 						continue
 					}
 				} else if link < 0 {
-					log.Errorw("seaweedfs delete object: link < 0", vars.ErrorKey, "fid", fid, "link", link)
+					log.Errorw("seaweedfs delete object: link < 0", "fid", fid, "link", link)
 				}
 
 				deleteCnt++

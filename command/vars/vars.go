@@ -2,7 +2,7 @@ package vars
 
 var Port = "9876"
 
-var MasterServer = "10.249.177.55:9333"
+var MasterServer = "10.249.181.84:9333"
 
 var RedisHostPost = "localhost:6379"
 var RedisPassword = ""

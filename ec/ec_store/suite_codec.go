@@ -22,16 +22,17 @@ func (suite *Suite) toPb() *ec_store_pb.Suite {
 	}
 
 	return &ec_store_pb.Suite{
-		ECid:     suite.ECid,
-		FullPath: string(suite.FullPath),
-		Set:      string(suite.Set),
-		OrigHost: suite.OrigHost,
-		OrigFid:  suite.OrigFid,
-		FileSize: suite.FileSize,
-		BakHost:  suite.BakHost,
-		BakFid:   suite.BakFid,
-		Next:     suite.Next,
-		Shards:   ShardPb,
+		ECid:       suite.ECid,
+		FullPath:   string(suite.FullPath),
+		Set:        string(suite.Set),
+		OrigHost:   suite.OrigHost,
+		OrigFid:    suite.OrigFid,
+		FileSize:   suite.FileSize,
+		BakHost:    suite.BakHost,
+		BakFid:     suite.BakFid,
+		Next:       suite.Next,
+		DataShards: suite.DataShards,
+		Shards:     ShardPb,
 	}
 }
 
@@ -84,16 +85,17 @@ func suitePbToInstance(pb *ec_store_pb.Suite) *Suite {
 	}
 
 	return &Suite{
-		ECid:     pb.ECid,
-		FullPath: full_path.FullPath(pb.FullPath),
-		Set:      set.Set(pb.Set),
-		OrigHost: pb.OrigHost,
-		OrigFid:  pb.OrigFid,
-		FileSize: pb.FileSize,
-		BakHost:  pb.BakHost,
-		BakFid:   pb.BakFid,
-		Next:     pb.Next,
-		Shards:   shards,
+		ECid:       pb.ECid,
+		FullPath:   full_path.FullPath(pb.FullPath),
+		Set:        set.Set(pb.Set),
+		OrigHost:   pb.OrigHost,
+		OrigFid:    pb.OrigFid,
+		FileSize:   pb.FileSize,
+		BakHost:    pb.BakHost,
+		BakFid:     pb.BakFid,
+		Next:       pb.Next,
+		DataShards: pb.DataShards,
+		Shards:     shards,
 	}
 }
 

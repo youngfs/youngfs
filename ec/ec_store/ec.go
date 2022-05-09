@@ -102,6 +102,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 					log.Errorw("ec_store insert object error: insert plan shard ecid", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "ent", ent)
 					return "", "", "", err
 				}
+				break
 			}
 		}
 
@@ -112,7 +113,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 				return "", "", "", errors.GetAPIErr(errors.ErrServer)
 			}
 
-			shards := make([]Shard, plan.DataShards)
+			shards := make([]Shard, setRules.DataShards+setRules.ParityShards)
 			for i := range shards {
 				shards[i].Host = plan.Shards[i].Host
 				shards[i].Frags, err = ec.getFrags(ctx, ent.Set, i)
@@ -127,8 +128,9 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 			}
 
 			err := ec.InsertSuite(ctx, &Suite{
-				ECid:   suiteId,
-				Shards: shards,
+				ECid:       suiteId,
+				DataShards: setRules.DataShards,
+				Shards:     shards,
 			})
 			if err != nil {
 				return "", "", "", err
@@ -164,6 +166,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 						log.Errorw("ec_store insert object error: insert plan shard ecid", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "ent", ent)
 						return "", "", "", err
 					}
+					break
 				}
 			}
 
@@ -233,6 +236,9 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 		log.Errorw("get set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", ent.Set, "entry", ent)
 		return errors.GetAPIErr(errors.ErrRedisSync)
 	}
+	defer func() {
+		_, _ = mutex.Unlock()
+	}()
 
 	setRules, err := ec.GetSetRules(ctx, ent.Set, false)
 	if err != nil {
@@ -259,6 +265,11 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 					return err
 				}
 			}
+		}
+
+		err = ec.insertPlan(ctx, plan)
+		if err != nil {
+			return err
 		}
 	}
 

@@ -26,5 +26,6 @@ message Suite{
   string bak_host = 7;
   string bak_fid = 8;
   string next = 9;
-  repeated Shard shards = 10;
+  uint64 data_shards = 10;
+  repeated Shard shards = 11;
 }

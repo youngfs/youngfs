@@ -5,7 +5,9 @@ import (
 	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
+	"icesos/errors"
 	"icesos/kv/redis"
+	"icesos/log"
 	"icesos/util"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +16,11 @@ import (
 )
 
 func TestSeaweedFS_DeleteObject(t *testing.T) {
+	vars.UnitTest = true
+	vars.Debug = true
+	log.InitLogger()
+	defer log.Sync()
+
 	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	client := NewStorageEngine(vars.MasterServer, kvStore)
 	size := uint64(5 * 1024)
@@ -37,10 +44,12 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
 
-	err = client.DeleteObject(ctx, fid)
+	req, err := http.NewRequest("DELETE", url, nil)
 	assert.Equal(t, err, nil)
 
-	time.Sleep(3 * time.Second)
+	resp, err := http.DefaultClient.Do(req)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, resp.StatusCode, http.StatusAccepted)
 
 	resp2, err := http.Get(url)
 	assert.Equal(t, err, nil)
@@ -51,4 +60,13 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 	httpBody, err = ioutil.ReadAll(resp2.Body)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, []byte{})
+
+	url, err = client.GetFidUrl(ctx, fid)
+	assert.Equal(t, err, errors.GetAPIErr(errors.ErrObjectNotExist))
+	assert.Equal(t, url, "")
+
+	err = client.DeleteObject(ctx, fid)
+	assert.Equal(t, err, nil)
+
+	time.Sleep(3 * time.Second)
 }

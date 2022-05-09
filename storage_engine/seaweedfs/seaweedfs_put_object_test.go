@@ -54,7 +54,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 	assert.Equal(t, httpBody, []byte{})
 
 	hosts, err := client.GetHosts(ctx)
-	fids := make([]string, 0)
+	urls := make([]string, 0)
 
 	for i := 0; i < 16; i++ {
 		b := util.RandByte(size)
@@ -84,7 +84,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 		assert.Equal(t, err, nil)
 		assert.Equal(t, httpBody, b)
 
-		fids = append(fids, fid)
+		urls = append(urls, url)
 
 		err = client.DeleteObject(ctx, fid)
 		assert.Equal(t, err, nil)
@@ -92,10 +92,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	for _, fid := range fids {
-		url, err = client.GetFidUrl(ctx, fid)
-		assert.Equal(t, err, nil)
-
+	for _, url := range urls {
 		resp, err := http.Get(url)
 		assert.Equal(t, err, nil)
 		defer func() {

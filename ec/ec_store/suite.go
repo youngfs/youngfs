@@ -3,6 +3,7 @@ package ec_store
 import (
 	"context"
 	"icesos/full_path"
+	"icesos/kv"
 	"icesos/set"
 )
 
@@ -32,11 +33,16 @@ type Suite struct {
 	BakHost            string  // backup host
 	BakFid             string  // backup fid
 	Next               string  // next ECid, if it's end,next = ""
+	DataShards         uint64  // data shards
 	Shards             []Shard // data blocks
 }
 
 func (ec *ECStore) getFrags(ctx context.Context, set set.Set, turns int) ([]Frag, error) {
 	ecids, err := ec.kvStore.SMembers(ctx, setPlanShardKey(set, turns))
+	if err == kv.NotFound {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}

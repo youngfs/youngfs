@@ -25,7 +25,7 @@ func (setRules *SetRules) IsLegal() bool {
 	}
 
 	if setRules.ECMode {
-		if setRules.DataShards+setRules.ParityShards > 256 {
+		if setRules.DataShards+setRules.ParityShards > 32 {
 			return false
 		}
 

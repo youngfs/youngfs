@@ -29,6 +29,7 @@ const (
 	ErrIllegalObjectSize    ErrorCode = 4006
 	ErrRouter               ErrorCode = 4007
 	ErrRecoverFailed        ErrorCode = 4008
+	ErrObjectNotExist       ErrorCode = 4009
 	ErrAdminAuthenticate    ErrorCode = 4100
 	ErrUserNotExist         ErrorCode = 4101
 	ErrUserAuthenticate     ErrorCode = 4102
@@ -93,9 +94,14 @@ var errorCodeResponse = map[ErrorCode]APIError{
 		HTTPStatusCode: http.StatusBadRequest,
 	},
 	ErrRecoverFailed: {
-		ErrorCode:      ErrRouter,
+		ErrorCode:      ErrRecoverFailed,
 		Description:    "Object recover failed",
 		HTTPStatusCode: http.StatusBadRequest,
+	},
+	ErrObjectNotExist: {
+		ErrorCode:      ErrObjectNotExist,
+		Description:    "Object not exist",
+		HTTPStatusCode: http.StatusNotFound,
 	},
 	// iam
 	ErrAdminAuthenticate: {
