@@ -3,6 +3,8 @@ package vfs
 import (
 	"context"
 	"icesos/command/vars"
+	"icesos/ec/ec_server"
+	"icesos/ec/ec_store"
 	"icesos/entry"
 	"icesos/errors"
 	"icesos/full_path"
@@ -16,12 +18,14 @@ import (
 type VFS struct {
 	kvStore       kv.KvStoreWithRedisMutex
 	storageEngine storage_engine.StorageEngine
+	ecServer      *ec_server.ECServer
 }
 
-func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine storage_engine.StorageEngine) *VFS {
+func NewVFS(kvStore kv.KvStoreWithRedisMutex, storageEngine storage_engine.StorageEngine, ecServer *ec_server.ECServer) *VFS {
 	return &VFS{
 		kvStore:       kvStore,
 		storageEngine: storageEngine,
+		ecServer:      ecServer,
 	}
 }
 
@@ -141,4 +145,15 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 	}
 
 	return entry.ToListEntries(ret), nil
+}
+
+func (vfs *VFS) RecoverObject(ctx context.Context, frags []ec_store.Frag) error {
+	for _, frag := range frags {
+		err := vfs.recoverEntry(ctx, &frag)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

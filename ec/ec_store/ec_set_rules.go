@@ -56,8 +56,10 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *set.SetRules) e
 		}
 	}
 
-	// clear set rules map
-	ec.setRulesMap[setRules.Set] = nil
+	err = ec.DeleteSetRules(ctx, setRules.Set, false)
+	if err != nil {
+		return err
+	}
 
 	proto, err := setRules.EncodeProto(ctx)
 	if err != nil {
@@ -74,11 +76,6 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *set.SetRules) e
 		return err
 	}
 
-	_, err = ec.kvStore.KvDelete(ctx, setPlanKey(setRules.Set))
-	if err != nil {
-		return err
-	}
-
 	if setRules.ECMode {
 		err = ec.initPlan(ctx, setRules.Set)
 		if err != nil {
@@ -89,18 +86,23 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *set.SetRules) e
 	return nil
 }
 
-func (ec *ECStore) DeleteSetRules(ctx context.Context, set set.Set) error {
-	mutex := ec.kvStore.NewMutex(setRulesLockKey(set))
-	if err := mutex.Lock(); err != nil {
-		log.Errorw("delete set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set)
-		return errors.GetAPIErr(errors.ErrRedisSync)
+func (ec *ECStore) DeleteSetRules(ctx context.Context, set set.Set, lock bool) error {
+	if lock {
+		mutex := ec.kvStore.NewMutex(setRulesLockKey(set))
+		if err := mutex.Lock(); err != nil {
+			log.Errorw("delete set rules lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "set", set)
+			return errors.GetAPIErr(errors.ErrRedisSync)
+		}
+		defer func() {
+			_, _ = mutex.Unlock()
+		}()
 	}
-	defer func() {
-		_, _ = mutex.Unlock()
-	}()
 
 	setRules, err := ec.GetSetRules(ctx, set, false)
 	if err != nil {
+		if err == kv.NotFound {
+			return nil
+		}
 		return err
 	}
 
@@ -153,11 +155,8 @@ func (ec *ECStore) GetSetRules(ctx context.Context, setName set.Set, lock bool) 
 	}
 
 	proto, err := ec.kvStore.KvGet(ctx, setRulesKey(setName))
-	if err == kv.NotFound {
-		return nil, nil
-	}
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	setRules, err := set.DecodeSetRulesProto(ctx, proto)

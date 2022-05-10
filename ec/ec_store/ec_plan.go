@@ -4,6 +4,7 @@ import (
 	"context"
 	"icesos/command/vars"
 	"icesos/errors"
+	"icesos/kv"
 	"icesos/log"
 	"icesos/set"
 	"strconv"
@@ -72,6 +73,9 @@ func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
 
 	setRules, err := ec.GetSetRules(ctx, set, false)
 	if err != nil {
+		if err == kv.NotFound {
+			return nil
+		}
 		return err
 	}
 

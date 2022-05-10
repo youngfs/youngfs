@@ -1,27 +1,49 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"icesos/command/vars"
 	"icesos/errors"
-	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
-	"icesos/util"
-	"io"
 	"net/http"
 )
 
-type PutObjectInfo struct {
-	Recover bool `form:"recover" json:"recover" uri:"recover"`
-}
-
-func PutObjectHandler(c *gin.Context) {
-	putObjectInfo := &PutObjectInfo{
-		Recover: false,
+func PutSetRulesHandler(c *gin.Context) {
+	setName := set.Set(c.Param("set"))
+	if len(setName) < 2 { // include /*set
+		err := errors.GetAPIErr(errors.ErrIllegalSetName)
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
+		c.JSON(
+			err.HTTPStatusCode,
+			gin.H{
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  err.ErrorCode,
+				vars.ErrorKey: err.Error(),
+			},
+		)
+		return
+	}
+	setName = setName[1:]
+	if !setName.IsLegal() {
+		err := errors.GetAPIErr(errors.ErrIllegalSetName)
+		c.Set(vars.CodeKey, err.ErrorCode)
+		c.Set(vars.ErrorKey, err.Error())
+		c.JSON(
+			err.HTTPStatusCode,
+			gin.H{
+				vars.UUIDKey:  c.Value(vars.UUIDKey),
+				vars.CodeKey:  err.ErrorCode,
+				vars.ErrorKey: err.Error(),
+			},
+		)
+		return
 	}
 
-	err := c.Bind(putObjectInfo)
+	setRules := &set.SetRules{}
+	err := c.Bind(setRules)
 	if err != nil {
 		apiErr := errors.GetAPIErr(errors.ErrRouter)
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
@@ -37,33 +59,13 @@ func PutObjectHandler(c *gin.Context) {
 		return
 	}
 
-	if putObjectInfo.Recover {
-		RecoverObjectHandler(c)
-		return
+	if setRules.Set == "" {
+		setRules.Set = setName
 	}
 
-	var file io.ReadCloser
-	var contentLength uint64
-	var filename string
-	file, head, err := c.Request.FormFile("file")
-	if head != nil && err == nil {
-		contentLength = uint64(head.Size)
-		filename = head.Filename
-	}
-	if err != nil {
-		file = c.Request.Body
-		contentLength = util.GetContentLength(c.Request.Header)
-		filename = ""
-	}
-	defer func() {
-		_ = file.Close()
-	}()
+	fmt.Printf("%#v %#v\n", setRules.Set, setName)
 
-	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
-	if len(fp) == 0 || fp[len(fp)-1] == '/' {
-		fp += full_path.FullPath(filename)
-	}
-	if !setName.IsLegal() {
+	if setRules.Set != setName {
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
@@ -77,23 +79,10 @@ func PutObjectHandler(c *gin.Context) {
 		)
 		return
 	}
-	if !fp.IsLegalObjectName() {
-		err := errors.GetAPIErr(errors.ErrIllegalObjectName)
-		c.Set(vars.CodeKey, err.ErrorCode)
-		c.Set(vars.ErrorKey, err.Error())
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  err.ErrorCode,
-				vars.ErrorKey: err.Error(),
-			},
-		)
-		return
-	}
-	fp = fp.Clean()
 
-	err = server.PutObject(c, setName, fp, contentLength, file)
+	fmt.Printf("%#v\n", setRules)
+
+	err = server.InsertSetRules(c, setRules)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
@@ -113,5 +102,4 @@ func PutObjectHandler(c *gin.Context) {
 	}
 
 	c.Status(http.StatusCreated)
-	return
 }

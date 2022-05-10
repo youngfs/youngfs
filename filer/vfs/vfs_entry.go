@@ -49,6 +49,10 @@ func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullP
 		if err != nil {
 			return err
 		}
+		err = vfs.ecServer.DeleteObject(ctx, ent.ECid)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

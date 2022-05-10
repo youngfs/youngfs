@@ -57,10 +57,10 @@ func TestSetRules_InsertDeleteGetSetRules(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, setRules2, setRules)
 
-	err = client.DeleteSetRules(ctx, setName)
+	err = client.DeleteSetRules(ctx, setName, true)
 	assert.Equal(t, err, nil)
 
-	err = client.DeleteSetRules(ctx, setName)
+	err = client.DeleteSetRules(ctx, setName, true)
 	assert.Equal(t, err, nil)
 
 	setRules2, err = client.GetSetRules(ctx, setName, true)

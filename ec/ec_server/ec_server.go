@@ -5,6 +5,8 @@ import (
 	"icesos/ec/ec_calc"
 	"icesos/ec/ec_store"
 	"icesos/entry"
+	"icesos/errors"
+	"icesos/kv"
 	"icesos/set"
 	"icesos/util"
 	"time"
@@ -68,7 +70,18 @@ func (ec *ECServer) InsertSetRules(ctx context.Context, setRules *set.SetRules) 
 }
 
 func (ec *ECServer) DeleteSetRules(ctx context.Context, set set.Set) error {
-	return ec.ECStore.DeleteSetRules(ctx, set)
+	return ec.ECStore.DeleteSetRules(ctx, set, true)
+}
+
+func (ec *ECServer) GetSetRules(ctx context.Context, setName set.Set) (*set.SetRules, error) {
+	setRules, err := ec.ECStore.GetSetRules(ctx, setName, true)
+	if err != nil {
+		if err == kv.NotFound {
+			return nil, errors.GetAPIErr(errors.ErrSetRulesNotExist)
+		}
+		return nil, err
+	}
+	return setRules, err
 }
 
 func (ec *ECServer) ExecEC(ctx context.Context, ecid string) error {

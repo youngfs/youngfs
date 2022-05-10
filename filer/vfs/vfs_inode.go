@@ -3,6 +3,7 @@ package vfs
 import (
 	"context"
 	"icesos/command/vars"
+	"icesos/ec/ec_store"
 	"icesos/entry"
 	"icesos/errors"
 	"icesos/full_path"
@@ -240,6 +241,37 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 	if fp != inodeRoot {
 		err = vfs.deleteEntry(ctx, set, fp)
 		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (vfs *VFS) recoverEntry(ctx context.Context, frag *ec_store.Frag) error {
+	mutex := vfs.kvStore.NewMutex(inodeLockKey(frag.Set, frag.FullPath))
+	if err := mutex.Lock(); err != nil {
+		log.Errorw("insert inode and entry lock error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "Set", frag.Set, "full path", frag.FullPath)
+		return errors.GetAPIErr(errors.ErrRedisSync)
+	}
+	defer func() {
+		_, _ = mutex.Unlock()
+	}()
+
+	ent, err := vfs.getEntry(ctx, frag.Set, frag.FullPath)
+	if err != nil {
+		if err == kv.NotFound {
+			return nil
+		}
+		log.Errorw("recover entry: get entry", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "Set", frag.Set, "full path", frag.FullPath)
+		return err
+	}
+
+	if ent.ECid == frag.OldECid {
+		ent.Fid = frag.Fid
+		err := vfs.insertEntry(ctx, ent)
+		if err != nil {
+			log.Errorw("recover entry: insert entry", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "Set", frag.Set, "full path", frag.FullPath)
 			return err
 		}
 	}

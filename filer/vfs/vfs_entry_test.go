@@ -4,6 +4,9 @@ import (
 	"context"
 	"github.com/go-playground/assert/v2"
 	"icesos/command/vars"
+	"icesos/ec/ec_calc"
+	"icesos/ec/ec_server"
+	"icesos/ec/ec_store"
 	"icesos/entry"
 	"icesos/full_path"
 	"icesos/kv"
@@ -19,7 +22,10 @@ import (
 func TestEntry(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
 	storageEngine := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
-	vfs := NewVFS(kvStore, storageEngine)
+	ecStore := ec_store.NewEC(kvStore, storageEngine)
+	ecCalc := ec_calc.NewECCalc(ecStore, storageEngine)
+	ecServer := ec_server.NewECServer(ecStore, ecCalc)
+	vfs := NewVFS(kvStore, storageEngine, ecServer)
 
 	fp := full_path.FullPath("/aa/bb/cc")
 	setName := set.Set("test_vfs_entry")

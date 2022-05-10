@@ -7,62 +7,11 @@ import (
 	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
-	"icesos/util"
-	"io"
 	"net/http"
 )
 
-type PutObjectInfo struct {
-	Recover bool `form:"recover" json:"recover" uri:"recover"`
-}
-
-func PutObjectHandler(c *gin.Context) {
-	putObjectInfo := &PutObjectInfo{
-		Recover: false,
-	}
-
-	err := c.Bind(putObjectInfo)
-	if err != nil {
-		apiErr := errors.GetAPIErr(errors.ErrRouter)
-		c.Set(vars.CodeKey, apiErr.ErrorCode)
-		c.Set(vars.ErrorKey, err.Error())
-		c.JSON(
-			apiErr.HTTPStatusCode,
-			gin.H{
-				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  apiErr.ErrorCode,
-				vars.ErrorKey: err.Error(),
-			},
-		)
-		return
-	}
-
-	if putObjectInfo.Recover {
-		RecoverObjectHandler(c)
-		return
-	}
-
-	var file io.ReadCloser
-	var contentLength uint64
-	var filename string
-	file, head, err := c.Request.FormFile("file")
-	if head != nil && err == nil {
-		contentLength = uint64(head.Size)
-		filename = head.Filename
-	}
-	if err != nil {
-		file = c.Request.Body
-		contentLength = util.GetContentLength(c.Request.Header)
-		filename = ""
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
+func RecoverObjectHandler(c *gin.Context) {
 	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
-	if len(fp) == 0 || fp[len(fp)-1] == '/' {
-		fp += full_path.FullPath(filename)
-	}
 	if !setName.IsLegal() {
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
@@ -91,9 +40,8 @@ func PutObjectHandler(c *gin.Context) {
 		)
 		return
 	}
-	fp = fp.Clean()
 
-	err = server.PutObject(c, setName, fp, contentLength, file)
+	err := server.RecoverObject(c, setName, fp)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {
@@ -112,6 +60,6 @@ func PutObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusAccepted)
 	return
 }

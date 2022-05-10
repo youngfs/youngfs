@@ -53,6 +53,9 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 
 	setRules, err := ec.GetSetRules(ctx, ent.Set, false)
 	if err != nil {
+		if err == kv.NotFound {
+			return "", "", "", nil
+		}
 		return "", "", "", err
 	}
 
@@ -242,6 +245,9 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 
 	setRules, err := ec.GetSetRules(ctx, ent.Set, false)
 	if err != nil {
+		if err == kv.NotFound {
+			return nil
+		}
 		return err
 	}
 

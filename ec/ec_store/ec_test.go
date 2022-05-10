@@ -70,6 +70,6 @@ func TestEC_RecoverEC(t *testing.T) {
 		assert.Equal(t, frags, nil)
 	}
 
-	err = client.DeleteSetRules(ctx, setName)
+	err = client.DeleteSetRules(ctx, setName, true)
 	assert.Equal(t, err, nil)
 }

@@ -34,11 +34,19 @@ func InitRouter() {
 	r.HEAD("/favicon.ico", faviconHandler)
 
 	//api handler
+	// object
 	r.PUT("/:set/*fp", Logger("put object"), api.PutObjectHandler)
 	r.POST("/:set/*fp", Logger("put object"), api.PutObjectHandler)
 	r.GET("/:set/*fp", Logger("get object"), api.GetObjectHandler)
 	r.DELETE("/:set/*fp", Logger("delete object"), api.DeleteObjectHandler)
 	r.HEAD("/:set/*fp", Logger("head object"), api.HeadObjectHandler)
+
+	// set rules
+	r.PUT("/SetRules/*set", Logger("put set rules"), api.PutSetRulesHandler)
+	r.POST("/SetRules/*set", Logger("put set rules"), api.PutSetRulesHandler)
+	r.GET("/SetRules/*set", Logger("get set rules"), api.GetSetRulesHandler)
+	r.DELETE("/SetRules/*set", Logger("delete set rules"), api.DeleteSetRulesHandler)
+	r.HEAD("/SetRules/*set", Logger("head set rules"), api.HeadSetRulesHandler)
 	router = r
 }
 

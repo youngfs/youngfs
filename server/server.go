@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/md5"
+	"icesos/ec/ec_server"
 	"icesos/entry"
 	"icesos/filer"
 	"icesos/full_path"
@@ -19,14 +20,16 @@ import (
 type Server struct {
 	filerStore    filer.FilerStore
 	storageEngine storage_engine.StorageEngine
+	ecServer      *ec_server.ECServer
 }
 
 var svr *Server
 
-func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine) *Server {
+func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine, ecServer *ec_server.ECServer) *Server {
 	return &Server{
 		filerStore:    filer,
 		storageEngine: storageEngine,
+		ecServer:      ecServer,
 	}
 }
 
@@ -55,28 +58,58 @@ func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uin
 		mimeType, file = util.FileMimeDetect(file)
 	}
 
-	md5Hash := md5.New()
-	file = io.TeeReader(file, md5Hash)
+	ent := &entry.Entry{
+		FullPath: fp,
+		Set:      set,
+		Mtime:    ctime,
+		Ctime:    ctime,
+		Mode:     os.ModePerm,
+		Mime:     mimeType,
+		FileSize: size,
+	}
 
-	fid, err := svr.storageEngine.PutObject(ctx, size, file)
+	host, ecid, err := svr.ecServer.InsertObject(ctx, ent)
 	if err != nil {
 		return err
 	}
 
-	err = svr.filerStore.InsertObject(ctx,
-		&entry.Entry{
-			FullPath: fp,
-			Set:      set,
-			Mtime:    ctime,
-			Ctime:    ctime,
-			Mode:     os.ModePerm,
-			Mime:     mimeType,
-			Md5:      md5Hash.Sum(nil),
-			FileSize: size,
-			Fid:      fid,
-		}, true)
+	ent.ECid = ecid
+
+	md5Hash := md5.New()
+	file = io.TeeReader(file, md5Hash)
+
+	fid := ""
+	if host != "" {
+		fid, err = svr.storageEngine.PutObject(ctx, size, file, host)
+		if err != nil {
+			_ = svr.ecServer.RecoverEC(ctx, ent)
+			return err
+		}
+	} else {
+		fid, err = svr.storageEngine.PutObject(ctx, size, file)
+		if err != nil {
+			_ = svr.ecServer.RecoverEC(ctx, ent)
+			return err
+		}
+	}
+
+	ent.Fid = fid
+	ent.Md5 = md5Hash.Sum(nil)
+
+	err = svr.filerStore.InsertObject(ctx, ent, true)
 	if err != nil {
 		_ = svr.storageEngine.DeleteObject(ctx, fid)
+		_ = svr.ecServer.RecoverEC(ctx, ent)
+		return err
+	}
+
+	err = svr.ecServer.ConfirmEC(ctx, ent)
+	if err != nil {
+		return err
+	}
+
+	err = svr.ecServer.ExecEC(ctx, ent.ECid)
+	if err != nil {
 		return err
 	}
 
@@ -98,4 +131,29 @@ func DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recur
 
 func GetFidUrl(ctx context.Context, fid string) (string, error) {
 	return svr.storageEngine.GetFidUrl(ctx, fid)
+}
+
+func RecoverObject(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+	ent, err := svr.filerStore.GetObject(ctx, set, fp)
+	if err != nil {
+		return err
+	}
+
+	frags, err := svr.ecServer.RecoverObject(ctx, ent)
+	if err != nil {
+		return err
+	}
+	return svr.filerStore.RecoverObject(ctx, frags)
+}
+
+func InsertSetRules(ctx context.Context, setRules *set.SetRules) error {
+	return svr.ecServer.InsertSetRules(ctx, setRules)
+}
+
+func DeleteSetRules(ctx context.Context, set set.Set) error {
+	return svr.ecServer.DeleteSetRules(ctx, set)
+}
+
+func GetSetRules(ctx context.Context, set set.Set) (*set.SetRules, error) {
+	return svr.ecServer.GetSetRules(ctx, set)
 }

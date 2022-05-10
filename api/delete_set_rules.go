@@ -4,36 +4,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"icesos/command/vars"
 	"icesos/errors"
-	"icesos/full_path"
 	"icesos/server"
 	"icesos/set"
 	"net/http"
 )
 
-type DeleteObjectInfo struct {
-	Recursive bool `form:"recursive" json:"recursive" uri:"recursive" xml:"recursive" yaml:"recursive"`
-}
-
-func DeleteObjectHandler(c *gin.Context) {
-	deleteObjectInfo := &DeleteObjectInfo{}
-
-	err := c.Bind(deleteObjectInfo)
-	if err != nil {
-		apiErr := errors.GetAPIErr(errors.ErrRouter)
-		c.Set(vars.CodeKey, apiErr.ErrorCode)
+func DeleteSetRulesHandler(c *gin.Context) {
+	setName := set.Set(c.Param("set"))
+	if len(setName) < 2 { // include /*set
+		err := errors.GetAPIErr(errors.ErrIllegalSetName)
+		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
-			apiErr.HTTPStatusCode,
+			err.HTTPStatusCode,
 			gin.H{
 				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  apiErr.ErrorCode,
+				vars.CodeKey:  err.ErrorCode,
 				vars.ErrorKey: err.Error(),
 			},
 		)
 		return
 	}
-
-	setName, fp := set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	setName = setName[1:]
 	if !setName.IsLegal() {
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
@@ -48,23 +40,8 @@ func DeleteObjectHandler(c *gin.Context) {
 		)
 		return
 	}
-	if !fp.IsLegal() {
-		err := errors.GetAPIErr(errors.ErrIllegalObjectName)
-		c.Set(vars.CodeKey, err.ErrorCode)
-		c.Set(vars.ErrorKey, err.Error())
-		c.JSON(
-			err.HTTPStatusCode,
-			gin.H{
-				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  err.ErrorCode,
-				vars.ErrorKey: err.Error(),
-			},
-		)
-		return
-	}
-	fp = fp.Clean()
 
-	err = server.DeleteObject(c, setName, fp, deleteObjectInfo.Recursive)
+	err := server.DeleteSetRules(c, setName)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

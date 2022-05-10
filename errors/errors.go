@@ -30,6 +30,7 @@ const (
 	ErrRouter               ErrorCode = 4007
 	ErrRecoverFailed        ErrorCode = 4008
 	ErrObjectNotExist       ErrorCode = 4009
+	ErrSetRulesNotExist     ErrorCode = 4010
 	ErrAdminAuthenticate    ErrorCode = 4100
 	ErrUserNotExist         ErrorCode = 4101
 	ErrUserAuthenticate     ErrorCode = 4102
@@ -101,6 +102,11 @@ var errorCodeResponse = map[ErrorCode]APIError{
 	ErrObjectNotExist: {
 		ErrorCode:      ErrObjectNotExist,
 		Description:    "Object not exist",
+		HTTPStatusCode: http.StatusNotFound,
+	},
+	ErrSetRulesNotExist: {
+		ErrorCode:      ErrSetRulesNotExist,
+		Description:    "set rules not exist",
 		HTTPStatusCode: http.StatusNotFound,
 	},
 	// iam
