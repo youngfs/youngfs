@@ -43,6 +43,10 @@ func (se *StorageEngine) loopProcessingDeletion() {
 					}
 				} else if link < 0 {
 					log.Errorw("seaweedfs delete object: link < 0", "fid", fid, "link", link)
+					_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fid))
+					if err != nil {
+						log.Errorw("seaweedfs delete object: clear err fid link", vars.ErrorKey, err.Error())
+					}
 				}
 
 				deleteCnt++
@@ -55,6 +59,12 @@ func (se *StorageEngine) loopProcessingDeletion() {
 }
 
 func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string) error {
+	_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fullFid))
+	if err != nil {
+		log.Errorw("seaweedfs delete actual object: clear fid link", vars.ErrorKey, err.Error())
+		return err
+	}
+
 	volumeId, fid, err := se.parseFid(ctx, fullFid)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: parse fid error", vars.ErrorKey, err.Error(), "fid", fid)
@@ -96,12 +106,6 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string)
 	if err != nil {
 		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http body", httpBody)
 		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
-	}
-
-	_, err = se.kvStore.ClrNum(ctx, fidLinkKey(fullFid))
-	if err != nil {
-		log.Errorw("seaweedfs delete actual object: clear fid link", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid)
-		return err
 	}
 
 	return nil
