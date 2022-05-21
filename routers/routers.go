@@ -13,6 +13,10 @@ import (
 var router *gin.Engine
 
 func InitRouter() {
+	if !vars.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.Default()
 	//html template
 	r.SetFuncMap(ui.FuncMap)
@@ -51,10 +55,6 @@ func InitRouter() {
 }
 
 func Run() {
-	if !vars.Debug {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
 	err := router.Run(":" + vars.Port)
 	if err != nil {
 		log.Errorw("gin router init failed", "error", err.Error())
