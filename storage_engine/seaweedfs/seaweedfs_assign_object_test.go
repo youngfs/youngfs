@@ -11,8 +11,8 @@ import (
 )
 
 func TestSeaweedFS_assignObject(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	info, err := client.assignObject(context.Background(), 5*1024)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, info.Url, info.PublicUrl)
@@ -27,8 +27,8 @@ func TestSeaweedFS_parseFid(t *testing.T) {
 
 	ctx := context.Background()
 
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	volumeId, fid, err := client.parseFid(ctx, "3,3fd41bd1da80")
 	assert.Equal(t, volumeId, uint64(3))
 	assert.Equal(t, fid, "3fd41bd1da80")

@@ -15,8 +15,8 @@ import (
 )
 
 func TestSeaweedFS_PutObject(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	size := uint64(5 * 1024)
 	ctx := context.Background()
 

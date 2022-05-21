@@ -16,8 +16,8 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	log.InitLogger()
 	defer log.Sync()
 
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	ctx := context.Background()
 
 	hosts, err := client.GetHosts(ctx)

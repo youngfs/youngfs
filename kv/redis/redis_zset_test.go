@@ -10,7 +10,7 @@ import (
 )
 
 func TestRedis_ZSet(t *testing.T) {
-	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	client := NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_zset"
 	ctx := context.Background()
 

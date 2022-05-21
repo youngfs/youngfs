@@ -19,7 +19,7 @@ func TestRedis_Num(t *testing.T) {
 	log.InitLogger()
 	defer log.Sync()
 
-	client := NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
+	client := NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_num"
 	ctx := context.Background()
 

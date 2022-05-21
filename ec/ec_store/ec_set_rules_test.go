@@ -12,8 +12,8 @@ import (
 )
 
 func TestSetRules_InsertDeleteGetSetRules(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	se := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	client := NewEC(kvStore, se)
 
 	ctx := context.Background()

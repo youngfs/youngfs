@@ -17,8 +17,8 @@ import (
 )
 
 func TestECCalc_ECReader(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	se := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 
 	ctx := context.Background()
 	size := uint64(5 * 1024 * 1024)

@@ -31,8 +31,8 @@ func TestECServer_Backup(t *testing.T) {
 	log.InitLogger()
 	defer log.Sync()
 
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	se := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	ecStore := ec_store.NewEC(kvStore, se)
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
@@ -138,8 +138,8 @@ func TestECServer_Backup(t *testing.T) {
 }
 
 func TestECServer_NoEC(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	se := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	ecStore := ec_store.NewEC(kvStore, se)
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
@@ -226,8 +226,8 @@ func TestECServer_ReedSolomon(t *testing.T) {
 	log.InitLogger()
 	defer log.Sync()
 
-	kvStore := redis.NewKvStore(vars.RedisHostPost, vars.RedisPassword, vars.RedisDatabase)
-	se := seaweedfs.NewStorageEngine(vars.MasterServer, kvStore)
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	ecStore := ec_store.NewEC(kvStore, se)
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
