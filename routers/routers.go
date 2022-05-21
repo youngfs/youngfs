@@ -7,6 +7,7 @@ import (
 	"icesos/log"
 	"icesos/ui"
 	"io/fs"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -15,6 +16,7 @@ var router *gin.Engine
 func InitRouter() {
 	if !vars.Debug {
 		gin.SetMode(gin.ReleaseMode)
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	r := gin.Default()

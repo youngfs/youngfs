@@ -37,6 +37,9 @@ func InitLogger() {
 	}
 
 	atomicLevel := zap.NewAtomicLevelAt(zap.InfoLevel) // log level
+	if !vars.InfoLog {
+		atomicLevel = zap.NewAtomicLevelAt(zap.ErrorLevel)
+	}
 	if vars.Debug {
 		atomicLevel = zap.NewAtomicLevelAt(zap.DebugLevel)
 	}

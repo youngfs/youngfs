@@ -10,5 +10,6 @@ var RedisDatabase = 0
 
 var Debug = false
 var UnitTest = false
+var InfoLog = true
 
 var ServerName = "icesos"
