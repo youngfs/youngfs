@@ -33,7 +33,7 @@ func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngin
 	}
 }
 
-func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file io.Reader) error {
+func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uint64, file io.Reader, compress bool) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
@@ -80,13 +80,13 @@ func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uin
 
 	fid := ""
 	if host != "" {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file, host)
+		fid, err = svr.storageEngine.PutObject(ctx, size, file, compress, host)
 		if err != nil {
 			_ = svr.ecServer.RecoverEC(ctx, ent)
 			return err
 		}
 	} else {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file)
+		fid, err = svr.storageEngine.PutObject(ctx, size, file, compress)
 		if err != nil {
 			_ = svr.ecServer.RecoverEC(ctx, ent)
 			return err

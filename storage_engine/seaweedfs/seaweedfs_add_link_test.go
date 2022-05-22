@@ -21,7 +21,7 @@ func TestSeaweedFS_AddLink(t *testing.T) {
 
 	b := util.RandByte(size)
 
-	fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
+	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), true)
 	assert.Equal(t, err, nil)
 
 	url, err := client.GetFidUrl(ctx, fid)

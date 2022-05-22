@@ -13,7 +13,8 @@ import (
 )
 
 type PutObjectInfo struct {
-	Recover bool `form:"recover" json:"recover" uri:"recover"`
+	Recover  bool `form:"recover" json:"recover" uri:"recover"`
+	Compress bool `form:"compress" json:"compress" uri:"compress"`
 }
 
 func PutObjectHandler(c *gin.Context) {
@@ -93,7 +94,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.PutObject(c, setName, fp, contentLength, file)
+	err = server.PutObject(c, setName, fp, contentLength, file, putObjectInfo.Compress)
 	if err != nil {
 		err, ok := err.(errors.APIError)
 		if ok != true {

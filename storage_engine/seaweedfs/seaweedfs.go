@@ -6,18 +6,20 @@ import (
 )
 
 type StorageEngine struct {
-	masterServer  string
-	volumeIpMap   map[uint64]string
-	deletionQueue *util.UnboundedQueue[string]
-	kvStore       kv.KvStore
+	masterServer   string
+	volumeIpMap    map[uint64]string
+	deletionQueue  *util.UnboundedQueue[string]
+	kvStore        kv.KvStore
+	gzipWriterPool *util.GzipWriterPool
 }
 
 func NewStorageEngine(masterServer string, KvStore kv.KvStore) *StorageEngine {
 	se := &StorageEngine{
-		masterServer:  masterServer,
-		volumeIpMap:   make(map[uint64]string),
-		deletionQueue: util.NewUnboundedQueue[string](),
-		kvStore:       KvStore,
+		masterServer:   masterServer,
+		volumeIpMap:    make(map[uint64]string),
+		deletionQueue:  util.NewUnboundedQueue[string](),
+		kvStore:        KvStore,
+		gzipWriterPool: util.NewGzipWriterPool(),
 	}
 
 	go se.loopProcessingDeletion()

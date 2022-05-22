@@ -99,7 +99,8 @@ first: // not change cnt
 		reader.file = NewEmptyReadCloser(int(reader.frags[reader.p].FileSize))
 	} else {
 		resp, err := http.Get(url)
-		if err != nil || resp.StatusCode != http.StatusOK || util.GetContentLength(resp.Header) != reader.frags[reader.p].FileSize {
+		// get util.GetContentLength(resp.Header) == 0: seaweedFS bug
+		if err != nil || resp.StatusCode != http.StatusOK {
 			reader.file = NewEmptyReadCloser(int(reader.frags[reader.p].FileSize))
 		} else {
 			reader.file = resp.Body

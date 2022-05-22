@@ -22,7 +22,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 
 	b := util.RandByte(size)
 
-	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), "")
+	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), true, "")
 	assert.Equal(t, err, nil)
 
 	url, err := client.GetFidUrl(ctx, fid)
@@ -61,7 +61,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 
 		host := hosts[rand.Intn(len(hosts))]
 
-		fid, err = client.PutObject(ctx, size, bytes.NewReader(b), host)
+		fid, err = client.PutObject(ctx, size, bytes.NewReader(b), true, host)
 		assert.Equal(t, err, nil)
 
 		volumeId, _, err := client.parseFid(ctx, fid)

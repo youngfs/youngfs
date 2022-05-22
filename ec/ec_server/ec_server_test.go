@@ -77,7 +77,7 @@ func TestECServer_Backup(t *testing.T) {
 		host, ecid, err := client.InsertObject(ctx, ent)
 		assert.Equal(t, err, nil)
 
-		fid, err := se.PutObject(ctx, size, file, host)
+		fid, err := se.PutObject(ctx, size, file, true, host)
 		assert.Equal(t, err, nil)
 
 		ent.Fid = fid
@@ -181,7 +181,7 @@ func TestECServer_NoEC(t *testing.T) {
 		assert.Equal(t, ecid, "")
 		assert.Equal(t, host, hosts[0])
 
-		fid, err := se.PutObject(ctx, size, file, host)
+		fid, err := se.PutObject(ctx, size, file, true, host)
 		assert.Equal(t, err, nil)
 
 		ent.Fid = fid
@@ -274,7 +274,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		host, ecid, err := client.InsertObject(ctx, ent)
 		assert.Equal(t, err, nil)
 
-		fid, err := se.PutObject(ctx, size, file, host)
+		fid, err := se.PutObject(ctx, size, file, true, host)
 		assert.Equal(t, err, nil)
 
 		ent.Fid = fid
@@ -398,7 +398,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		host, ecid, err := client.InsertObject(ctx, ent)
 		assert.Equal(t, err, nil)
 
-		fid, err := se.PutObject(ctx, size, file, host)
+		fid, err := se.PutObject(ctx, size, file, true, host)
 		assert.Equal(t, err, nil)
 
 		ent.Fid = fid

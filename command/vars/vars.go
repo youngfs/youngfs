@@ -2,7 +2,7 @@ package vars
 
 var Port = "9876"
 
-var SeaweedFSMaster = "10.249.181.84:9333"
+var SeaweedFSMaster = "10.249.178.178:9333"
 
 var RedisSocket = "localhost:6379"
 var RedisPassword = ""

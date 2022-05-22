@@ -92,7 +92,7 @@ func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) erro
 
 		for i := int(suite.DataShards); i < len(suite.Shards); i++ {
 			file := io.TeeReader(bytes.NewReader(data[i]), md5Hashs[i])
-			fid, err := calc.storageEngine.PutObject(ctx, length, file, suite.Shards[i].Host)
+			fid, err := calc.storageEngine.PutObject(ctx, length, file, true, suite.Shards[i].Host)
 			if err != nil {
 				log.Errorw("reed solomon : put object", vars.ErrorKey, err, "ecid", suite.ECid)
 				return err
@@ -266,7 +266,7 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 		fileReadCloser := NewFilesReader(frags[u])
 		for i, frags := range suite.Shards[u].Frags {
 			fileReadCloser.SetLimit(int(frags.FileSize))
-			fid, err := calc.storageEngine.PutObject(ctx, frags.FileSize, fileReadCloser)
+			fid, err := calc.storageEngine.PutObject(ctx, frags.FileSize, fileReadCloser, true)
 			if err != nil {
 				log.Errorw("reed solomon recover: put recover object", vars.ErrorKey, err, "ecid", suite.ECid)
 				return nil, err

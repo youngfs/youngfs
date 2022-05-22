@@ -168,6 +168,7 @@
         xhr.open('POST', url, false)
 
         formData.append('file', file)
+        formData.append('compress', 'true')
         xhr.send(formData)
     }
 

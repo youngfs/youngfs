@@ -20,6 +20,7 @@ func InitRouter() {
 	}
 
 	r := gin.Default()
+	r.MaxMultipartMemory = 1 << 30
 	//html template
 	r.SetFuncMap(ui.FuncMap)
 	r.SetHTMLTemplate(ui.StatusTpl)
