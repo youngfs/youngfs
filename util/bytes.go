@@ -7,7 +7,6 @@ func BytesIsEqual(x, y []byte) bool {
 
 	for i := range x {
 		if x[i] != y[i] {
-			println(i, x[i], y[i])
 			return false
 		}
 	}
