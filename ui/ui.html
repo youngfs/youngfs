@@ -20,11 +20,6 @@
             border: 2px dashed #ccc;
         }
 
-        .col-lg-4 {
-            float: right;
-            margin-bottom: 5px;
-        }
-
         .button {
             display: inline-block;
             padding: 2px;
@@ -39,8 +34,21 @@
             background: #ddd;
         }
 
+        label {
+            font-weight: normal;
+        }
+
         #fileElem {
             display: none;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            right: 5%;
+            min-width: 25%;
+            border-left: 1px solid #ccc;
+            border-right: 1px solid #ccc;
         }
 
     </style>
@@ -65,13 +73,14 @@
                 </a>
                 {{ end }}
             </span>
-            <label class="button" for="fileElem" style="margin-top: 5px; margin-right: 8px;">Upload</label>
-            <div class="col-lg-4">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="dirName" placeholder="folder name">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button" onclick="mkdir()">New</button>
-                    </span>
+            <div class="col-lg-4" style="float: right; margin-bottom: 5px;">
+                <div class="btn-group btn-group-sm pull-right" role="group" style="margin-top:3px;">
+                    <label class="btn btn-default" onclick="mkdir()">
+                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> New Folder
+                    </label>
+                    <label class="btn btn-default" for="fileElem">
+                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
+                    </label>
                 </div>
             </div>
         </div>
@@ -104,9 +113,14 @@
                 <td align="right" nowrap>
                     <label class="button" onclick="deleteFile({{ $ent.Name }})">Delete</label>
                 </td>
+                <td align="right" nowrap>
+                    <label class="button" onclick="recoverFile({{ $ent.Name }})">Recover</label>
+                </td>
             </tr>
             {{ end }}
         </table>
+    </div>
+    <div id="progress-area" class="footer" style="display: none;">
     </div>
 </div>
 </body>
@@ -114,7 +128,7 @@
     // ************************ Drag and drop ***************** //
     let dropArea = document.getElementById('drop-area')
 
-        // Prevent default drag behaviors
+    // Prevent default drag behaviors
     ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
         document.body.addEventListener(eventName, preventDefaults, false)
@@ -148,14 +162,64 @@
     function handleDrop(e) {
         var dt = e.dataTransfer
         var files = dt.files
-
         handleFiles(files)
     }
 
+    let progressArea = document.getElementById("progress-area");
+
+    var uploadList = {};
+
     function handleFiles(files) {
         files = [...files]
-        files.forEach(uploadFile)
-        window.location.reload()
+        files.forEach(startUpload);
+        renderProgress();
+        files.forEach(uploadFile);
+    }
+
+    function startUpload(file, i) {
+        uploadList[file.name] = {'name': file.name, 'percent': 0, 'finish': false};
+    }
+
+    function renderProgress() {
+        var values = Object.values(uploadList);
+        var html = '<table class="table">\n<tr><th>Uploading</th><\/tr>\n';
+        for (let i of values) {
+            var progressBarClass = 'progress-bar-striped active';
+            if (i.percent >= 100) {
+                progressBarClass = 'progress-bar-success';
+            }
+            html += '<tr>\n<td>\n';
+            html += '<div class="progress" style="margin-bottom: 2px;">\n';
+            html += '<div class="progress-bar ' + progressBarClass + '" role="progressbar" aria-valuenow="' + '100" aria-valuemin="0" aria-valuemax="100" style="width:' + i.percent + '%;">';
+            html += '<span style="margin-right: 10px;">' + i.name + '</span>' + i.percent + '%<\/div>';
+            html += '<\/div>\n<\/td>\n<\/tr>\n';
+        }
+        html += '<\/table>\n';
+        progressArea.innerHTML = html;
+        if (values.length > 0) {
+            progressArea.attributes.style.value = '';
+        }
+    }
+
+    function reportProgress(file, percent) {
+        var item = uploadList[file]
+        item.percent = percent;
+        renderProgress();
+    }
+
+    function finishUpload(file) {
+        uploadList[file]['finish'] = true;
+        renderProgress();
+        var allFinish = true;
+        for (let i of Object.values(uploadList)) {
+            if (!i.finish) {
+                allFinish = false;
+                break;
+            }
+        }
+        if (allFinish) {
+            window.location.reload();
+        }
     }
 
     function uploadFile(file, index) {
@@ -163,12 +227,30 @@
         if (url.charAt(url.length - 1) !== '/') {
             url += '/'
         }
+        var fileName = file.name;
+        url += fileName
         var xhr = new XMLHttpRequest()
         var formData = new FormData()
-        xhr.open('POST', url, false)
-
+        xhr.open('POST', url, true)
+        xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+                var percent = Math.ceil((e.loaded / e.total) * 100);
+                reportProgress(fileName, percent)
+            }
+        });
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
+                    finishUpload(fileName);
+                }
+            }
+        }
+        // loadend only means that the upload to the server is complete
+        // xhr.upload.addEventListener('loadend', function (e) {
+        //     finishUpload(fileName);
+        // });
         formData.append('file', file)
-        formData.append('compress', 'true')
+        // formData.append('compress', 'true')
         xhr.send(formData)
     }
 
@@ -180,18 +262,53 @@
         url += fileName
         var xhr = new XMLHttpRequest()
         var formData = new FormData()
-        xhr.open('DELETE', url, false)
+        xhr.open('DELETE', url, true)
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
+                    alert("delete successfully");
+                    window.location.reload()
+                } else {
+                    alert("delete failed");
+                    window.location.reload()
+                }
+            }
+        }
 
         formData.append('recursive', 'true')
         xhr.send(formData)
-        window.location.reload()
+    }
+
+    function recoverFile(fileName) {
+        var url = window.location.href
+        if (url.charAt(url.length - 1) !== '/') {
+            url += '/'
+        }
+        url += fileName
+        var xhr = new XMLHttpRequest()
+        var formData = new FormData()
+        xhr.open('POST', url, true)
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
+                    alert("recover successfully");
+                    window.location.reload()
+                } else {
+                    alert("recover failed");
+                    window.location.reload()
+                }
+            }
+        }
+
+        formData.append('recover', 'true')
+        xhr.send(formData)
     }
 
     function mkdir() {
-        var dirName = document.getElementById('dirName').value
-        if (dirName === '') {
-            window.location.reload()
-            return
+        var dirName = prompt('Folder Name:', '');
+        dirName = dirName.trim();
+        if (dirName == null || dirName === '') {
+            return;
         }
         var url = window.location.href
         if (url.charAt(url.length - 1) !== '/') {

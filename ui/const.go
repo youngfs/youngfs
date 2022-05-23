@@ -1,5 +1,6 @@
 package ui
 
 const (
-	UiName = "ui"
+	UiName       = "ui"
+	SetRulesName = "set_rules"
 )

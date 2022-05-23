@@ -286,3 +286,28 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 
 	return nil
 }
+
+func ecidLinkKey(ecid string) string {
+	return ecid + ecidLink
+}
+
+func (ec *ECStore) SetECidLink(ctx context.Context, ecid string, num int64) error {
+	err := ec.kvStore.SetNum(ctx, ecidLinkKey(ecid), num)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ec *ECStore) AddECidLink(ctx context.Context, ecid string) (int64, error) {
+	return ec.kvStore.Incr(ctx, ecidLinkKey(ecid))
+}
+
+func (ec *ECStore) DelECidLink(ctx context.Context, ecid string) (int64, error) {
+	return ec.kvStore.Decr(ctx, ecidLinkKey(ecid))
+}
+
+func (ec *ECStore) ClrECidLink(ctx context.Context, ecid string) error {
+	_, err := ec.kvStore.ClrNum(ctx, ecidLinkKey(ecid))
+	return err
+}

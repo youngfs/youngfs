@@ -357,6 +357,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 
 	frags, err = client.RecoverObject(ctx, ents[0])
 	assert.Equal(t, err, nil)
+	assert.Equal(t, len(frags), 2)
 
 	for _, frag := range frags {
 		if frag.OldECid == ents[0].ECid {
@@ -379,6 +380,30 @@ func TestECServer_ReedSolomon(t *testing.T) {
 			assert.Equal(t, md5Ret, ents[0].Md5)
 
 			ents[0].Fid = frag.Fid
+		}
+	}
+
+	for _, frag := range frags {
+		if frag.OldECid == ents[1].ECid {
+			url, err := se.GetFidUrl(ctx, frag.Fid)
+			assert.Equal(t, err, nil)
+
+			resp, err := http.Get(url)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, resp.StatusCode, http.StatusOK)
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
+			httpBody, err := ioutil.ReadAll(resp.Body)
+			assert.Equal(t, err, nil)
+
+			md5Hash := md5.New()
+			md5Hash.Write(httpBody)
+			md5Ret := md5Hash.Sum(nil)
+			assert.Equal(t, md5Ret, ents[1].Md5)
+
+			ents[1].Fid = frag.Fid
 		}
 	}
 
@@ -481,6 +506,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 
 	frags, err = client.RecoverObject(ctx, ents[6])
 	assert.Equal(t, err, nil)
+	assert.Equal(t, len(frags), 2)
 
 	for _, frag := range frags {
 		if frag.OldECid == ents[6].ECid {
@@ -506,6 +532,30 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		}
 	}
 
+	for _, frag := range frags {
+		if frag.OldECid == ents[7].ECid {
+			url, err := se.GetFidUrl(ctx, frag.Fid)
+			assert.Equal(t, err, nil)
+
+			resp, err := http.Get(url)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, resp.StatusCode, http.StatusOK)
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
+			httpBody, err := ioutil.ReadAll(resp.Body)
+			assert.Equal(t, err, nil)
+
+			md5Hash := md5.New()
+			md5Hash.Write(httpBody)
+			md5Ret := md5Hash.Sum(nil)
+			assert.Equal(t, md5Ret, ents[7].Md5)
+
+			ents[7].Fid = frag.Fid
+		}
+	}
+
 	err = client.DeleteSetRules(ctx, setName)
 	assert.Equal(t, err, nil)
 
@@ -513,17 +563,14 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		err := se.DeleteObject(ctx, ents[i].Fid)
 		assert.Equal(t, err, nil)
 
-		err = se.DeleteObject(ctx, ents[i].Fid)
-		assert.Equal(t, err, nil)
-
-		err = client.DeleteObject(ctx, ents[i].Fid)
+		err = client.DeleteObject(ctx, ents[i].ECid)
 		assert.Equal(t, err, nil)
 	}
 
 	err = se.DeleteObject(ctx, ents[8].Fid)
 	assert.Equal(t, err, nil)
 
-	err = client.DeleteObject(ctx, ents[8].Fid)
+	err = client.DeleteObject(ctx, ents[8].ECid)
 	assert.Equal(t, err, nil)
 
 	time.Sleep(10 * time.Second)

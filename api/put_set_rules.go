@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"icesos/command/vars"
 	"icesos/errors"
@@ -12,7 +11,7 @@ import (
 
 func PutSetRulesHandler(c *gin.Context) {
 	setName := set.Set(c.Param("set"))
-	if len(setName) < 2 { // include /*set
+	if len(setName) < 1 { // include /*set
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
@@ -27,7 +26,7 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 	setName = setName[1:]
-	if !setName.IsLegal() {
+	if setName != "" && !setName.IsLegal() {
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
@@ -59,11 +58,28 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	if setRules.Set == "" {
-		setRules.Set = setName
-	}
+	if setRules.Set == "" || setName == "" {
+		if setName != "" {
+			setRules.Set = setName
+		} else {
+			setName = setRules.Set
+		}
 
-	fmt.Printf("%#v %#v\n", setRules.Set, setName)
+		if setName == "" {
+			err := errors.GetAPIErr(errors.ErrIllegalSetName)
+			c.Set(vars.CodeKey, err.ErrorCode)
+			c.Set(vars.ErrorKey, err.Error())
+			c.JSON(
+				err.HTTPStatusCode,
+				gin.H{
+					vars.UUIDKey:  c.Value(vars.UUIDKey),
+					vars.CodeKey:  err.ErrorCode,
+					vars.ErrorKey: err.Error(),
+				},
+			)
+			return
+		}
+	}
 
 	if setRules.Set != setName {
 		err := errors.GetAPIErr(errors.ErrIllegalSetName)
@@ -80,7 +96,7 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("%#v\n", setRules)
+	setRules.MAXShardSize *= 1024 * 1024 // change MiB
 
 	err = server.InsertSetRules(c, setRules)
 	if err != nil {

@@ -1,7 +1,6 @@
 package set
 
 import (
-	"fmt"
 	"github.com/go-playground/assert/v2"
 	jsoniter "github.com/json-iterator/go"
 	"icesos/util"
@@ -194,7 +193,7 @@ func TestSetRules_IsLegal(t *testing.T) {
 		ECMode:          false,
 		ReplicationMode: true,
 	}
-	assert.Equal(t, setRules.IsLegal(), true)
+	assert.Equal(t, setRules.IsLegal(), false)
 
 	setRules = &SetRules{
 		Set:             Set(util.RandString(16)),
@@ -205,7 +204,7 @@ func TestSetRules_IsLegal(t *testing.T) {
 		ECMode:          false,
 		ReplicationMode: false,
 	}
-	assert.Equal(t, setRules.IsLegal(), true)
+	assert.Equal(t, setRules.IsLegal(), false)
 
 	setRules = &SetRules{
 		Set:             Set(util.RandString(16)),
@@ -227,7 +226,7 @@ func TestSetRules_IsLegal(t *testing.T) {
 		ECMode:          false,
 		ReplicationMode: true,
 	}
-	assert.Equal(t, setRules.IsLegal(), true)
+	assert.Equal(t, setRules.IsLegal(), false)
 
 	setRules = &SetRules{
 		Set:             Set(util.RandString(16)),
@@ -238,7 +237,7 @@ func TestSetRules_IsLegal(t *testing.T) {
 		ECMode:          false,
 		ReplicationMode: false,
 	}
-	assert.Equal(t, setRules.IsLegal(), true)
+	assert.Equal(t, setRules.IsLegal(), false)
 
 	hosts = make([]string, 0)
 
@@ -268,7 +267,6 @@ func TestSetRules_Json(t *testing.T) {
 
 	val, err := jsoniter.Marshal(setRules)
 	assert.Equal(t, err, nil)
-	fmt.Printf("%s\n", string(val))
 
 	setRules2 := &SetRules{}
 	err = jsoniter.Unmarshal(val, setRules2)

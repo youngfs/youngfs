@@ -18,6 +18,8 @@ import (
 )
 
 func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) error {
+	fragCnt := 0 // effective frag
+
 	// init len(suite.Shards) == setRules.DataShards + setRules.ParityShards
 	for i, shard := range suite.Shards {
 		for j, frag := range shard.Frags {
@@ -38,6 +40,7 @@ func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) erro
 				continue
 			} else {
 				_ = calc.storageEngine.AddLink(ctx, frag.Fid)
+				fragCnt++
 			}
 		}
 	}
@@ -73,6 +76,7 @@ func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) erro
 
 	enc, err := reedsolomon.New(int(suite.DataShards), len(suite.Shards)-int(suite.DataShards))
 	if err != nil {
+		log.Errorw("reed solomon : new reed solomon", vars.ErrorKey, err, "ecid", suite.ECid)
 		return errors.GetAPIErr(errors.ErrServer)
 	}
 
@@ -112,6 +116,12 @@ func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) erro
 	if err != nil {
 		log.Errorw("reed solomon : insert suite", vars.ErrorKey, err, "ecid", suite.ECid)
 		return err
+	}
+
+	err = calc.ECStore.SetECidLink(ctx, suite.ECid, int64(fragCnt))
+	if err != nil {
+		log.Errorw("reed solomon : set ecid link", vars.ErrorKey, err, "ecid", suite.ECid)
+		return errors.GetAPIErr(errors.ErrServer)
 	}
 
 	for _, shard := range suite.Shards {
@@ -264,9 +274,15 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 	ret := make([]ec_store.Frag, 0)
 	for _, u := range corruptionList {
 		fileReadCloser := NewFilesReader(frags[u])
-		for i, frags := range suite.Shards[u].Frags {
-			fileReadCloser.SetLimit(int(frags.FileSize))
-			fid, err := calc.storageEngine.PutObject(ctx, frags.FileSize, fileReadCloser, true)
+		for i, frag := range suite.Shards[u].Frags {
+			if frag.Fid != "" {
+				// delete original fid
+				_ = calc.storageEngine.DeleteObject(ctx, frag.Fid)
+				_ = calc.storageEngine.DeleteObject(ctx, frag.Fid)
+			}
+
+			fileReadCloser.SetLimit(int(frag.FileSize))
+			fid, err := calc.storageEngine.PutObject(ctx, frag.FileSize, fileReadCloser, true)
 			if err != nil {
 				log.Errorw("reed solomon recover: put recover object", vars.ErrorKey, err, "ecid", suite.ECid)
 				return nil, err
@@ -278,11 +294,11 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 			}
 			suite.Shards[u].Frags[i].Fid = fid
 			ret = append(ret, ec_store.Frag{
-				FullPath: frags.FullPath,
-				Set:      frags.Set,
+				FullPath: frag.FullPath,
+				Set:      frag.Set,
 				Fid:      fid,
-				FileSize: frags.FileSize,
-				OldECid:  frags.OldECid,
+				FileSize: frag.FileSize,
+				OldECid:  frag.OldECid,
 			})
 		}
 		_ = fileReadCloser.Release()
@@ -295,4 +311,39 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 	}
 
 	return ret, nil
+}
+
+func (calc *ECCalc) reedSolomonDelete(ctx context.Context, ecid string) error {
+	link, err := calc.ECStore.DelECidLink(ctx, ecid)
+	if err != nil {
+		return err
+	}
+
+	if link <= 0 {
+		suite, err := calc.ECStore.GetSuite(ctx, ecid)
+		if err != nil {
+			return err
+		}
+
+		err = calc.ECStore.DeleteSuite(ctx, ecid)
+		if err != nil {
+			return err
+		}
+
+		err = calc.ECStore.ClrECidLink(ctx, ecid)
+		if err != nil {
+			return err
+		}
+
+		for _, shard := range suite.Shards {
+			for _, frag := range shard.Frags {
+				if frag.Fid != "" {
+					_ = calc.storageEngine.DeleteObject(ctx, frag.Fid)
+					_ = calc.storageEngine.DeleteObject(ctx, frag.Fid)
+				}
+			}
+		}
+	}
+
+	return nil
 }

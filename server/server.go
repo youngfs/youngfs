@@ -157,3 +157,7 @@ func DeleteSetRules(ctx context.Context, set set.Set) error {
 func GetSetRules(ctx context.Context, set set.Set) (*set.SetRules, error) {
 	return svr.ecServer.GetSetRules(ctx, set)
 }
+
+func GetHosts(ctx context.Context) ([]string, error) {
+	return svr.storageEngine.GetHosts(ctx)
+}

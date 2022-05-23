@@ -101,6 +101,7 @@ func (calc *ECCalc) backupRecover(ctx context.Context, suite *ec_store.Suite, en
 		FullPath: ent.FullPath,
 		Set:      ent.Set,
 		Fid:      fid,
+		OldECid:  suite.ECid,
 	}
 
 	return frag, nil

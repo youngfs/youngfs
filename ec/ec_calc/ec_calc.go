@@ -84,9 +84,20 @@ func (calc *ECCalc) DeleteObject(ctx context.Context, ecid string) error {
 	if err != nil {
 		return nil
 	}
+	for suite.Next != "" {
+		suite, err = calc.ECStore.GetSuite(ctx, suite.Next)
+		if err != nil {
+			return err
+		}
+	}
 
 	if suite.BakFid != "" {
 		err := calc.storageEngine.DeleteObject(ctx, suite.BakFid)
+		if err != nil {
+			return err
+		}
+	} else if suite.Shards != nil {
+		err := calc.reedSolomonDelete(ctx, suite.ECid)
 		if err != nil {
 			return err
 		}

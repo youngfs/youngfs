@@ -17,11 +17,7 @@ func (setRules *SetRules) IsLegal() bool {
 	}
 
 	if setRules.Hosts == nil || len(setRules.Hosts) == 0 {
-		if setRules.ECMode {
-			return false
-		} else {
-			return true
-		}
+		return false
 	}
 
 	if setRules.ECMode {

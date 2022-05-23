@@ -42,7 +42,6 @@ func (se *StorageEngine) loopProcessingDeletion() {
 						continue
 					}
 				} else if link < 0 {
-					log.Errorw("seaweedfs delete object: link < 0", "fid", fid, "link", link)
 					_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fid))
 					if err != nil {
 						log.Errorw("seaweedfs delete object: clear err fid link", vars.ErrorKey, err.Error())

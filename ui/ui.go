@@ -22,10 +22,18 @@ var FuncMap = template.FuncMap{
 //go:embed ui.html
 var uiHtml string
 
+//go:embed set_rules.html
+var setRulesHtml string
+
 //go:embed static
 var Static embed.FS
 
 //go:embed static/images/favicon.ico
 var Favicon []byte
 
-var StatusTpl = template.Must(template.New(UiName).Funcs(FuncMap).Parse(uiHtml))
+var StatusTpl *template.Template
+
+func init() {
+	tpl, _ := template.New(UiName).Funcs(FuncMap).Parse(uiHtml)
+	StatusTpl = template.Must(tpl.New(SetRulesName).Parse(setRulesHtml))
+}
