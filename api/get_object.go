@@ -92,6 +92,8 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, url)
+	c.Redirect(http.StatusFound, url)
+	// http.StatusMovedPermanently 301: The URL of the requested resource has been changed permanently. The new URL is given in the response.
+	// http.StatusFound            302: This response code means that the URI of requested resource has been changed temporarily. Further changes in the URI might be made in the future. Therefore, this same URI should be used by the client in future requests.
 	return
 }
