@@ -128,7 +128,7 @@
     // ************************ Drag and drop ***************** //
     let dropArea = document.getElementById('drop-area')
 
-    // Prevent default drag behaviors
+        // Prevent default drag behaviors
     ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
         document.body.addEventListener(eventName, preventDefaults, false)
@@ -177,7 +177,7 @@
     }
 
     function startUpload(file, i) {
-        uploadList[file.name] = {'name': file.name, 'percent': 0, 'finish': false};
+        uploadList[file.name] = {'name': file.name, 'percent': 0, 'finish': false, 'failed': false};
     }
 
     function renderProgress() {
@@ -187,6 +187,9 @@
             var progressBarClass = 'progress-bar-striped active';
             if (i.percent >= 100) {
                 progressBarClass = 'progress-bar-success';
+            }
+            if (i.failed) {
+                progressBarClass = 'progress-bar-danger';
             }
             html += '<tr>\n<td>\n';
             html += '<div class="progress" style="margin-bottom: 2px;">\n';
@@ -207,8 +210,9 @@
         renderProgress();
     }
 
-    function finishUpload(file) {
+    function finishUpload(file, successful) {
         uploadList[file]['finish'] = true;
+        uploadList[file]['failed'] = !successful;
         renderProgress();
         var allFinish = true;
         for (let i of Object.values(uploadList)) {
@@ -218,7 +222,20 @@
             }
         }
         if (allFinish) {
-            window.location.reload();
+            var failedInfo = ''
+            for (let i of Object.values(uploadList)) {
+                if (i.failed) {
+                    failedInfo += i.name + '   '
+                }
+            }
+            if (failedInfo !== '') {
+                setTimeout(() => {
+                    alert('upload failed:  ' + failedInfo);
+                    window.location.reload();
+                }, 100);
+            } else {
+                window.location.reload();
+            }
         }
     }
 
@@ -241,7 +258,9 @@
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
-                    finishUpload(fileName);
+                    finishUpload(fileName, true);
+                } else {
+                    finishUpload(fileName, false);
                 }
             }
         }
@@ -266,10 +285,10 @@
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
-                    alert("delete successfully");
+                    alert('delete successfully');
                     window.location.reload()
                 } else {
-                    alert("delete failed");
+                    alert('delete failed');
                     window.location.reload()
                 }
             }
@@ -291,10 +310,10 @@
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
-                    alert("recover successfully");
+                    alert('recover successfully');
                     window.location.reload()
                 } else {
-                    alert("recover failed");
+                    alert('recover failed');
                     window.location.reload()
                 }
             }
