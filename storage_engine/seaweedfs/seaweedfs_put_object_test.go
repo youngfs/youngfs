@@ -19,10 +19,11 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
 	size := uint64(5 * 1024)
 	ctx := context.Background()
+	rand.Seed(time.Now().UnixNano())
 
 	b := util.RandByte(size)
 
-	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), true, "")
+	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), "", true, "")
 	assert.Equal(t, err, nil)
 
 	url, err := client.GetFidUrl(ctx, fid)
@@ -56,12 +57,12 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 	hosts, err := client.GetHosts(ctx)
 	urls := make([]string, 0)
 
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 128; i++ {
 		b := util.RandByte(size)
 
 		host := hosts[rand.Intn(len(hosts))]
 
-		fid, err = client.PutObject(ctx, size, bytes.NewReader(b), true, host)
+		fid, err = client.PutObject(ctx, size, bytes.NewReader(b), "", rand.Intn(2) == rand.Intn(2), host)
 		assert.Equal(t, err, nil)
 
 		volumeId, _, err := client.parseFid(ctx, fid)

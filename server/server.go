@@ -80,13 +80,13 @@ func PutObject(ctx context.Context, set set.Set, fp full_path.FullPath, size uin
 
 	fid := ""
 	if host != "" {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file, compress, host)
+		fid, err = svr.storageEngine.PutObject(ctx, size, file, fp.Name(), compress, host)
 		if err != nil {
 			_ = svr.ecServer.RecoverEC(ctx, ent)
 			return err
 		}
 	} else {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file, compress)
+		fid, err = svr.storageEngine.PutObject(ctx, size, file, fp.Name(), compress)
 		if err != nil {
 			_ = svr.ecServer.RecoverEC(ctx, ent)
 			return err

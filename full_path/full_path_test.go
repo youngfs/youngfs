@@ -239,6 +239,9 @@ func TestFullPath_Name(t *testing.T) {
 
 	path = FullPath("/")
 	assert.Equal(t, path.Name(), "")
+
+	path = FullPath("")
+	assert.Equal(t, path.Name(), "")
 }
 
 func TestFullPath_Split(t *testing.T) {

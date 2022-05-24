@@ -670,7 +670,7 @@ func TestVFS(t *testing.T) {
 func putObject(t *testing.T, ctx context.Context, vfs *VFS, size uint64) string {
 	b := util.RandByte(size)
 
-	fid, err := vfs.storageEngine.PutObject(ctx, size, bytes.NewReader(b), true)
+	fid, err := vfs.storageEngine.PutObject(ctx, size, bytes.NewReader(b), "", true)
 	assert.Equal(t, err, nil)
 
 	return fid

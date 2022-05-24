@@ -35,13 +35,13 @@ func TestECCalc_ECReader(t *testing.T) {
 		sz[1] = uint64(rand.Intn(int(size - sz[0] - 1)))
 		sz[2] = size - sz[0] - sz[1]
 
-		fid[0], err = se.PutObject(ctx, sz[0], bytes.NewReader(b[:sz[0]]), true)
+		fid[0], err = se.PutObject(ctx, sz[0], bytes.NewReader(b[:sz[0]]), "", true)
 		assert.Equal(t, err, nil)
 
-		fid[1], err = se.PutObject(ctx, sz[1], bytes.NewReader(b[sz[0]:sz[0]+sz[1]]), true)
+		fid[1], err = se.PutObject(ctx, sz[1], bytes.NewReader(b[sz[0]:sz[0]+sz[1]]), "", true)
 		assert.Equal(t, err, nil)
 
-		fid[2], err = se.PutObject(ctx, sz[2], bytes.NewReader(b[sz[0]+sz[1]:]), true)
+		fid[2], err = se.PutObject(ctx, sz[2], bytes.NewReader(b[sz[0]+sz[1]:]), "", true)
 		assert.Equal(t, err, nil)
 
 		frags := make([]ec_store.Frag, 3)
@@ -92,12 +92,12 @@ func TestECCalc_ECReader(t *testing.T) {
 		sz[1] = uint64(rand.Intn(int(size - sz[0] - 1)))
 		sz[2] = size - sz[0] - sz[1]
 
-		fid[0], err = se.PutObject(ctx, sz[0], bytes.NewReader(b[:sz[0]]), true)
+		fid[0], err = se.PutObject(ctx, sz[0], bytes.NewReader(b[:sz[0]]), "", true)
 		assert.Equal(t, err, nil)
 
 		fid[1] = ""
 
-		fid[2], err = se.PutObject(ctx, sz[2], bytes.NewReader(b[sz[0]+sz[1]:]), true)
+		fid[2], err = se.PutObject(ctx, sz[2], bytes.NewReader(b[sz[0]+sz[1]:]), "", true)
 		assert.Equal(t, err, nil)
 
 		frags := make([]ec_store.Frag, 3)

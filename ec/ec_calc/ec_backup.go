@@ -32,7 +32,7 @@ func (calc *ECCalc) backup(ctx context.Context, suite *ec_store.Suite) error {
 		_ = resp.Body.Close()
 	}()
 
-	bakFid, err := calc.storageEngine.PutObject(ctx, suite.FileSize, resp.Body, true, suite.BakHost)
+	bakFid, err := calc.storageEngine.PutObject(ctx, suite.FileSize, resp.Body, suite.FullPath.Name(), true, suite.BakHost)
 	if err != nil {
 		log.Errorw("backup err: put backup", "ecid", suite.ECid)
 		return err
@@ -74,7 +74,7 @@ func (calc *ECCalc) backupRecover(ctx context.Context, suite *ec_store.Suite, en
 	md5Hash := md5.New()
 	file := io.TeeReader(resp.Body, md5Hash)
 
-	fid, err := calc.storageEngine.PutObject(ctx, suite.FileSize, file, true)
+	fid, err := calc.storageEngine.PutObject(ctx, suite.FileSize, file, suite.FullPath.Name(), true)
 	if err != nil {
 		log.Errorw("backup recover object: put backup", "ecid", suite.ECid)
 		return nil, err
