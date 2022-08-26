@@ -2,7 +2,7 @@ package command
 
 import (
 	"flag"
-	"icesos/command/vars"
+	"icesfs/command/vars"
 )
 
 func InitCommand() {

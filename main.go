@@ -1,10 +1,10 @@
 package main
 
 import (
-	"icesos/command"
-	"icesos/log"
-	"icesos/routers"
-	"icesos/server"
+	"icesfs/command"
+	"icesfs/log"
+	"icesfs/routers"
+	"icesfs/server"
 )
 
 func main() {

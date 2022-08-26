@@ -2,10 +2,10 @@ package vfs
 
 import (
 	"context"
-	"icesos/entry"
-	"icesos/full_path"
-	"icesos/kv"
-	"icesos/set"
+	"icesfs/entry"
+	"icesfs/full_path"
+	"icesfs/kv"
+	"icesfs/set"
 )
 
 func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {

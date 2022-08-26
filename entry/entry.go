@@ -1,8 +1,8 @@
 package entry
 
 import (
-	"icesos/full_path"
-	"icesos/set"
+	"icesfs/full_path"
+	"icesfs/set"
 	"os"
 	"time"
 )

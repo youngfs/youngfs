@@ -3,11 +3,11 @@ package ec_store
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"icesos/command/vars"
-	"icesos/ec/ec_store/ec_store_pb"
-	"icesos/errors"
-	"icesos/log"
-	"icesos/set"
+	"icesfs/command/vars"
+	"icesfs/ec/ec_store/ec_store_pb"
+	"icesfs/errors"
+	"icesfs/log"
+	"icesfs/set"
 )
 
 func (shard *PlanShard) toPb() *ec_store_pb.PlanShard {

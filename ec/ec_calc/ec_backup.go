@@ -3,11 +3,11 @@ package ec_calc
 import (
 	"context"
 	"crypto/md5"
-	"icesos/ec/ec_store"
-	"icesos/entry"
-	"icesos/errors"
-	"icesos/log"
-	"icesos/util"
+	"icesfs/ec/ec_store"
+	"icesfs/entry"
+	"icesfs/errors"
+	"icesfs/log"
+	"icesfs/util"
 	"io"
 	"net/http"
 )

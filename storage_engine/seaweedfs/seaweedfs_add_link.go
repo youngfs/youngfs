@@ -2,8 +2,8 @@ package seaweedfs
 
 import (
 	"context"
-	"icesos/command/vars"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/log"
 )
 
 func fidLinkKey(fid string) string {

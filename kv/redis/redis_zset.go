@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/kv"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/kv"
+	"icesfs/log"
 )
 
 func (store *KvStore) ZAdd(ctx context.Context, key, member string) error {
@@ -50,9 +50,9 @@ func (store *KvStore) ZIsMember(ctx context.Context, key, member string) (bool, 
 	return len(ret) != 0, err
 }
 
-//[min , max)
-//if min = "" : min = "-"
-//if max = "" : max = "+"
+// [min , max)
+// if min = "" : min = "-"
+// if max = "" : max = "+"
 func (store *KvStore) ZRangeByLex(ctx context.Context, key, min, max string) ([]string, error) {
 	if min == "" {
 		min = "-"
@@ -85,9 +85,9 @@ func (store *KvStore) ZRangeByLex(ctx context.Context, key, min, max string) ([]
 	return members, err
 }
 
-//[min , max)
-//if min = "" : min = "-"
-//if max = "" : max = "+"
+// [min , max)
+// if min = "" : min = "-"
+// if max = "" : max = "+"
 func (store *KvStore) ZRemRangeByLex(ctx context.Context, key, min, max string) (bool, error) {
 	if min == "" {
 		min = "-"

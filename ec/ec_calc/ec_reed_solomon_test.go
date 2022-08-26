@@ -3,7 +3,7 @@ package ec_calc
 import (
 	"github.com/go-playground/assert/v2"
 	"github.com/klauspost/reedsolomon"
-	"icesos/util"
+	"icesfs/util"
 	"math/rand"
 	"testing"
 	"time"

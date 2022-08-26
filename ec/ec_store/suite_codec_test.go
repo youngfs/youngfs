@@ -3,9 +3,9 @@ package ec_store
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesos/full_path"
-	"icesos/set"
-	"icesos/util"
+	"icesfs/full_path"
+	"icesfs/set"
+	"icesfs/util"
 	"math/rand"
 	"strconv"
 	"testing"

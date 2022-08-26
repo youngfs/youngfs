@@ -2,10 +2,10 @@ package filer
 
 import (
 	"context"
-	"icesos/ec/ec_store"
-	"icesos/entry"
-	"icesos/full_path"
-	"icesos/set"
+	"icesfs/ec/ec_store"
+	"icesfs/entry"
+	"icesfs/full_path"
+	"icesfs/set"
 	"time"
 )
 

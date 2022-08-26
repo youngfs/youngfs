@@ -3,8 +3,8 @@ package ec_store
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesos/set"
-	"icesos/util"
+	"icesfs/set"
+	"icesfs/util"
 	"math/rand"
 	"testing"
 	"time"

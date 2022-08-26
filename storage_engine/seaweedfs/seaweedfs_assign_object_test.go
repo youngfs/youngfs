@@ -3,10 +3,10 @@ package seaweedfs
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/kv/redis"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/kv/redis"
+	"icesfs/log"
 	"testing"
 )
 

@@ -2,9 +2,9 @@ package ec_calc
 
 import (
 	"context"
-	"icesos/ec/ec_store"
-	"icesos/storage_engine"
-	"icesos/util"
+	"icesfs/ec/ec_store"
+	"icesfs/storage_engine"
+	"icesfs/util"
 	"io"
 	"math"
 	"net/http"

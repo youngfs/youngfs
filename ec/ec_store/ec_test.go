@@ -3,14 +3,14 @@ package ec_store
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesos/command/vars"
-	"icesos/entry"
-	"icesos/full_path"
-	"icesos/kv"
-	"icesos/kv/redis"
-	"icesos/set"
-	"icesos/storage_engine/seaweedfs"
-	"icesos/util"
+	"icesfs/command/vars"
+	"icesfs/entry"
+	"icesfs/full_path"
+	"icesfs/kv"
+	"icesfs/kv/redis"
+	"icesfs/set"
+	"icesfs/storage_engine/seaweedfs"
+	"icesfs/util"
 	"testing"
 )
 

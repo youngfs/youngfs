@@ -2,9 +2,9 @@ package ec_store
 
 import (
 	"context"
-	"icesos/full_path"
-	"icesos/kv"
-	"icesos/set"
+	"icesfs/full_path"
+	"icesfs/kv"
+	"icesfs/set"
 )
 
 type Frag struct {
@@ -15,14 +15,14 @@ type Frag struct {
 	OldECid            string // old ecid
 }
 
-//Frags must not be []Frag{} (codec will become nill)
+// Frags must not be []Frag{} (codec will become nill)
 type Shard struct {
 	Host  string // host
 	Frags []Frag // frags
 	Md5   []byte // MD5
 }
 
-//DataBlocks must not be []Shard{} (codec will become nill)
+// DataBlocks must not be []Shard{} (codec will become nill)
 type Suite struct {
 	ECid               string  // erasure code id
 	full_path.FullPath         // full path

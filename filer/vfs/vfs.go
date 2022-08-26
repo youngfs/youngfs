@@ -2,16 +2,16 @@ package vfs
 
 import (
 	"context"
-	"icesos/command/vars"
-	"icesos/ec/ec_server"
-	"icesos/ec/ec_store"
-	"icesos/entry"
-	"icesos/errors"
-	"icesos/full_path"
-	"icesos/kv"
-	"icesos/log"
-	"icesos/set"
-	"icesos/storage_engine"
+	"icesfs/command/vars"
+	"icesfs/ec/ec_server"
+	"icesfs/ec/ec_store"
+	"icesfs/entry"
+	"icesfs/errors"
+	"icesfs/full_path"
+	"icesfs/kv"
+	"icesfs/log"
+	"icesfs/set"
+	"icesfs/storage_engine"
 	"time"
 )
 

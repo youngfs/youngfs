@@ -2,10 +2,10 @@ package redis
 
 import (
 	"context"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/kv"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/kv"
+	"icesfs/log"
 )
 
 func (store *KvStore) SAdd(ctx context.Context, key string, member []byte) error {

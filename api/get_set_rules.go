@@ -2,11 +2,11 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/server"
-	"icesos/set"
-	"icesos/ui"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/server"
+	"icesfs/set"
+	"icesfs/ui"
 	"net/http"
 )
 

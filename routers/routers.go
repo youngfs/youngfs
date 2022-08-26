@@ -2,10 +2,10 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"icesos/api"
-	"icesos/command/vars"
-	"icesos/log"
-	"icesos/ui"
+	"icesfs/api"
+	"icesfs/command/vars"
+	"icesfs/log"
+	"icesfs/ui"
 	"io/fs"
 	"io/ioutil"
 	"net/http"

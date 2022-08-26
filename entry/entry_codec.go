@@ -3,12 +3,12 @@ package entry
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"icesos/command/vars"
-	"icesos/entry/entry_pb"
-	"icesos/errors"
-	"icesos/full_path"
-	"icesos/log"
-	"icesos/set"
+	"icesfs/command/vars"
+	"icesfs/entry/entry_pb"
+	"icesfs/errors"
+	"icesfs/full_path"
+	"icesfs/log"
+	"icesfs/set"
 	"os"
 	"time"
 )

@@ -3,9 +3,9 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"

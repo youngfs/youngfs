@@ -1,8 +1,8 @@
 package seaweedfs
 
 import (
-	"icesos/kv"
-	"icesos/util"
+	"icesfs/kv"
+	"icesfs/util"
 )
 
 type StorageEngine struct {

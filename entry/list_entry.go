@@ -2,7 +2,7 @@ package entry
 
 import (
 	"encoding/hex"
-	"icesos/full_path"
+	"icesfs/full_path"
 	"os"
 )
 

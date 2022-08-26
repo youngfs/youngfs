@@ -1,13 +1,13 @@
 package server
 
 import (
-	"icesos/command/vars"
-	"icesos/ec/ec_calc"
-	"icesos/ec/ec_server"
-	"icesos/ec/ec_store"
-	"icesos/filer/vfs"
-	"icesos/kv/redis"
-	"icesos/storage_engine/seaweedfs"
+	"icesfs/command/vars"
+	"icesfs/ec/ec_calc"
+	"icesfs/ec/ec_server"
+	"icesfs/ec/ec_store"
+	"icesfs/filer/vfs"
+	"icesfs/kv/redis"
+	"icesfs/storage_engine/seaweedfs"
 )
 
 func InitServer() {

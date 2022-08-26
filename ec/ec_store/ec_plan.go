@@ -2,11 +2,11 @@ package ec_store
 
 import (
 	"context"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/kv"
-	"icesos/log"
-	"icesos/set"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/kv"
+	"icesfs/log"
+	"icesfs/set"
 	"strconv"
 )
 

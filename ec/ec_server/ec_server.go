@@ -2,13 +2,13 @@ package ec_server
 
 import (
 	"context"
-	"icesos/ec/ec_calc"
-	"icesos/ec/ec_store"
-	"icesos/entry"
-	"icesos/errors"
-	"icesos/kv"
-	"icesos/set"
-	"icesos/util"
+	"icesfs/ec/ec_calc"
+	"icesfs/ec/ec_store"
+	"icesfs/entry"
+	"icesfs/errors"
+	"icesfs/kv"
+	"icesfs/set"
+	"icesfs/util"
 	"time"
 )
 

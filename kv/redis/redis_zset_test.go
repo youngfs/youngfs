@@ -3,8 +3,8 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesos/command/vars"
-	"icesos/kv"
+	"icesfs/command/vars"
+	"icesfs/kv"
 	"math/rand"
 	"testing"
 )

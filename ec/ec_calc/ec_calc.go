@@ -2,10 +2,10 @@ package ec_calc
 
 import (
 	"context"
-	"icesos/ec/ec_store"
-	"icesos/entry"
-	"icesos/errors"
-	"icesos/storage_engine"
+	"icesfs/ec/ec_store"
+	"icesfs/entry"
+	"icesfs/errors"
+	"icesfs/storage_engine"
 )
 
 type ECCalc struct {

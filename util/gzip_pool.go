@@ -2,8 +2,8 @@ package util
 
 import (
 	"compress/gzip"
-	"icesos/errors"
-	"icesos/log"
+	"icesfs/errors"
+	"icesfs/log"
 	"io"
 	"sync"
 )

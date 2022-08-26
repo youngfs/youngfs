@@ -2,9 +2,9 @@ package seaweedfs
 
 import (
 	"context"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/log"
 	"net/http"
 )
 

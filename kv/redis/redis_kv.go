@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/kv"
-	"icesos/log"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/kv"
+	"icesfs/log"
 )
 
 func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {

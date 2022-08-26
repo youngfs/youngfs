@@ -3,10 +3,10 @@ package set
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"icesos/command/vars"
-	"icesos/errors"
-	"icesos/log"
-	"icesos/set/set_pb"
+	"icesfs/command/vars"
+	"icesfs/errors"
+	"icesfs/log"
+	"icesfs/set/set_pb"
 )
 
 func (setRules *SetRules) toPb() *set_pb.SetRules {
