@@ -45,7 +45,7 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 	info := &volumeIpInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		log.Errorw("seaweedfs get volume host : http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10), "http body", httpBody)
+		log.Errorw("seaweedfs get volume host : http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/lookup?volumeId="+strconv.FormatUint(volumeId, 10))
 	}
 
 	if info.Error != "" || len(info.Locations) != 1 {

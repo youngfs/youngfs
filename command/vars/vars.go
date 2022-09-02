@@ -12,4 +12,4 @@ var Debug = false
 var UnitTest = false
 var InfoLog = true
 
-var ServerName = "icesos"
+var ServerName = "icesfs"

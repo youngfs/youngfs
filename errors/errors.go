@@ -173,7 +173,7 @@ var errorCodeResponse = map[ErrorCode]APIError{
 	},
 	ErrServer: {
 		ErrorCode:      ErrServer,
-		Description:    "icesos server error",
+		Description:    "icesfs server error",
 		HTTPStatusCode: http.StatusInternalServerError,
 	},
 }

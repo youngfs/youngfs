@@ -103,7 +103,7 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string)
 	info := &deleteObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, "http body", httpBody)
+		log.Errorw("seaweedfs delete actual object: get http body error", vars.ErrorKey, err.Error(), "request url", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid)
 		return errors.GetAPIErr(errors.ErrSeaweedFSVolume)
 	}
 

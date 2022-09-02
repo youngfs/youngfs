@@ -56,7 +56,7 @@ func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 	info := &dirStatue{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		log.Errorw("seaweedfs get hosts: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/status", "http body", httpBody)
+		log.Errorw("seaweedfs get hosts: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/status")
 		return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 	}
 

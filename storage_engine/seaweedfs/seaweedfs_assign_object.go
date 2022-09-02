@@ -45,7 +45,7 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 	assignFileInfo := &assignObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, assignFileInfo)
 	if err != nil {
-		log.Errorw("seaweedfs assign object: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq, "http body", httpBody)
+		log.Errorw("seaweedfs assign object: http body unmarshal error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "request url", "http://"+se.masterServer+"/dir/assign?preallocate="+strconv.FormatUint(size, 10)+hostReq)
 		return nil, errors.GetAPIErr(errors.ErrSeaweedFSMaster)
 	}
 
