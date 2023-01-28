@@ -3,22 +3,15 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesfs/command/vars"
-	"icesfs/errors"
-	"icesfs/kv"
-	"icesfs/log"
-	"icesfs/util"
 	"math/rand"
 	"testing"
 	"time"
+	"youngfs/errors"
+	"youngfs/util"
+	"youngfs/vars"
 )
 
 func TestRedis_Num(t *testing.T) {
-	vars.UnitTest = true
-	vars.Debug = true
-	log.InitLogger()
-	defer log.Sync()
-
 	client := NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	key := "test_redis_num"
 	ctx := context.Background()
@@ -116,19 +109,19 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err := client.Incr(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
+	assert.Equal(t, errors.Is(err, errors.ErrKvSever), true)
 
 	ret2, err = client.Decr(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
+	assert.Equal(t, errors.Is(err, errors.ErrKvSever), true)
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
+	assert.Equal(t, errors.Is(err, errors.ErrKvSever), true)
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
-	assert.Equal(t, err, errors.GetAPIErr(errors.ErrKvSever))
+	assert.Equal(t, errors.Is(err, errors.ErrKvSever), true)
 
 	ret, err = client.KvDelete(ctx, key)
 	assert.Equal(t, ret, true)
@@ -136,7 +129,7 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 
 	for i := 0; i < 1024; i++ {
 		cnt := rand.Int63()
@@ -156,7 +149,7 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 
 	ret, err = client.ClrNum(ctx, key)
 	assert.Equal(t, ret, false)
@@ -164,10 +157,10 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err = client.GetNum(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 
 	ret3, err := client.KvGet(ctx, key)
 	assert.Equal(t, ret3, nil)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 
 }

@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesfs/command/vars"
-	"icesfs/kv"
-	"icesfs/util"
 	"testing"
+	"youngfs/errors"
+	"youngfs/util"
+	"youngfs/vars"
 )
 
 func TestRedis_Kv(t *testing.T) {
@@ -15,7 +15,7 @@ func TestRedis_Kv(t *testing.T) {
 	ctx := context.Background()
 
 	b, err := client.KvGet(ctx, key)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 	assert.Equal(t, b, nil)
 
 	ret, err := client.KvDelete(ctx, key)
@@ -43,7 +43,7 @@ func TestRedis_Kv(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	b, err = client.KvGet(ctx, key)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 	assert.Equal(t, b, nil)
 
 	ret, err = client.KvDelete(ctx, key)

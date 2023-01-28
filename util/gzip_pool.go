@@ -2,10 +2,10 @@ package util
 
 import (
 	"compress/gzip"
-	"icesfs/errors"
-	"icesfs/log"
 	"io"
 	"sync"
+	"youngfs/errors"
+	"youngfs/log"
 )
 
 type GzipWriterPool struct {
@@ -27,7 +27,7 @@ func (pool *GzipWriterPool) GzipStream(w io.Writer, r io.Reader) (int64, error) 
 	gw, ok := pool.Get().(*gzip.Writer)
 	if !ok {
 		log.Errorw("gzip: new writer error")
-		return 0, errors.GetAPIErr(errors.ErrServer)
+		return 0, errors.ErrServer
 	}
 	gw.Reset(w)
 	defer func() {

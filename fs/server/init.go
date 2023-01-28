@@ -1,0 +1,21 @@
+package server
+
+import (
+	"youngfs/fs/ec/ec_calc"
+	"youngfs/fs/ec/ec_server"
+	"youngfs/fs/ec/ec_store"
+	"youngfs/fs/filer/vfs"
+	"youngfs/fs/storage_engine/seaweedfs"
+	"youngfs/kv/redis"
+	"youngfs/vars"
+)
+
+func InitServer() {
+	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
+	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
+	ecStore := ec_store.NewEC(kvStore, storageEngine)
+	ecCalc := ec_calc.NewECCalc(ecStore, storageEngine)
+	ecServer := ec_server.NewECServer(ecStore, ecCalc)
+	filerStore := vfs.NewVFS(kvStore, storageEngine, ecServer)
+	svr = NewServer(filerStore, storageEngine, ecServer)
+}

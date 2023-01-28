@@ -3,12 +3,12 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesfs/command/vars"
-	"icesfs/kv"
-	"icesfs/util"
 	"math/rand"
 	"sort"
 	"testing"
+	"youngfs/errors"
+	"youngfs/util"
+	"youngfs/vars"
 )
 
 func TestRedis_Set(t *testing.T) {
@@ -25,7 +25,7 @@ func TestRedis_Set(t *testing.T) {
 
 	// not add members
 	bList2, err := client.SMembers(ctx, key)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err := client.SCard(ctx, key)
@@ -126,7 +126,7 @@ func TestRedis_Set(t *testing.T) {
 	assert.Equal(t, ret, true)
 
 	bList2, err = client.SMembers(ctx, key)
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 	assert.Equal(t, bList2, [][]byte{})
 
 	cnt, err = client.SCard(ctx, key)

@@ -1,8 +1,7 @@
 package log
 
 const (
-	timeFormat   = "2006-01-02 15:04:05.000000" //time.RFC3339Nano
-	logExtension = ".log"
+	timeFormat = "2006-01-02 15:04:05.000000" //time.RFC3339Nano
 
 	timeKey       = "time"
 	levelKey      = "level"

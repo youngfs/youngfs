@@ -4,8 +4,8 @@ import (
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"icesfs/command/vars"
 	"os"
+	"youngfs/vars"
 )
 
 var logger *zap.SugaredLogger
@@ -30,7 +30,7 @@ func InitLogger() {
 	encoder := zapcore.NewJSONEncoder(encoderConfig) // zapcore.NewConsoleEncoder(encoderConfig)
 
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:  vars.ServerName + logExtension,
+		Filename:  vars.ServerName + ".log",
 		MaxSize:   16,
 		LocalTime: true,
 		Compress:  false,
@@ -45,9 +45,7 @@ func InitLogger() {
 	}
 
 	var writers []zapcore.WriteSyncer
-	if !vars.UnitTest {
-		writers = append(writers, zapcore.AddSync(lumberJackLogger)) // writer
-	}
+	writers = append(writers, zapcore.AddSync(lumberJackLogger)) // writer
 	if vars.Debug {
 		writers = append(writers, zapcore.AddSync(os.Stdout))
 	}

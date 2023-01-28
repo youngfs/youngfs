@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
-	"icesfs/command/vars"
-	"icesfs/kv"
 	"math/rand"
 	"testing"
+	"youngfs/errors"
+	"youngfs/vars"
 )
 
 func TestRedis_ZSet(t *testing.T) {
@@ -73,7 +73,7 @@ func TestRedis_ZSet(t *testing.T) {
 		ret, err := client.ZRangeByLex(ctx, key, string(rune('a'+x)), string(rune('a'+y)))
 		assert.Equal(t, ret, bList[x:y])
 		if x == y {
-			assert.Equal(t, err, kv.NotFound)
+			assert.Equal(t, errors.IsKvNotFound(err), true)
 		} else {
 			assert.Equal(t, err, nil)
 		}
@@ -81,7 +81,7 @@ func TestRedis_ZSet(t *testing.T) {
 
 	bList2, err := client.ZRangeByLex(ctx, key, "b", "b")
 	assert.Equal(t, bList2, []string{})
-	assert.Equal(t, err, kv.NotFound)
+	assert.Equal(t, errors.IsKvNotFound(err), true)
 
 	bList2, err = client.ZRangeByLex(ctx, key, "", "")
 	assert.Equal(t, bList2, bList)
