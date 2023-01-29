@@ -53,7 +53,7 @@ func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
 	message := ent.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
-		err = errors.ErrProto
+		err = errors.ErrProto.WithStack()
 	}
 	return b, err
 }
@@ -61,7 +61,7 @@ func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
 func DecodeEntryProto(ctx context.Context, b []byte) (*Entry, error) {
 	message := &entry_pb.Entry{}
 	if err := proto.Unmarshal(b, message); err != nil {
-		return nil, errors.ErrProto
+		return nil, errors.ErrProto.WithStack()
 	}
 	return entryPbToInstance(message), nil
 }

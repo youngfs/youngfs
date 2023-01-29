@@ -12,7 +12,7 @@ func fidLinkKey(fid string) string {
 func (se *StorageEngine) AddLink(ctx context.Context, fid string) error {
 	_, err := se.kvStore.Incr(ctx, fidLinkKey(fid))
 	if err != nil {
-		return errors.WithMessage(err, "seaweedfs add link")
+		return errors.Wrap(err, "seaweedfs add link")
 	}
 	return nil
 }
@@ -20,7 +20,7 @@ func (se *StorageEngine) AddLink(ctx context.Context, fid string) error {
 func (se *StorageEngine) delLink(ctx context.Context, fid string) (int64, error) {
 	ret, err := se.kvStore.Decr(ctx, fidLinkKey(fid))
 	if err != nil {
-		return -1, errors.WithMessage(err, "seaweedfs del link")
+		return -1, errors.Wrap(err, "seaweedfs del link")
 	}
 	return ret, nil
 }

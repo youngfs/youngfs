@@ -27,7 +27,7 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 
 	resp, err := http.Get("http://" + se.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
 	if err != nil {
-		return "", errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get volume host : http get error")
+		return "", errors.ErrSeaweedFSMaster.Wrap("seaweedfs get volume host : http get error")
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -35,17 +35,17 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 
 	httpBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get volume host : get http body error")
+		return "", errors.ErrSeaweedFSMaster.Wrap("seaweedfs get volume host : get http body error")
 	}
 
 	info := &volumeIpInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		return "", errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get volume host : http body unmarshal error")
+		return "", errors.ErrSeaweedFSMaster.Wrap("seaweedfs get volume host : http body unmarshal error")
 	}
 
 	if info.Error != "" || len(info.Locations) != 1 {
-		return "", errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get volume host : http body unmarshal error")
+		return "", errors.ErrSeaweedFSMaster.Wrap("seaweedfs get volume host : http body unmarshal error")
 	}
 
 	se.volumeIpMap[volumeId] = info.Locations[0].Url

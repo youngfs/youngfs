@@ -74,7 +74,7 @@ func (calc *ECCalc) reedSolomon(ctx context.Context, suite *ec_store.Suite) erro
 
 	enc, err := reedsolomon.New(int(suite.DataShards), len(suite.Shards)-int(suite.DataShards))
 	if err != nil {
-		return errors.ErrServer.WithMessage("ecid: " + suite.ECid)
+		return errors.ErrServer.WrapErr(err)
 	}
 
 	for i := uint64(0); i < mx; i += EcBlockSize {
@@ -189,11 +189,11 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 	}
 
 	if len(corruptionList) > len(suite.Shards)-int(suite.DataShards) {
-		return nil, errors.ErrRecoverFailed.WithMessage("reed solomon recover object corrupt too much, ecid:" + suite.ECid)
+		return nil, errors.ErrRecoverFailed.Wrap("reed solomon recover: object corrupt too much, ecid:" + suite.ECid)
 	}
 
 	if len(corruptionList) == 0 {
-		return nil, errors.ErrRecoverFailed.WithMessage("reed solomon recover object request ec shard not corrupt, ecid:" + suite.ECid)
+		return nil, errors.ErrRecoverFailed.Wrap("reed solomon recover: object request ec shard not corrupt, ecid:" + suite.ECid)
 	}
 
 	for i, shard := range suite.Shards {
@@ -240,7 +240,7 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 		}
 		err := enc.Reconstruct(data)
 		if err != nil {
-			return nil, errors.ErrServer.WithMessage("reed solomon recover object reconstruct, ecid:" + suite.ECid)
+			return nil, errors.ErrServer.Wrap("reed solomon recover: object reconstruct, ecid:" + suite.ECid)
 		}
 
 		for _, u := range corruptionList {
@@ -249,7 +249,7 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 			filesName = append(filesName, fileName)
 			err := os.WriteFile(fileName, data[u], os.ModePerm)
 			if err != nil {
-				return nil, errors.ErrServer.WithMessage("reed solomon recover write ec temporary data, ecid:" + suite.ECid)
+				return nil, errors.ErrServer.Wrap("reed solomon recover: write ec temporary data, ecid:" + suite.ECid)
 			}
 			frags[u] = append(frags[u], ec_store.Frag{
 				Fid: fileName,
@@ -270,11 +270,11 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 			fileReadCloser.SetLimit(int(frag.FileSize))
 			fid, err := calc.storageEngine.PutObject(ctx, frag.FileSize, fileReadCloser, frag.FullPath.Name(), true)
 			if err != nil {
-				return nil, errors.WithMessage(err, "reed solomon recover put recover object, ecid:"+suite.ECid)
+				return nil, errors.Wrap(err, "reed solomon recover: put recover object, ecid:"+suite.ECid)
 			}
 			err = calc.storageEngine.AddLink(ctx, fid)
 			if err != nil {
-				return nil, errors.WithMessage(err, "reed solomon recover add link object, ecid:"+suite.ECid)
+				return nil, errors.Wrap(err, "reed solomon recover: add link object, ecid:"+suite.ECid)
 			}
 			suite.Shards[u].Frags[i].Fid = fid
 			ret = append(ret, ec_store.Frag{
@@ -290,7 +290,7 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 
 	err = calc.ECStore.InsertSuite(ctx, suite)
 	if err != nil {
-		return nil, errors.WithMessage(err, "reed solomon recover insert suite, ecid:"+suite.ECid)
+		return nil, errors.Wrap(err, "reed solomon recover: insert suite, ecid:"+suite.ECid)
 	}
 
 	return ret, nil

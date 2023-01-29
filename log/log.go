@@ -65,87 +65,87 @@ func InitLogger() {
 	logger = zapLogger.Sugar()
 }
 
-func Debug(args ...interface{}) {
+func Debug(args ...any) {
 	logger.Debug(args...)
 }
 
-func Debugf(template string, args ...interface{}) {
+func Debugf(template string, args ...any) {
 	logger.Debugf(template, args...)
 }
 
-func Debugw(msg string, keysAndValues ...interface{}) {
+func Debugw(msg string, keysAndValues ...any) {
 	logger.Debugw(msg, keysAndValues...)
 }
 
-func Info(args ...interface{}) {
+func Info(args ...any) {
 	logger.Info(args...)
 }
 
-func Infof(template string, args ...interface{}) {
+func Infof(template string, args ...any) {
 	logger.Infof(template, args...)
 }
 
-func Infow(msg string, keysAndValues ...interface{}) {
+func Infow(msg string, keysAndValues ...any) {
 	logger.Infow(msg, keysAndValues...)
 }
 
-func Warn(args ...interface{}) {
+func Warn(args ...any) {
 	logger.Warn(args...)
 }
 
-func Warnf(template string, args ...interface{}) {
+func Warnf(template string, args ...any) {
 	logger.Warnf(template, args...)
 }
 
-func Warnw(msg string, keysAndValues ...interface{}) {
+func Warnw(msg string, keysAndValues ...any) {
 	logger.Warnw(msg, keysAndValues...)
 }
 
-func Error(args ...interface{}) {
+func Error(args ...any) {
 	logger.Error(args...)
 }
 
-func Errorf(template string, args ...interface{}) {
+func Errorf(template string, args ...any) {
 	logger.Errorf(template, args...)
 }
 
-func Errorw(msg string, keysAndValues ...interface{}) {
+func Errorw(msg string, keysAndValues ...any) {
 	logger.Errorw(msg, keysAndValues...)
 }
 
-func DPanic(args ...interface{}) {
+func DPanic(args ...any) {
 	logger.DPanic(args...)
 }
 
-func DPanicf(template string, args ...interface{}) {
+func DPanicf(template string, args ...any) {
 	logger.DPanicf(template, args...)
 }
 
-func DPanicw(msg string, keysAndValues ...interface{}) {
+func DPanicw(msg string, keysAndValues ...any) {
 	logger.DPanicw(msg, keysAndValues...)
 }
 
-func Panic(args ...interface{}) {
+func Panic(args ...any) {
 	logger.Panic(args...)
 }
 
-func Panicf(template string, args ...interface{}) {
+func Panicf(template string, args ...any) {
 	logger.Panicf(template, args...)
 }
 
-func Panicw(msg string, keysAndValues ...interface{}) {
+func Panicw(msg string, keysAndValues ...any) {
 	logger.Panicw(msg, keysAndValues...)
 }
 
-func Fatal(args ...interface{}) {
+func Fatal(args ...any) {
 	logger.Fatal(args...)
 }
 
-func Fatalf(template string, args ...interface{}) {
+func Fatalf(template string, args ...any) {
 	logger.Fatalf(template, args...)
 }
 
-func Fatalw(msg string, keysAndValues ...interface{}) {
+func Fatalw(msg string, keysAndValues ...any) {
 	logger.Fatalw(msg, keysAndValues...)
 }
 

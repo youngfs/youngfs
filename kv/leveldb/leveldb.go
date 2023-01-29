@@ -6,6 +6,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"os"
+	"youngfs/errors"
 	"youngfs/log"
 )
 
@@ -13,11 +14,11 @@ type KvStore struct {
 	db *leveldb.DB
 }
 
-func NewKvStore(dir string) *KvStore {
+func NewKvStore(dir string) (*KvStore, error) {
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		log.Errorf("leveldb init error :%s", err.Error())
-		return nil
+		return nil, errors.ErrKvSever.WrapErr(err)
 	}
 	opts := &opt.Options{
 		BlockCacheCapacity: 32 * 1024 * 1024,
@@ -32,10 +33,10 @@ func NewKvStore(dir string) *KvStore {
 		}
 		if err != nil {
 			log.Errorf("leveldb init error :%s", err.Error())
-			return nil
+			return nil, errors.ErrKvSever.WrapErr(err)
 		}
 	}
 	return &KvStore{
 		db: db,
-	}
+	}, nil
 }

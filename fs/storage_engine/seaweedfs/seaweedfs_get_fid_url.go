@@ -29,10 +29,10 @@ func (se *StorageEngine) GetFidUrl(ctx context.Context, fid string) (string, err
 	url := "http://" + host + "/" + fid
 	resp, err := http.Head(url)
 	if err != nil {
-		return "", errors.ErrObjectNotExist.WithMessage("seaweedfs get fid url: head error")
+		return "", errors.ErrObjectNotExist.Wrap("seaweedfs get fid url: head error")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.ErrObjectNotExist.WithMessage("seaweedfs get fid url: status code error")
+		return "", errors.ErrObjectNotExist.Wrap("seaweedfs get fid url: status code error")
 	}
 	return url, nil
 

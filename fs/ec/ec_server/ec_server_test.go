@@ -45,8 +45,7 @@ func TestECServer_Backup(t *testing.T) {
 	hosts, err := se.GetHosts(ctx)
 	assert.Equal(t, err, nil)
 	set := fs_set.Set("ec_test")
-	ec_calc.EcBlockSize = 16 * 1024 * 1024
-	size := uint64(40 * 1024 * 1024)
+	size := uint64(150 * 1024 * 1024)
 
 	if len(hosts) < 2 {
 		fmt.Printf("Can't do backup unit test")
@@ -153,8 +152,7 @@ func TestECServer_NoEC(t *testing.T) {
 	hosts, err := se.GetHosts(ctx)
 	assert.Equal(t, err, nil)
 	set := fs_set.Set("ec_test")
-	ec_calc.EcBlockSize = 16 * 1024 * 1024
-	size := uint64(40 * 1024 * 1024)
+	size := uint64(150 * 1024 * 1024)
 
 	setRules := &fs_set.SetRules{
 		Set:             set,
@@ -245,8 +243,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 	hosts, err := se.GetHosts(ctx)
 	assert.Equal(t, err, nil)
 	set := fs_set.Set("ec_test")
-	ec_calc.EcBlockSize = 16 * 1024 * 1024
-	size := uint64(40 * 1024 * 1024)
+	size := uint64(150 * 1024 * 1024)
 
 	if len(hosts) < 3 {
 		fmt.Printf("Can't do reed solomon unit test")
@@ -258,7 +255,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		Hosts:           hosts[:3],
 		DataShards:      2,
 		ParityShards:    1,
-		MAXShardSize:    96 * 1024 * 1024,
+		MAXShardSize:    384 * 1024 * 1024,
 		ECMode:          true,
 		ReplicationMode: true,
 	}

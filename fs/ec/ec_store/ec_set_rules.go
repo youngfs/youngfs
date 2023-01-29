@@ -123,7 +123,7 @@ func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool
 		for turns := 0; turns < int(setRules.DataShards+setRules.ParityShards); turns++ {
 			_, err := ec.kvStore.SDelete(ctx, setPlanShardKey(set, turns))
 			if err != nil {
-				return errors.WithMessage(err, "delete set rules error clear plan shard")
+				return errors.WithMessage(err, "delete set rules error: clear plan shard")
 			}
 		}
 	}
@@ -149,9 +149,6 @@ func (ec *ECStore) GetSetRules(ctx context.Context, set fs_set.Set, lock bool) (
 
 	proto, err := ec.kvStore.KvGet(ctx, setRulesKey(set))
 	if err != nil {
-		if errors.IsKvNotFound(err) {
-			return nil, nil
-		}
 		return nil, err
 	}
 

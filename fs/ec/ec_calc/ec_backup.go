@@ -70,7 +70,7 @@ func (calc *ECCalc) backupRecover(ctx context.Context, suite *ec_store.Suite, en
 
 	fid, err := calc.storageEngine.PutObject(ctx, suite.FileSize, file, suite.FullPath.Name(), true)
 	if err != nil {
-		return nil, errors.WithMessage(err, "backup recover failed put object, ecid: "+suite.ECid)
+		return nil, errors.WithMessage(err, "backup recover failed: put object, ecid: "+suite.ECid)
 	}
 
 	md5Ret := md5Hash.Sum(nil)

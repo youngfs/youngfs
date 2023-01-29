@@ -10,9 +10,7 @@ import (
 	"net/textproto"
 	"strings"
 	"youngfs/errors"
-	"youngfs/log"
 	"youngfs/util"
-	"youngfs/vars"
 )
 
 type PutObjectInfo struct {
@@ -24,7 +22,6 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 
 	info, err := se.assignObject(ctx, size, hosts...)
 	if err != nil {
-		log.Errorw("seaweedfs put object: assign object error", vars.UUIDKey, ctx.Value(vars.UUIDKey), vars.UserKey, ctx.Value(vars.UserKey), vars.ErrorKey, err.Error(), "size", size, "hosts", hosts)
 		return "", err
 	}
 
@@ -42,18 +39,18 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 
 	formFile, err := multiWriter.CreatePart(h)
 	if err != nil {
-		return "", errors.ErrServer.WithMessage("seaweedfs put object: get form file")
+		return "", errors.ErrServer.Wrap("seaweedfs put object: get form file")
 	}
 	if compress {
 		_, err := se.gzipWriterPool.GzipStream(formFile, file)
 		if err != nil {
-			return "", errors.ErrServer.WithMessage("seaweedfs put object: gzip copy")
+			return "", errors.ErrServer.Wrap("seaweedfs put object: gzip copy")
 		}
 
 		// add multiWriter.Boundary()
 		err = multiWriter.Close()
 		if err != nil {
-			return "", errors.ErrServer.WithMessage("seaweedfs put object: multi writer close")
+			return "", errors.ErrServer.Wrap("seaweedfs put object: multi writer close")
 		}
 
 		multiReader = buf
@@ -65,20 +62,20 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 
 	req, err := http.NewRequest("POST", "http://"+info.Url+"/"+info.Fid, multiReader)
 	if err != nil {
-		return "", errors.ErrServer.WithMessage("seaweedfs put object: new request put error")
+		return "", errors.ErrServer.Wrap("seaweedfs put object: new request put error")
 	}
 	req.Header.Set("Content-Type", multiWriter.FormDataContentType())
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", errors.ErrServer.WithMessage("seaweedfs put object: do request put error")
+		return "", errors.ErrServer.Wrap("seaweedfs put object: do request put error")
 	}
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode != http.StatusCreated {
-		return "", errors.ErrSeaweedFSVolume.WithMessage("seaweedfs put object: request error")
+		return "", errors.ErrSeaweedFSVolume.Wrap("seaweedfs put object: request error")
 	}
 
 	err = se.AddLink(ctx, info.Fid)

@@ -77,7 +77,7 @@ func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
 
 	turn, err := ec.kvStore.GetNum(ctx, setTurnKey(set))
 	if err != nil {
-		return errors.WithMessage(err, "init plan error get set turns")
+		return errors.WithMessage(err, "init plan error: get set turns")
 	}
 
 	shardsNum := setRules.DataShards + setRules.ParityShards
@@ -110,7 +110,7 @@ func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
 	for turns := 0; turns < int(shardsNum); turns++ {
 		_, err := ec.kvStore.SDelete(ctx, setPlanShardKey(setRules.Set, turns))
 		if err != nil {
-			return errors.WithMessage(err, "init plan error clear plan shard")
+			return errors.WithMessage(err, "init plan error: clear plan shard")
 		}
 	}
 

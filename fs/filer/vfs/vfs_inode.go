@@ -25,7 +25,7 @@ func inodeLockKey(set set.Set, fp full_path.FullPath) string {
 
 func (vfs *VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
-		return errors.ErrServer.WithMessage("insert inode inode root")
+		return errors.ErrServer.Wrap("insert inode: inode root")
 	}
 
 	err := vfs.kvStore.ZAdd(ctx, inodeBelongKey(set, fp), string(fp))
@@ -52,7 +52,7 @@ func (vfs *VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullP
 
 func (vfs *VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
 	if fp == inodeRoot {
-		return errors.ErrServer.WithMessage("delete inode inode root")
+		return errors.ErrServer.Wrap("delete inode: inode root")
 	}
 
 	_, err := vfs.kvStore.ZRem(ctx, inodeBelongKey(set, fp), string(fp))
@@ -87,7 +87,7 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 	ent, err := vfs.getEntry(ctx, set, fp)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
-			return errors.ErrServer.WithMessage("update mtime entry not found")
+			return errors.ErrServer.Wrap("update mtime: entry not found")
 		}
 		return err
 	}
@@ -253,14 +253,14 @@ func (vfs *VFS) recoverEntry(ctx context.Context, frag *ec_store.Frag) error {
 		if errors.IsKvNotFound(err) {
 			return nil
 		}
-		return errors.WithMessage(err, "recover entry get entry")
+		return errors.WithMessage(err, "recover entry: get entry")
 	}
 
 	if ent.ECid == frag.OldECid {
 		ent.Fid = frag.Fid
 		err := vfs.insertEntry(ctx, ent)
 		if err != nil {
-			return errors.WithMessage(err, "recover entry insert entry")
+			return errors.WithMessage(err, "recover entry: insert entry")
 		}
 	}
 

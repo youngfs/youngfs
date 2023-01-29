@@ -10,7 +10,8 @@ import (
 )
 
 func TestLeveldb_Kv(t *testing.T) {
-	client := NewKvStore(".kv")
+	client, err := NewKvStore(".kv")
+	assert.Equal(t, err, nil)
 	defer func() {
 		_ = os.RemoveAll(".kv")
 	}()

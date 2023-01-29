@@ -60,7 +60,7 @@ func (se *StorageEngine) loopProcessingDeletion() {
 func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string) error {
 	_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fullFid))
 	if err != nil {
-		return errors.WithMessage(err, "seaweedfs delete actual object: clear fid link")
+		return errors.Wrap(err, "seaweedfs delete actual object: clear fid link")
 	}
 
 	volumeId, fid, err := se.parseFid(ctx, fullFid)
@@ -75,15 +75,15 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string)
 
 	req, err := http.NewRequest("DELETE", "http://"+volumeIp+"/"+strconv.FormatUint(volumeId, 10)+","+fid, nil)
 	if err != nil {
-		return errors.ErrSeaweedFSVolume.WithMessage("seaweedfs delete actual object new request delete error")
+		return errors.ErrSeaweedFSVolume.Wrap("seaweedfs delete actual object: new request delete error")
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return errors.ErrSeaweedFSVolume.WithMessage("seaweedfs delete actual object: do request delete error")
+		return errors.ErrSeaweedFSVolume.Wrap("seaweedfs delete actual object: do request delete error")
 	}
 	if resp.StatusCode != http.StatusAccepted {
-		return errors.ErrSeaweedFSVolume.WithMessage("seaweedfs delete actual object: request error")
+		return errors.ErrSeaweedFSVolume.Wrap("seaweedfs delete actual object: request error")
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -91,13 +91,13 @@ func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string)
 
 	httpBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return errors.ErrSeaweedFSVolume.WithMessage("seaweedfs delete actual object: get http body error")
+		return errors.ErrSeaweedFSVolume.Wrap("seaweedfs delete actual object: get http body error")
 	}
 
 	info := &deleteObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		return errors.ErrSeaweedFSVolume.WithMessage("seaweedfs delete actual object: get http body error")
+		return errors.ErrSeaweedFSVolume.Wrap("seaweedfs delete actual object: get http body error")
 	}
 
 	return nil

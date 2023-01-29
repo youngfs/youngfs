@@ -9,7 +9,7 @@ import (
 func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {
 	err := store.db.Put([]byte(key), val, nil)
 	if err != nil {
-		return errors.ErrKvSever.Wrap("leveldb kv put error")
+		return errors.ErrKvSever.WrapErr(err)
 	}
 	return nil
 }
@@ -20,7 +20,7 @@ func (store *KvStore) KvGet(ctx context.Context, key string) ([]byte, error) {
 		if err == leveldb.ErrNotFound {
 			return nil, errors.ErrKvNotFound
 		} else {
-			return nil, errors.ErrKvSever.Wrap("leveldb kv get error")
+			return nil, errors.ErrKvSever.WrapErr(err)
 		}
 	}
 
@@ -31,7 +31,7 @@ func (store *KvStore) KvGet(ctx context.Context, key string) ([]byte, error) {
 func (store *KvStore) KvDelete(ctx context.Context, key string) (bool, error) {
 	err := store.db.Delete([]byte(key), nil)
 	if err != nil {
-		return false, errors.ErrKvSever.Wrap("leveldb kv delete error")
+		return false, errors.ErrKvSever.WrapErr(err)
 	}
 	return true, nil
 }

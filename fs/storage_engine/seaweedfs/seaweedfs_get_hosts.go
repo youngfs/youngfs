@@ -38,7 +38,7 @@ type dirStatue struct {
 func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 	resp, err := http.Get("http://" + se.masterServer + "/dir/status")
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get hosts : http get error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts : http get error")
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -46,13 +46,13 @@ func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 
 	httpBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get hosts: get http body error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts: get http body error")
 	}
 
 	info := &dirStatue{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs get hosts: http body unmarshal error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts: http body unmarshal error")
 	}
 
 	dataCenters := info.Topology.DataCenters

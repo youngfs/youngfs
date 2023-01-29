@@ -27,7 +27,7 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 
 	resp, err := http.Get("http://" + se.masterServer + "/dir/assign?preallocate=" + strconv.FormatUint(size, 10) + hostReq)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs assign object http get error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs assign object: http get error")
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -35,18 +35,18 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 
 	httpBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs assign object get http body error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs assign object: get http body error")
 	}
 
 	assignFileInfo := &assignObjectInfo{}
 	err = jsoniter.Unmarshal(httpBody, assignFileInfo)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs assign object http body unmarshal error")
+		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs assign object: http body unmarshal error")
 	}
 
 	if host != "" {
 		if host != assignFileInfo.Url && host != assignFileInfo.PublicUrl {
-			return nil, errors.ErrSeaweedFSMaster.WithMessage("seaweedfs assign object request host error")
+			return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs assign object: request host error")
 		}
 	}
 
@@ -56,11 +56,11 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 func (se *StorageEngine) parseFid(ctx context.Context, fullFid string) (uint64, string, error) {
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
-		return 0, "", errors.ErrServer.WithMessage("seaweedfs parse fid error")
+		return 0, "", errors.ErrServer.Wrap("seaweedfs parse fid error")
 	}
 	volumeId, err := strconv.ParseUint(ret[0], 10, 64)
 	if err != nil {
-		return 0, "", errors.ErrServer.WithMessage("seaweedfs parse fid error")
+		return 0, "", errors.ErrServer.Wrap("seaweedfs parse fid error")
 	}
 	return volumeId, ret[1], nil
 }
