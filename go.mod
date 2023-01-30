@@ -15,6 +15,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
+	github.com/syndtr/goleveldb v1.0.0
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.21.0
 	google.golang.org/protobuf v1.28.1
@@ -43,7 +44,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
-	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect

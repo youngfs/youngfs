@@ -10,7 +10,6 @@ import (
 	"net/textproto"
 	"strings"
 	"youngfs/errors"
-	"youngfs/util"
 )
 
 type PutObjectInfo struct {
@@ -19,7 +18,6 @@ type PutObjectInfo struct {
 }
 
 func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Reader, fileName string, compress bool, hosts ...string) (string, error) {
-
 	info, err := se.assignObject(ctx, size, hosts...)
 	if err != nil {
 		return "", err
@@ -31,7 +29,7 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 	multiWriter := multipart.NewWriter(buf)
 
 	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, util.EscapeQuotes("file"), util.EscapeQuotes(fileName)))
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, escapeQuotes("file"), escapeQuotes(fileName)))
 	h.Set("Content-Type", "application/octet-stream")
 	if compress {
 		h.Set("Content-Encoding", "gzip")
@@ -84,4 +82,10 @@ func (se *StorageEngine) PutObject(ctx context.Context, size uint64, file io.Rea
 	}
 
 	return info.Fid, nil
+}
+
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
 }

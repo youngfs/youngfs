@@ -61,7 +61,7 @@ func TestECCalc_ECReader(t *testing.T) {
 			n, err := ecReader.Read(b2)
 			assert.Equal(t, n, int(length))
 			assert.Equal(t, err, nil)
-			assert.Equal(t, util.BytesIsEqual(b2, b[cnt:cnt+length]), true)
+			assert.Equal(t, b2, b[cnt:cnt+length])
 			cnt += length
 		}
 
@@ -121,7 +121,7 @@ func TestECCalc_ECReader(t *testing.T) {
 			n, err := ecReader.Read(b2)
 			assert.Equal(t, n, int(length))
 			assert.Equal(t, err, nil)
-			assert.Equal(t, util.BytesIsEqual(b2, b[cnt:cnt+length]), true)
+			assert.Equal(t, b2, b[cnt:cnt+length])
 			cnt += length
 		}
 

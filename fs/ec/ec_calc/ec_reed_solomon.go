@@ -182,7 +182,7 @@ func (calc *ECCalc) reedSolomonRecover(ctx context.Context, suite *ec_store.Suit
 		}
 
 		md5Ret := md5Hash.Sum(nil)
-		if !util.BytesIsEqual(md5Ret, shard.Md5) {
+		if bytes.Compare(md5Ret, shard.Md5) != 0 {
 			corruptionMap[i] = true
 			corruptionList = append(corruptionList, i)
 		}

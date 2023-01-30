@@ -1,6 +1,7 @@
 package ec_calc
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"io"
@@ -9,7 +10,6 @@ import (
 	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/log"
-	"youngfs/util"
 )
 
 func (calc *ECCalc) backup(ctx context.Context, suite *ec_store.Suite) error {
@@ -74,7 +74,7 @@ func (calc *ECCalc) backupRecover(ctx context.Context, suite *ec_store.Suite, en
 	}
 
 	md5Ret := md5Hash.Sum(nil)
-	if len(ent.Md5) != 0 && !util.BytesIsEqual(md5Ret, ent.Md5) {
+	if len(ent.Md5) != 0 && bytes.Compare(md5Ret, ent.Md5) != 0 {
 		suite.BakFid = ""
 		err := calc.storageEngine.DeleteObject(ctx, fid)
 		return nil, errors.ErrRecoverFailed.WrapErr(err)

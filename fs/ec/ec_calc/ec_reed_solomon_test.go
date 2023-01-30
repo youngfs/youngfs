@@ -28,7 +28,7 @@ func TestECCalc_ReedSolomonPackage(t *testing.T) {
 	err = enc.Encode(data)
 	assert.Equal(t, err, nil)
 	for i := 4; i < 6; i++ {
-		assert.Equal(t, util.BytesIsEqual(data[i], emptyBytes), false)
+		assert.NotEqual(t, data[i], emptyBytes)
 	}
 
 	for i := 0; i < 32; i++ {
@@ -69,7 +69,7 @@ func TestECCalc_ReedSolomonPackage(t *testing.T) {
 	err = enc.Encode(data)
 	assert.Equal(t, err, nil)
 	for i := 3; i < 6; i++ {
-		assert.Equal(t, util.BytesIsEqual(data[i], emptyBytes), false)
+		assert.NotEqual(t, data[i], emptyBytes)
 	}
 
 	for i := 0; i < 32; i++ {
@@ -110,7 +110,7 @@ func TestECCalc_ReedSolomonPackage(t *testing.T) {
 	err = enc.Encode(data)
 	assert.Equal(t, err, nil)
 	for i := 2; i < 6; i++ {
-		assert.Equal(t, util.BytesIsEqual(data[i], emptyBytes), false)
+		assert.NotEqual(t, data[i], emptyBytes)
 	}
 
 	for i := 0; i < 32; i++ {

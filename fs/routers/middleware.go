@@ -7,13 +7,12 @@ import (
 	"net/http"
 	"strconv"
 	"youngfs/log"
-	"youngfs/util"
 	"youngfs/vars"
 )
 
 func authorizationHeader(user, pw string) string {
 	base := user + ":" + pw
-	return "Basic " + base64.StdEncoding.EncodeToString(util.StringToBytes(base))
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(base))
 }
 
 func auth(realms ...string) gin.HandlerFunc {

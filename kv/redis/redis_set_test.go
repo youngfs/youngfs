@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"bytes"
 	"context"
 	"github.com/go-playground/assert/v2"
 	"math/rand"
@@ -10,6 +11,20 @@ import (
 	"youngfs/util"
 	"youngfs/vars"
 )
+
+type bytesSlice [][]byte
+
+func (b bytesSlice) Len() int {
+	return len(b)
+}
+
+func (b bytesSlice) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
+}
+
+func (b bytesSlice) Less(i, j int) bool {
+	return bytes.Compare(b[i], b[j]) < 0
+}
 
 func TestRedis_Set(t *testing.T) {
 	client := NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
@@ -52,8 +67,8 @@ func TestRedis_Set(t *testing.T) {
 
 	bList2, err = client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
-	sort.Sort(util.BytesSlice(bList))
-	sort.Sort(util.BytesSlice(bList2))
+	sort.Sort(bytesSlice(bList))
+	sort.Sort(bytesSlice(bList2))
 	assert.Equal(t, bList2, bList)
 
 	cnt, err = client.SCard(ctx, key)
@@ -86,8 +101,8 @@ func TestRedis_Set(t *testing.T) {
 
 	bList2, err = client.SMembers(ctx, key)
 	assert.Equal(t, err, nil)
-	sort.Sort(util.BytesSlice(bList))
-	sort.Sort(util.BytesSlice(bList2))
+	sort.Sort(bytesSlice(bList))
+	sort.Sort(bytesSlice(bList2))
 	assert.Equal(t, bList2, bList)
 
 	cnt, err = client.SCard(ctx, key)
