@@ -91,7 +91,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 		assert.Equal(t, err, nil)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	for _, url := range urls {
 		resp, err := http.Get(url)
@@ -99,6 +99,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 		defer func() {
 			_ = resp.Body.Close()
 		}()
+		assert.Equal(t, resp.StatusCode, http.StatusNotFound)
 
 		httpBody, err = io.ReadAll(resp.Body)
 		assert.Equal(t, err, nil)

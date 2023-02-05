@@ -21,8 +21,10 @@ type volumeIpInfo struct {
 }
 
 func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (string, error) {
-	if se.volumeIpMap[volumeId] != "" {
-		return se.volumeIpMap[volumeId], nil
+	if val, ok := se.volumeIpMap.Load(volumeId); ok {
+		if ip, ok := val.(string); ok {
+			return ip, nil
+		}
 	}
 
 	resp, err := http.Get("http://" + se.masterServer + "/dir/lookup?volumeId=" + strconv.FormatUint(volumeId, 10))
@@ -48,6 +50,6 @@ func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (st
 		return "", errors.ErrSeaweedFSMaster.Wrap("seaweedfs get volume host : http body unmarshal error")
 	}
 
-	se.volumeIpMap[volumeId] = info.Locations[0].Url
-	return se.volumeIpMap[volumeId], nil
+	se.volumeIpMap.Store(volumeId, info.Locations[0].Url)
+	return info.Locations[0].Url, nil
 }

@@ -43,6 +43,13 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 
+	resp2, err := http.Get(url)
+	assert.Equal(t, err, nil)
+	defer func() {
+		_ = resp2.Body.Close()
+	}()
+	assert.Equal(t, resp2.StatusCode, http.StatusNotFound)
+
 	url, err = client.GetFidUrl(ctx, fid)
 	assert.Equal(t, errors.Is(err, errors.ErrObjectNotExist), true)
 	assert.Equal(t, url, "")

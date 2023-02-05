@@ -27,7 +27,11 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 		host, err := client.getVolumeHost(ctx, i)
 		if err == nil {
 			volumes[i] = true
-			assert.Equal(t, client.volumeIpMap[i], host)
+			val, ok := client.volumeIpMap.Load(i)
+			assert.Equal(t, ok, true)
+			ip, ok := val.(string)
+			assert.Equal(t, ok, true)
+			assert.Equal(t, ip, host)
 			assert.Equal(t, hostSet[host], true)
 			assert.Equal(t, err, nil)
 		}
@@ -36,12 +40,18 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	for i := uint64(1); i <= 128; i++ {
 		host, err := client.getVolumeHost(ctx, i)
 		if volumes[i] {
-			assert.Equal(t, client.volumeIpMap[i], host)
+			val, ok := client.volumeIpMap.Load(i)
+			assert.Equal(t, ok, true)
+			ip, ok := val.(string)
+			assert.Equal(t, ok, true)
+			assert.Equal(t, ip, host)
 			assert.Equal(t, hostSet[host], true)
 			assert.Equal(t, err, nil)
 		} else {
 			assert.Equal(t, errors.Is(err, errors.ErrSeaweedFSMaster), true)
-			assert.Equal(t, client.volumeIpMap[i], "")
+			val, ok := client.volumeIpMap.Load(i)
+			assert.Equal(t, ok, false)
+			assert.Equal(t, val, nil)
 		}
 	}
 }

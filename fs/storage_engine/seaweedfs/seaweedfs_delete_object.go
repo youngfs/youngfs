@@ -6,9 +6,11 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 	"youngfs/errors"
 	"youngfs/log"
+	"youngfs/util"
 	"youngfs/vars"
 )
 
@@ -22,37 +24,43 @@ func (se *StorageEngine) DeleteObject(ctx context.Context, fid string) error {
 }
 
 func (se *StorageEngine) loopProcessingDeletion() {
-	var deleteCnt int
+	var deleteCnt int64
+	lce := util.NewLimitedConcurrentExecutor(8)
 	for {
 		deleteCnt = 0
 		se.deletionQueue.Consume(func(fids []string) {
-			for _, fid := range fids {
-				ctx := context.Background()
+			for _, id := range fids {
+				fid := id
+				lce.Execute(func() {
+					ctx := context.Background()
 
-				link, err := se.delLink(ctx, fid)
-				if err != nil {
-					log.Errorw("seaweedfs delete object: get link error", vars.ErrorKey, err.Error(), "fid", fid)
-					continue
-				}
-
-				if link == 0 {
-					err = se.deleteActualObject(ctx, fid)
+					link, err := se.delLink(ctx, fid)
 					if err != nil {
-						log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
-						continue
+						log.Errorw("seaweedfs delete object: get link error", vars.ErrorKey, err.Error(), "fid", fid)
+						return
 					}
-				} else if link < 0 {
-					_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fid))
-					if err != nil {
-						log.Errorw("seaweedfs delete object: clear err fid link", vars.ErrorKey, err.Error())
-					}
-				}
 
-				deleteCnt++
+					if link == 0 {
+						err = se.deleteActualObject(ctx, fid)
+						if err != nil {
+							log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
+							return
+						}
+					} else if link < 0 {
+						_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fid))
+						if err != nil {
+							log.Errorw("seaweedfs delete object: clear err fid link", vars.ErrorKey, err.Error())
+						}
+					}
+
+					atomic.AddInt64(&deleteCnt, 1)
+				})
+
 			}
+			lce.Wait()
 		})
 		if deleteCnt == 0 {
-			time.Sleep(1234 * time.Millisecond)
+			time.Sleep(time.Second)
 		}
 	}
 }
