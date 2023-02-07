@@ -9,32 +9,28 @@ import (
 	"testing"
 	"time"
 	"youngfs/errors"
-	"youngfs/kv/redis"
 	"youngfs/util"
 	"youngfs/vars"
 )
 
 func TestSeaweedFS_DeleteObject(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
+	client := NewStorageEngine(vars.SeaweedFSMaster)
 	size := uint64(5 * 1024)
 	ctx := context.Background()
 
 	b := util.RandByte(size)
 
-	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), "", true)
+	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), true)
 	assert.Equal(t, err, nil)
 
-	url, err := client.GetFidUrl(ctx, fid)
+	url, err := client.getFidUrl(fid)
 	assert.Equal(t, err, nil)
 
-	resp1, err := http.Get(url)
+	buffer := &bytes.Buffer{}
+	err = client.GetObject(ctx, fid, buffer)
 	assert.Equal(t, err, nil)
-	defer func() {
-		_ = resp1.Body.Close()
-	}()
 
-	httpBody, err := io.ReadAll(resp1.Body)
+	httpBody, err := io.ReadAll(buffer)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, httpBody, b)
 
@@ -43,14 +39,13 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 
-	resp2, err := http.Get(url)
+	resp, err := http.Get(url)
 	assert.Equal(t, err, nil)
 	defer func() {
-		_ = resp2.Body.Close()
+		_ = resp.Body.Close()
 	}()
-	assert.Equal(t, resp2.StatusCode, http.StatusNotFound)
+	assert.Equal(t, resp.StatusCode, http.StatusNotFound)
 
-	url, err = client.GetFidUrl(ctx, fid)
+	err = client.GetObject(ctx, fid, buffer)
 	assert.Equal(t, errors.Is(err, errors.ErrObjectNotExist), true)
-	assert.Equal(t, url, "")
 }

@@ -7,12 +7,8 @@ import (
 	"testing"
 	"time"
 	"youngfs/errors"
-	"youngfs/fs/ec/ec_calc"
-	"youngfs/fs/ec/ec_server"
-	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
-	"youngfs/fs/id_generator/snow_flake"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine/seaweedfs"
 	"youngfs/kv/redis"
@@ -22,19 +18,14 @@ import (
 
 func TestEntry(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewECStore(kvStore, storageEngine, snow_flake.NewSnowFlake(0))
-	ecCalc := ec_calc.NewECCalc(ecStore, storageEngine)
-	ecServer := ec_server.NewECServer(ecStore, ecCalc)
-	vfs := NewVFS(kvStore, storageEngine, ecServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster)
+	vfs := NewVFS(kvStore, storageEngine)
 
 	fp := full_path.FullPath("/aa/bb/cc")
 	set := fs_set.Set("test_vfs_entry")
 	ctx := context.Background()
 
-	size := uint64(5 * 1024)
-
-	fid := putObject(t, ctx, vfs, size)
+	size := uint64(20 * 1024)
 
 	ent := &entry.Entry{
 		FullPath: fp,
@@ -45,7 +36,7 @@ func TestEntry(t *testing.T) {
 		Mime:     "text/plain",
 		Md5:      util.RandMd5(),
 		FileSize: size,
-		Fid:      fid,
+		Chunks:   putObject(t, ctx, vfs, size),
 	}
 
 	assert.Equal(t, ent.IsFile(), true)
@@ -69,4 +60,6 @@ func TestEntry(t *testing.T) {
 
 	err = vfs.deleteEntry(ctx, set, fp)
 	assert.Equal(t, err, nil)
+
+	time.Sleep(3 * time.Second)
 }

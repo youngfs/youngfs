@@ -14,14 +14,11 @@ import (
 )
 
 type PutObjectInfo struct {
-	Recover  bool `form:"recover" json:"recover" uri:"recover"`
 	Compress bool `form:"compress" json:"compress" uri:"compress"`
 }
 
 func PutObjectHandler(c *gin.Context) {
-	putObjectInfo := &PutObjectInfo{
-		Recover: false,
-	}
+	putObjectInfo := &PutObjectInfo{}
 
 	err := c.Bind(putObjectInfo)
 	if err != nil {
@@ -36,11 +33,6 @@ func PutObjectHandler(c *gin.Context) {
 				vars.ErrorKey: err.Error(),
 			},
 		)
-		return
-	}
-
-	if putObjectInfo.Recover {
-		RecoverObjectHandler(c)
 		return
 	}
 
@@ -60,6 +52,23 @@ func PutObjectHandler(c *gin.Context) {
 	defer func() {
 		_ = file.Close()
 	}()
+
+	for _, transfer := range c.Request.TransferEncoding {
+		if transfer == "chunked" {
+			err := errors.ErrNotSupportChunkTransfer
+			c.Set(vars.CodeKey, err.ErrorCode)
+			c.Set(vars.ErrorKey, err.Error())
+			c.JSON(
+				err.HTTPStatusCode,
+				gin.H{
+					vars.UUIDKey:  c.Value(vars.UUIDKey),
+					vars.CodeKey:  err.ErrorCode,
+					vars.ErrorKey: err.Error(),
+				},
+			)
+			return
+		}
+	}
 
 	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if len(fp) == 0 || fp[len(fp)-1] == '/' {

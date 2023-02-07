@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 	"youngfs/errors"
-	"youngfs/fs/ec/ec_server"
-	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
 	"youngfs/fs/set"
@@ -16,14 +14,12 @@ import (
 type VFS struct {
 	kvStore       kv.KvSetStoreWithRedisMutex
 	storageEngine storage_engine.StorageEngine
-	ecServer      *ec_server.ECServer
 }
 
-func NewVFS(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storage_engine.StorageEngine, ecServer *ec_server.ECServer) *VFS {
+func NewVFS(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storage_engine.StorageEngine) *VFS {
 	return &VFS{
 		kvStore:       kvStore,
 		storageEngine: storageEngine,
-		ecServer:      ecServer,
 	}
 }
 
@@ -141,15 +137,4 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 	}
 
 	return entry.ToListEntries(ret), nil
-}
-
-func (vfs *VFS) RecoverObject(ctx context.Context, frags []ec_store.Frag) error {
-	for _, frag := range frags {
-		err := vfs.recoverEntry(ctx, &frag)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

@@ -1,7 +1,6 @@
 package seaweedfs
 
 import (
-	"context"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"net/http"
@@ -20,7 +19,7 @@ type volumeIpInfo struct {
 	Error          string      `json:"error"`
 }
 
-func (se *StorageEngine) getVolumeHost(ctx context.Context, volumeId uint64) (string, error) {
+func (se *StorageEngine) getVolumeHost(volumeId uint64) (string, error) {
 	if val, ok := se.volumeIpMap.Load(volumeId); ok {
 		if ip, ok := val.(string); ok {
 			return ip, nil

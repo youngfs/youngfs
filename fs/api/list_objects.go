@@ -47,7 +47,7 @@ func ListObjectsHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ents, err := server.ListObejcts(c, set, fp)
+	ents, err := server.ListObjects(c, set, fp)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {

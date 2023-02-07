@@ -58,7 +58,7 @@
     <div class="page-header">
         <h1>
             <img src="/static/images/hit_logo.jpeg" width="100" height="100"/>
-            YOUNG FS
+            YOUNGFS
         </h1>
     </div>
     <form class="upload-form">
@@ -112,9 +112,6 @@
                 </td>
                 <td align="right" nowrap>
                     <label class="button" onclick="deleteFile({{ $ent.Name }})">Delete</label>
-                </td>
-                <td align="right" nowrap>
-                    <label class="button" onclick="recoverFile({{ $ent.Name }})">Recover</label>
                 </td>
             </tr>
             {{ end }}
@@ -295,31 +292,6 @@
         }
 
         formData.append('recursive', 'true')
-        xhr.send(formData)
-    }
-
-    function recoverFile(fileName) {
-        var url = window.location.href
-        if (url.charAt(url.length - 1) !== '/') {
-            url += '/'
-        }
-        url += fileName
-        var xhr = new XMLHttpRequest()
-        var formData = new FormData()
-        xhr.open('POST', url, true)
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
-                    alert('recover successfully');
-                    window.location.reload()
-                } else {
-                    alert('recover failed');
-                    window.location.reload()
-                }
-            }
-        }
-
-        formData.append('recover', 'true')
         xhr.send(formData)
     }
 

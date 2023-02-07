@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 	"youngfs/errors"
-	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
 	"youngfs/fs/set"
@@ -233,34 +232,6 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 		err = vfs.deleteEntry(ctx, set, fp)
 		if err != nil {
 			return err
-		}
-	}
-
-	return nil
-}
-
-func (vfs *VFS) recoverEntry(ctx context.Context, frag *ec_store.Frag) error {
-	mutex := vfs.kvStore.NewMutex(inodeLockKey(frag.Set, frag.FullPath))
-	if err := mutex.Lock(); err != nil {
-		return errors.ErrRedisSync.WithStack()
-	}
-	defer func() {
-		_, _ = mutex.Unlock()
-	}()
-
-	ent, err := vfs.getEntry(ctx, frag.Set, frag.FullPath)
-	if err != nil {
-		if errors.IsKvNotFound(err) {
-			return nil
-		}
-		return errors.WithMessage(err, "recover entry: get entry")
-	}
-
-	if ent.ECid == frag.OldECid {
-		ent.Fid = frag.Fid
-		err := vfs.insertEntry(ctx, ent)
-		if err != nil {
-			return errors.WithMessage(err, "recover entry: insert entry")
 		}
 	}
 

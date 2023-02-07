@@ -2,6 +2,7 @@ package vfs
 
 import (
 	"context"
+	"go.uber.org/multierr"
 	"youngfs/errors"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
@@ -9,7 +10,7 @@ import (
 )
 
 func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
-	b, err := ent.EncodeProto(ctx)
+	b, err := ent.EncodeProto()
 	if err != nil {
 		return err
 	}
@@ -25,7 +26,7 @@ func (vfs *VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath
 		return nil, err
 	}
 
-	return entry.DecodeEntryProto(ctx, b)
+	return entry.DecodeEntryProto(b)
 }
 
 func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {
@@ -45,13 +46,17 @@ func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullP
 	}
 
 	if ent.IsFile() {
-		err := vfs.storageEngine.DeleteObject(ctx, ent.Fid)
-		if err != nil {
-			return err
+		var merr error
+		for _, chunk := range ent.Chunks {
+			for _, frag := range chunk.Frags {
+				err := vfs.storageEngine.DeleteObject(ctx, frag.Fid)
+				if err != nil {
+					merr = multierr.Append(merr, err)
+				}
+			}
 		}
-		err = vfs.ecServer.DeleteObject(ctx, ent.ECid)
-		if err != nil {
-			return err
+		if merr != nil {
+			return merr
 		}
 	}
 

@@ -8,9 +8,6 @@ import (
 	"testing"
 	"time"
 	"youngfs/errors"
-	"youngfs/fs/ec/ec_calc"
-	"youngfs/fs/ec/ec_server"
-	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
 	fs_set "youngfs/fs/set"
@@ -22,15 +19,12 @@ import (
 
 func TestVFS(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
-	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewECStore(kvStore, storageEngine)
-	ecCalc := ec_calc.NewECCalc(ecStore, storageEngine)
-	ecServer := ec_server.NewECServer(ecStore, ecCalc)
-	vfs := NewVFS(kvStore, storageEngine, ecServer)
+	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster)
+	vfs := NewVFS(kvStore, storageEngine)
 
 	set := fs_set.Set("test_vfs")
 	mime := "application/octet-stream"
-	size := uint64(5 * 1024)
+	size := uint64(20 * 1024)
 	insertFiles := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff", "/ll"}
 	insertDirs := []full_path.FullPath{"/gg", "/bb/hh", "/aa/bb/ii", "/aa/bb/ee/jj", "/kk"}
 	Files := []full_path.FullPath{"/aa/bb/cc/dd", "/aa/bb/dd", "/aa/ee", "/ff", "/ll"}
@@ -38,11 +32,11 @@ func TestVFS(t *testing.T) {
 	time1 := time.Unix(time.Now().Unix(), 0)
 	ctx := context.Background()
 
-	fidMap := make(map[full_path.FullPath]string)
+	chunksMap := make(map[full_path.FullPath]entry.Chunks)
 
 	for _, fp := range insertFiles {
-		fid := putObject(t, ctx, vfs, size)
-		fidMap[fp] = fid
+		chunks := putObject(t, ctx, vfs, size)
+		chunksMap[fp] = chunks
 
 		err := vfs.InsertObject(
 			ctx,
@@ -54,7 +48,7 @@ func TestVFS(t *testing.T) {
 				Mode:     os.ModePerm,
 				Mime:     mime,
 				FileSize: size,
-				Fid:      fid,
+				Chunks:   chunks,
 			}, true)
 		assert.Equal(t, err, nil)
 	}
@@ -82,7 +76,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		ent, err = vfs.getEntry(ctx, set, fp)
@@ -95,7 +89,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		entries, err := vfs.ListObjects(ctx, set, fp)
@@ -147,7 +141,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		ent, err = vfs.getEntry(ctx, set, fp)
@@ -160,7 +154,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		entries, err := vfs.ListObjects(ctx, set, fp)
@@ -283,7 +277,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		ent, err = vfs.getEntry(ctx, set, fp)
@@ -296,7 +290,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		entries, err := vfs.ListObjects(ctx, set, fp)
@@ -359,8 +353,8 @@ func TestVFS(t *testing.T) {
 	time.Sleep(time.Duration(2) * time.Second)
 	time3 := time.Unix(time.Now().Unix(), 0)
 
-	fid := putObject(t, ctx, vfs, size)
-	fidMap["/aa/ee/ll/mm"] = fid
+	chunks := putObject(t, ctx, vfs, size)
+	chunksMap["/aa/ee/ll/mm"] = chunks
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
@@ -371,7 +365,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fid,
+			Chunks:   chunks,
 		}, true)
 	assert.Equal(t, err, nil)
 
@@ -395,8 +389,8 @@ func TestVFS(t *testing.T) {
 		}, true)
 	assert.Equal(t, err, nil)
 
-	fid = putObject(t, ctx, vfs, size)
-	fidMap["/kk"] = fid
+	chunks = putObject(t, ctx, vfs, size)
+	chunksMap["/kk"] = chunks
 
 	err = vfs.InsertObject(ctx,
 		&entry.Entry{
@@ -407,7 +401,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fid,
+			Chunks:   chunks,
 		}, true)
 	assert.Equal(t, err, nil)
 
@@ -491,7 +485,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		ent, err = vfs.getEntry(ctx, set, fp)
@@ -504,7 +498,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		entries, err := vfs.ListObjects(ctx, set, fp)
@@ -523,7 +517,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		ent, err = vfs.getEntry(ctx, set, fp)
@@ -536,7 +530,7 @@ func TestVFS(t *testing.T) {
 			Mode:     os.ModePerm,
 			Mime:     mime,
 			FileSize: size,
-			Fid:      fidMap[fp],
+			Chunks:   chunksMap[fp],
 		})
 
 		entries, err := vfs.ListObjects(ctx, set, fp)
@@ -666,11 +660,66 @@ func TestVFS(t *testing.T) {
 	time.Sleep(3 * time.Second)
 }
 
-func putObject(t *testing.T, ctx context.Context, vfs *VFS, size uint64) string {
-	b := util.RandByte(size)
+func putObject(t *testing.T, ctx context.Context, vfs *VFS, size uint64) entry.Chunks {
+	sizes := make([]uint64, 4)
+	sizes[0] = size >> 2
+	sizes[1] = size >> 2
+	sizes[2] = size >> 2
+	sizes[3] = size - sizes[0] - sizes[1] - sizes[2]
 
-	fid, err := vfs.storageEngine.PutObject(ctx, size, bytes.NewReader(b), "", true)
-	assert.Equal(t, err, nil)
+	fids := make([]string, 4)
+	for i := 0; i < 4; i++ {
+		fid, err := vfs.storageEngine.PutObject(ctx, sizes[i], bytes.NewReader(util.RandByte(sizes[i])), true)
+		assert.Equal(t, err, nil)
+		fids[i] = fid
+	}
 
-	return fid
+	return []entry.Chunk{
+		{
+			Offset: 0,
+			Size:   sizes[0] + sizes[1],
+			Md5:    util.RandMd5(),
+			Frags: []entry.Frag{
+				{
+					Size:          sizes[0],
+					Id:            1,
+					Md5:           util.RandMd5(),
+					IsReplication: false,
+					IsDataShard:   true,
+					Fid:           fids[0],
+				},
+				{
+					Size:          sizes[1],
+					Id:            2,
+					Md5:           util.RandMd5(),
+					IsReplication: false,
+					IsDataShard:   true,
+					Fid:           fids[1],
+				},
+			},
+		},
+		{
+			Offset: sizes[0] + sizes[1],
+			Size:   sizes[2] + sizes[3],
+			Md5:    util.RandMd5(),
+			Frags: []entry.Frag{
+				{
+					Size:          sizes[2],
+					Id:            1,
+					Md5:           util.RandMd5(),
+					IsReplication: false,
+					IsDataShard:   true,
+					Fid:           fids[2],
+				},
+				{
+					Size:          sizes[3],
+					Id:            2,
+					Md5:           util.RandMd5(),
+					IsReplication: false,
+					IsDataShard:   true,
+					Fid:           fids[3],
+				},
+			},
+		},
+	}
 }

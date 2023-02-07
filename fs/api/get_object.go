@@ -49,7 +49,7 @@ func GetObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.GetObject(c, set, fp)
+	ent, err := server.GetEntry(c, set, fp)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -78,7 +78,7 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	url, err := server.GetFidUrl(c, ent.Fid)
+	err = server.GetObject(c, ent, c.Writer)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -101,8 +101,6 @@ func GetObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, url)
-	// http.StatusMovedPermanently 301: The URL of the requested resource has been changed permanently. The new URL is given in the response.
-	// http.StatusFound            302: This response code means that the URI of requested resource has been changed temporarily. Further changes in the URI might be made in the future. Therefore, this same URI should be used by the client in future requests.
+	c.Status(http.StatusOK)
 	return
 }

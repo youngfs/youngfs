@@ -33,7 +33,7 @@ func HeadObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.GetObject(c, set, fp)
+	ent, err := server.GetEntry(c, set, fp)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -66,7 +66,6 @@ func HeadObjectHandler(c *gin.Context) {
 	c.Header("Mime", ent.Mime)
 	c.Header("Md5", hex.EncodeToString(ent.Md5))
 	c.Header("File-Size", strconv.FormatUint(ent.FileSize, 10))
-	c.Header("Fid", ent.Fid)
 	c.Status(http.StatusOK)
 	return
 }

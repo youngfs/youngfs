@@ -20,12 +20,8 @@ const (
 	errInvalidDelete
 	errIllegalObjectName
 	errIllegalSetName
-	errIllegalSetRules
-	errIllegalObjectSize
 	errRouter
-	errRecoverFailed
 	errObjectNotExist
-	errRulesNotExist
 )
 
 // 500  error code
@@ -37,4 +33,6 @@ const (
 	errSeaweedFSVolume
 	errRedisSync
 	errServer
+	errNotSupportChunkTransfer
+	errChunkMisalignment
 )

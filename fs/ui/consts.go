@@ -1,6 +1,5 @@
 package ui
 
 const (
-	FSName    = "fs"
-	RulesName = "rules"
+	FSName = "fs"
 )

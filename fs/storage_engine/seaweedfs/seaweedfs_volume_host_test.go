@@ -5,16 +5,13 @@ import (
 	"github.com/go-playground/assert/v2"
 	"testing"
 	"youngfs/errors"
-	"youngfs/kv/redis"
 	"youngfs/vars"
 )
 
 func TestSeaweedFS_GetVolumeHost(t *testing.T) {
-	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
-	client := NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ctx := context.Background()
+	client := NewStorageEngine(vars.SeaweedFSMaster)
 
-	hosts, err := client.GetHosts(ctx)
+	hosts, err := client.GetHosts(context.Background())
 	assert.Equal(t, err, nil)
 
 	volumes := make(map[uint64]bool)
@@ -24,7 +21,7 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	}
 
 	for i := uint64(1); i <= 128; i++ {
-		host, err := client.getVolumeHost(ctx, i)
+		host, err := client.getVolumeHost(i)
 		if err == nil {
 			volumes[i] = true
 			val, ok := client.volumeIpMap.Load(i)
@@ -38,7 +35,7 @@ func TestSeaweedFS_GetVolumeHost(t *testing.T) {
 	}
 
 	for i := uint64(1); i <= 128; i++ {
-		host, err := client.getVolumeHost(ctx, i)
+		host, err := client.getVolumeHost(i)
 		if volumes[i] {
 			val, ok := client.volumeIpMap.Load(i)
 			assert.Equal(t, ok, true)

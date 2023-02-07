@@ -48,12 +48,6 @@ func InitRouter() {
 	r.DELETE("/:set/*fp", Logger("delete object"), api.DeleteObjectHandler)
 	r.HEAD("/:set/*fp", Logger("head object"), api.HeadObjectHandler)
 
-	// set rules
-	r.PUT("/rules/*set", Logger("put set rules"), api.PutSetRulesHandler)
-	r.POST("/rules/*set", Logger("put set rules"), api.PutSetRulesHandler)
-	r.GET("/rules/*set", Logger("get set rules"), api.GetRulesHandler)
-	r.DELETE("/rules/*set", Logger("delete set rules"), api.DeleteRulesHandler)
-	r.HEAD("/rules/*set", Logger("head set rules"), api.HeadRulesHandler)
 	router = r
 }
 

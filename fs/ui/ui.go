@@ -22,9 +22,6 @@ var FuncMap = template.FuncMap{
 //go:embed fs.html
 var uiHtml string
 
-//go:embed rules.html
-var rulesHtml string
-
 //go:embed static
 var Static embed.FS
 
@@ -34,6 +31,5 @@ var Favicon []byte
 var StatusTpl *template.Template
 
 func init() {
-	tpl, _ := template.New(FSName).Funcs(FuncMap).Parse(uiHtml)
-	StatusTpl = template.Must(tpl.New(RulesName).Parse(rulesHtml))
+	StatusTpl, _ = template.New(FSName).Funcs(FuncMap).Parse(uiHtml)
 }

@@ -1,5 +1,5 @@
 package server
 
 const (
-	ecStoreIdGeneratorKey = "ec_store_id_generator_key"
+	partSize = 4 * 1024 * 1024
 )

@@ -7,12 +7,12 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
-	"youngfs/fs/ec/ec_server"
+	"youngfs/errors"
 	"youngfs/fs/entry"
 	"youngfs/fs/filer"
 	"youngfs/fs/full_path"
-	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine"
 	"youngfs/util"
@@ -21,20 +21,18 @@ import (
 type Server struct {
 	filerStore    filer.FilerStore
 	storageEngine storage_engine.StorageEngine
-	ecServer      *ec_server.ECServer
 }
 
 var svr *Server
 
-func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine, ecServer *ec_server.ECServer) *Server {
+func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine) *Server {
 	return &Server{
 		filerStore:    filer,
 		storageEngine: storageEngine,
-		ecServer:      ecServer,
 	}
 }
 
-func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, size uint64, file io.Reader, compress bool) error {
+func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, size uint64, reader io.Reader, compress bool) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	if size == 0 {
@@ -56,7 +54,7 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, size 
 	ext := filepath.Ext(string(fp))
 	mimeType := mime.TypeByExtension(ext)
 	if mimeType == "" {
-		mimeType, file = util.FileMimeDetect(file)
+		mimeType, reader = util.FileMimeDetect(reader)
 	}
 
 	ent := &entry.Entry{
@@ -68,92 +66,85 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, size 
 		Mime:     mimeType,
 		FileSize: size,
 	}
-
-	host, ecid, err := svr.ecServer.InsertObject(ctx, ent)
-	if err != nil {
-		return err
-	}
-
-	ent.ECid = ecid
+	chunks := entry.Chunks{}
 
 	md5Hash := md5.New()
-	file = io.TeeReader(file, md5Hash)
+	reader = io.TeeReader(reader, md5Hash)
 
-	fid := ""
-	if host != "" {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file, fp.Name(), compress, host)
+	for offset, id := uint64(0), int64(0); offset < size; offset += partSize {
+		id++
+		sz := util.Min(size-offset, partSize)
+		md5Hash := md5.New()
+		file := io.TeeReader(io.LimitReader(reader, int64(sz)), md5Hash)
+		fid, err := svr.storageEngine.PutObject(ctx, sz, file, compress)
 		if err != nil {
-			_ = svr.ecServer.RecoverEC(ctx, ent)
+			for _, chunk := range chunks {
+				for _, frag := range chunk.Frags {
+					_ = svr.storageEngine.DeleteObject(ctx, frag.Fid)
+				}
+			}
 			return err
 		}
-	} else {
-		fid, err = svr.storageEngine.PutObject(ctx, size, file, fp.Name(), compress)
-		if err != nil {
-			_ = svr.ecServer.RecoverEC(ctx, ent)
-			return err
-		}
+		chunks = append(chunks, entry.Chunk{
+			Offset: offset,
+			Size:   sz,
+			Md5:    md5Hash.Sum(nil),
+			Frags: entry.Frags{
+				entry.Frag{
+					Size:          sz,
+					Id:            id,
+					Md5:           md5Hash.Sum(nil),
+					IsReplication: false,
+					IsDataShard:   true,
+					Fid:           fid,
+				},
+			},
+		})
 	}
 
-	ent.Fid = fid
+	ent.Chunks = chunks
 	ent.Md5 = md5Hash.Sum(nil)
 
-	err = svr.filerStore.InsertObject(ctx, ent, true)
+	err := svr.filerStore.InsertObject(ctx, ent, true)
 	if err != nil {
-		_ = svr.storageEngine.DeleteObject(ctx, fid)
-		_ = svr.ecServer.RecoverEC(ctx, ent)
-		return err
-	}
-
-	err = svr.ecServer.ConfirmEC(ctx, ent)
-	if err != nil {
+		for _, chunk := range chunks {
+			for _, frag := range chunk.Frags {
+				_ = svr.storageEngine.DeleteObject(ctx, frag.Fid)
+			}
+		}
 		return err
 	}
 
 	return nil
 }
 
-func GetObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath) (*entry.Entry, error) {
+func GetEntry(ctx context.Context, set fs_set.Set, fp full_path.FullPath) (*entry.Entry, error) {
 	return svr.filerStore.GetObject(ctx, set, fp)
 }
 
-func ListObejcts(ctx context.Context, set fs_set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
+func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
+	if !ent.Chunks.Verify() {
+		return errors.ErrChunkMisalignment.WithMessagef("damaged file: %s", string(ent.FullPath))
+	}
+	for _, chunk := range ent.Chunks {
+		sort.Sort(chunk.Frags)
+		for _, frag := range chunk.Frags {
+			if frag.IsDataShard {
+				err := svr.storageEngine.GetObject(ctx, frag.Fid, writer)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func ListObjects(ctx context.Context, set fs_set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
 	return svr.filerStore.ListObjects(ctx, set, fp)
 }
 
 func DeleteObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, recursive bool) error {
 	mtime := time.Unix(time.Now().Unix(), 0)
 	return svr.filerStore.DeleteObject(ctx, set, fp, recursive, mtime)
-}
-
-func GetFidUrl(ctx context.Context, fid string) (string, error) {
-	return svr.storageEngine.GetFidUrl(ctx, fid)
-}
-
-func RecoverObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath) error {
-	ent, err := svr.filerStore.GetObject(ctx, set, fp)
-	if err != nil {
-		return err
-	}
-
-	frags, err := svr.ecServer.RecoverObject(ctx, ent)
-	if err != nil {
-		return err
-	}
-	return svr.filerStore.RecoverObject(ctx, frags)
-}
-
-func InsertRules(ctx context.Context, r *rules.Rules) error {
-	return svr.ecServer.InsertRules(ctx, r)
-}
-
-func DeleteRules(ctx context.Context, set fs_set.Set) error {
-	return svr.ecServer.DeleteRules(ctx, set)
-}
-
-func GetRules(ctx context.Context, set fs_set.Set) (*rules.Rules, error) {
-	return svr.ecServer.GetRules(ctx, set)
-}
-
-func GetHosts(ctx context.Context) ([]string, error) {
-	return svr.storageEngine.GetHosts(ctx)
 }

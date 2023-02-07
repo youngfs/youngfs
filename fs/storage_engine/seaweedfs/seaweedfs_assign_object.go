@@ -1,7 +1,6 @@
 package seaweedfs
 
 import (
-	"context"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"math/rand"
@@ -18,7 +17,7 @@ type assignObjectInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ...string) (*assignObjectInfo, error) {
+func (se *StorageEngine) assignObject(size uint64, hosts ...string) (*assignObjectInfo, error) {
 	hostReq, host := "", ""
 	if len(hosts) > 0 {
 		host = hosts[rand.Intn(len(hosts))]
@@ -53,7 +52,7 @@ func (se *StorageEngine) assignObject(ctx context.Context, size uint64, hosts ..
 	return assignFileInfo, nil
 }
 
-func (se *StorageEngine) parseFid(ctx context.Context, fullFid string) (uint64, string, error) {
+func (se *StorageEngine) parseFid(fullFid string) (uint64, string, error) {
 	ret := strings.Split(fullFid, ",")
 	if len(ret) != 2 {
 		return 0, "", errors.ErrServer.Wrap("seaweedfs parse fid error")

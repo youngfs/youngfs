@@ -9,9 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 	"youngfs/errors"
-	"youngfs/log"
 	"youngfs/util"
-	"youngfs/vars"
 )
 
 type deleteObjectInfo struct {
@@ -32,25 +30,10 @@ func (se *StorageEngine) loopProcessingDeletion() {
 			for _, id := range fids {
 				fid := id
 				lce.Execute(func() {
-					ctx := context.Background()
-
-					link, err := se.delLink(ctx, fid)
+					err := se.deleteActualObject(fid)
 					if err != nil {
-						log.Errorw("seaweedfs delete object: get link error", vars.ErrorKey, err.Error(), "fid", fid)
+						//log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
 						return
-					}
-
-					if link == 0 {
-						err = se.deleteActualObject(ctx, fid)
-						if err != nil {
-							log.Errorw("seaweedfs delete object: delete actual object error", vars.ErrorKey, err.Error(), "fid", fid)
-							return
-						}
-					} else if link < 0 {
-						_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fid))
-						if err != nil {
-							log.Errorw("seaweedfs delete object: clear err fid link", vars.ErrorKey, err.Error())
-						}
 					}
 
 					atomic.AddInt64(&deleteCnt, 1)
@@ -65,18 +48,13 @@ func (se *StorageEngine) loopProcessingDeletion() {
 	}
 }
 
-func (se *StorageEngine) deleteActualObject(ctx context.Context, fullFid string) error {
-	_, err := se.kvStore.ClrNum(ctx, fidLinkKey(fullFid))
-	if err != nil {
-		return errors.Wrap(err, "seaweedfs delete actual object: clear fid link")
-	}
-
-	volumeId, fid, err := se.parseFid(ctx, fullFid)
+func (se *StorageEngine) deleteActualObject(fullFid string) error {
+	volumeId, fid, err := se.parseFid(fullFid)
 	if err != nil {
 		return err
 	}
 
-	volumeIp, err := se.getVolumeHost(ctx, volumeId)
+	volumeIp, err := se.getVolumeHost(volumeId)
 	if err != nil || volumeIp == "" {
 		return err
 	}

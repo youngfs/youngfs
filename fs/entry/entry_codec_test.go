@@ -1,19 +1,15 @@
 package entry
 
 import (
-	"context"
 	"github.com/go-playground/assert/v2"
 	"math/rand"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 	"youngfs/util"
 )
 
 func TestEntry_EnDecodeProto(t *testing.T) {
-	ctx := context.Background()
-
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
 		Set:      "test",
@@ -22,15 +18,61 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 		Mode:     os.ModePerm,
 		Mime:     "",
 		Md5:      util.RandMd5(),
-		FileSize: uint64(rand.Int63()),
-		Fid:      strconv.Itoa(rand.Int()),
-		ECid:     strconv.FormatInt(rand.Int63(), 10),
+		FileSize: rand.Uint64(),
+		Chunks: []Chunk{
+			{
+				Offset: rand.Uint64(),
+				Size:   rand.Uint64(),
+				Md5:    util.RandMd5(),
+				Frags: []Frag{
+					{
+						Size:          rand.Uint64(),
+						Id:            1,
+						Md5:           util.RandMd5(),
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+					{
+						Size:          rand.Uint64(),
+						Id:            2,
+						Md5:           util.RandMd5(),
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+				},
+			},
+			{
+				Offset: rand.Uint64(),
+				Size:   rand.Uint64(),
+				Md5:    util.RandMd5(),
+				Frags: []Frag{
+					{
+						Size:          rand.Uint64(),
+						Id:            1,
+						Md5:           util.RandMd5(),
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+					{
+						Size:          rand.Uint64(),
+						Id:            2,
+						Md5:           util.RandMd5(),
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+				},
+			},
+		},
 	}
 
-	b, err := val.EncodeProto(ctx)
+	b, err := val.EncodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeEntryProto(ctx, b)
+	val2, err := DecodeEntryProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 
@@ -42,14 +84,54 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 		Mode:     os.ModePerm,
 		Mime:     "",
 		FileSize: uint64(rand.Int63()),
-		Fid:      strconv.Itoa(rand.Int()),
-		ECid:     strconv.FormatInt(rand.Int63(), 10),
+		Chunks: []Chunk{
+			{
+				Offset: rand.Uint64(),
+				Size:   rand.Uint64(),
+				Frags: []Frag{
+					{
+						Size:          rand.Uint64(),
+						Id:            1,
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+					{
+						Size:          rand.Uint64(),
+						Id:            2,
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+				},
+			},
+			{
+				Offset: rand.Uint64(),
+				Size:   rand.Uint64(),
+				Frags: []Frag{
+					{
+						Size:          rand.Uint64(),
+						Id:            1,
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+					{
+						Size:          rand.Uint64(),
+						Id:            2,
+						IsReplication: rand.Int()%2 == 0,
+						IsDataShard:   rand.Int()%2 == 0,
+						Fid:           util.RandString(16),
+					},
+				},
+			},
+		},
 	}
 
-	b, err = val.EncodeProto(ctx)
+	b, err = val.EncodeProto()
 	assert.Equal(t, err, nil)
 
-	val2, err = DecodeEntryProto(ctx, b)
+	val2, err = DecodeEntryProto(b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

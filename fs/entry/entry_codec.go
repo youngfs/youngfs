@@ -1,7 +1,6 @@
 package entry
 
 import (
-	"context"
 	"github.com/golang/protobuf/proto"
 	"os"
 	"time"
@@ -16,6 +15,11 @@ func (ent *Entry) toPb() *entry_pb.Entry {
 		return nil
 	}
 
+	chunks := make([]*entry_pb.Chunk, len(ent.Chunks))
+	for i, u := range ent.Chunks {
+		chunks[i] = u.toPb()
+	}
+
 	return &entry_pb.Entry{
 		FullPath: string(ent.FullPath),
 		Set:      string(ent.Set),
@@ -25,14 +29,58 @@ func (ent *Entry) toPb() *entry_pb.Entry {
 		Mine:     ent.Mime,
 		Md5:      ent.Md5,
 		FileSize: ent.FileSize,
-		Fid:      ent.Fid,
-		ECid:     ent.ECid,
+		Chunks:   chunks,
+	}
+}
+
+func (c *Chunk) toPb() *entry_pb.Chunk {
+	if c == nil {
+		return nil
+	}
+
+	frags := make([]*entry_pb.Frag, len(c.Frags))
+	for i, u := range c.Frags {
+		frags[i] = u.toPb()
+	}
+
+	return &entry_pb.Chunk{
+		Offset: c.Offset,
+		Size:   c.Size,
+		Md5:    c.Md5,
+		Frags:  frags,
+	}
+}
+
+func (f *Frag) toPb() *entry_pb.Frag {
+	if f == nil {
+		return nil
+	}
+
+	return &entry_pb.Frag{
+		Size:          f.Size,
+		Id:            f.Id,
+		Md5:           f.Md5,
+		IsReplication: f.IsReplication,
+		IsDataShard:   f.IsDataShard,
+		Fid:           f.Fid,
 	}
 }
 
 func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 	if pb == nil {
 		return nil
+	}
+
+	chunks := make([]Chunk, len(pb.Chunks))
+	for i, u := range pb.Chunks {
+		if u == nil {
+			continue
+		}
+		chunks[i] = *chunkPbToInstance(u)
+	}
+
+	if pb.Chunks == nil {
+		chunks = nil
 	}
 
 	return &Entry{
@@ -44,12 +92,51 @@ func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 		Mime:     pb.Mine,
 		Md5:      pb.Md5,
 		FileSize: pb.FileSize,
-		Fid:      pb.Fid,
-		ECid:     pb.ECid,
+		Chunks:   chunks,
 	}
 }
 
-func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
+func chunkPbToInstance(pb *entry_pb.Chunk) *Chunk {
+	if pb == nil {
+		return nil
+	}
+
+	frags := make([]Frag, len(pb.Frags))
+	for i, u := range pb.Frags {
+		if u == nil {
+			continue
+		}
+		frags[i] = *frgaPbToInstance(u)
+	}
+
+	if pb.Frags == nil {
+		frags = nil
+	}
+
+	return &Chunk{
+		Offset: pb.Offset,
+		Size:   pb.Size,
+		Md5:    pb.Md5,
+		Frags:  frags,
+	}
+}
+
+func frgaPbToInstance(pb *entry_pb.Frag) *Frag {
+	if pb == nil {
+		return nil
+	}
+
+	return &Frag{
+		Size:          pb.Size,
+		Id:            pb.Id,
+		Md5:           pb.Md5,
+		IsReplication: pb.IsReplication,
+		IsDataShard:   pb.IsDataShard,
+		Fid:           pb.Fid,
+	}
+}
+
+func (ent *Entry) EncodeProto() ([]byte, error) {
 	message := ent.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
@@ -58,7 +145,7 @@ func (ent *Entry) EncodeProto(ctx context.Context) ([]byte, error) {
 	return b, err
 }
 
-func DecodeEntryProto(ctx context.Context, b []byte) (*Entry, error) {
+func DecodeEntryProto(b []byte) (*Entry, error) {
 	message := &entry_pb.Entry{}
 	if err := proto.Unmarshal(b, message); err != nil {
 		return nil, errors.ErrProto.WithStack()

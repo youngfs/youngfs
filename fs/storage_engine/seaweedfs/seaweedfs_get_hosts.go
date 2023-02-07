@@ -5,7 +5,8 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"net/http"
-	"youngfs/errors"
+	"time"
+	"youngfs/log"
 )
 
 type dataNode struct {
@@ -35,10 +36,11 @@ type dirStatue struct {
 	Topology topology `json:"Topology"`
 }
 
-func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
+func (se *StorageEngine) updateHosts() {
 	resp, err := http.Get("http://" + se.masterServer + "/dir/status")
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts : http get error")
+		log.Errorw("seaweedfs get hosts : http get error")
+		return
 	}
 	defer func() {
 		_ = resp.Body.Close()
@@ -46,13 +48,15 @@ func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 
 	httpBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts: get http body error")
+		log.Errorw("seaweedfs get hosts: get http body error")
+		return
 	}
 
 	info := &dirStatue{}
 	err = jsoniter.Unmarshal(httpBody, info)
 	if err != nil {
-		return nil, errors.ErrSeaweedFSMaster.Wrap("seaweedfs get hosts: http body unmarshal error")
+		log.Errorw("seaweedfs get hosts: http body unmarshal error")
+		return
 	}
 
 	dataCenters := info.Topology.DataCenters
@@ -83,5 +87,20 @@ func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 		}
 	}
 
-	return ret, nil
+	se.hostsMutex.Lock()
+	defer se.hostsMutex.Unlock()
+	se.hosts = ret
+}
+
+func (se *StorageEngine) scheduledUpdateHosts() {
+	ticker := time.NewTicker(5 * time.Second)
+	for range ticker.C {
+		se.updateHosts()
+	}
+}
+
+func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
+	se.hostsMutex.RLock()
+	defer se.hostsMutex.RUnlock()
+	return se.hosts, nil
 }
