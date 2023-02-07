@@ -12,6 +12,7 @@ import (
 	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
+	"youngfs/fs/id_generator/snow_flake"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine/seaweedfs"
 	"youngfs/kv/redis"
@@ -22,7 +23,7 @@ import (
 func TestEntry(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	storageEngine := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewEC(kvStore, storageEngine)
+	ecStore := ec_store.NewECStore(kvStore, storageEngine, snow_flake.NewSnowFlake(0))
 	ecCalc := ec_calc.NewECCalc(ecStore, storageEngine)
 	ecServer := ec_server.NewECServer(ecStore, ecCalc)
 	vfs := NewVFS(kvStore, storageEngine, ecServer)

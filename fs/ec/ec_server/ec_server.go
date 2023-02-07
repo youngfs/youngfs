@@ -2,11 +2,13 @@ package ec_server
 
 import (
 	"context"
+	"sync/atomic"
 	"time"
 	"youngfs/errors"
 	"youngfs/fs/ec/ec_calc"
 	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
+	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 	"youngfs/util"
 )
@@ -30,31 +32,32 @@ func NewECServer(ecStore *ec_store.ECStore, ecCalc *ec_calc.ECCalc) *ECServer {
 }
 
 func (ec *ECServer) loopProcessingEC() {
-	var ecCnt int
+	var ecCnt int64
+	lce := util.NewLimitedConcurrentExecutor(4)
 	for {
 		ecCnt = 0
 		ec.ecQueue.Consume(func(ecids []string) {
-			for _, ecid := range ecids {
-				ctx := context.Background()
-				_ = ec.ECCalc.ExecEC(ctx, ecid)
-				ecCnt++
+			for _, id := range ecids {
+				ecid := id
+				lce.Execute(func() {
+					ctx := context.Background()
+					_ = ec.ECCalc.ExecEC(ctx, ecid)
+					atomic.AddInt64(&ecCnt, 1)
+				})
 			}
+			lce.Wait()
 		})
 		if ecCnt == 0 {
-			time.Sleep(1234 * time.Millisecond)
+			time.Sleep(time.Second)
 		}
 	}
 }
 
 // return host, ecid, error
 func (ec *ECServer) InsertObject(ctx context.Context, ent *entry.Entry) (string, string, error) {
-	host, ecid, suiteid, err := ec.ECStore.InsertObject(ctx, ent)
+	host, ecid, _, err := ec.ECStore.InsertObject(ctx, ent)
 	if err != nil {
 		return "", "", err
-	}
-
-	if suiteid != "" {
-		ec.ecQueue.EnQueue(suiteid)
 	}
 
 	return host, ecid, nil
@@ -64,19 +67,19 @@ func (ec *ECServer) RecoverObject(ctx context.Context, ent *entry.Entry) ([]ec_s
 	return ec.ECCalc.RecoverObject(ctx, ent)
 }
 
-func (ec *ECServer) InsertSetRules(ctx context.Context, setRules *fs_set.SetRules) error {
-	return ec.ECStore.InsertSetRules(ctx, setRules)
+func (ec *ECServer) InsertRules(ctx context.Context, setRules *rules.Rules) error {
+	return ec.ECStore.InsertRules(ctx, setRules)
 }
 
-func (ec *ECServer) DeleteSetRules(ctx context.Context, set fs_set.Set) error {
-	return ec.ECStore.DeleteSetRules(ctx, set, true)
+func (ec *ECServer) DeleteRules(ctx context.Context, set fs_set.Set) error {
+	return ec.ECStore.DeleteRules(ctx, set, true)
 }
 
-func (ec *ECServer) GetSetRules(ctx context.Context, set fs_set.Set) (*fs_set.SetRules, error) {
-	setRules, err := ec.ECStore.GetSetRules(ctx, set, true)
+func (ec *ECServer) GetRules(ctx context.Context, set fs_set.Set) (*rules.Rules, error) {
+	setRules, err := ec.ECStore.GetRules(ctx, set)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
-			return nil, errors.ErrSetRulesNotExist
+			return nil, errors.ErrRulesNotExist
 		}
 		return nil, err
 	}
@@ -91,7 +94,11 @@ func (ec *ECServer) ExecEC(ctx context.Context, ecid string) error {
 }
 
 func (ec *ECServer) ConfirmEC(ctx context.Context, ent *entry.Entry) error {
-	return ec.ECStore.ConfirmEC(ctx, ent)
+	err := ec.ECStore.ConfirmEC(ctx, ent)
+	if err == nil && ent.ECid != "" {
+		ec.ecQueue.EnQueue(ent.ECid)
+	}
+	return err
 }
 
 func (ec *ECServer) RecoverEC(ctx context.Context, ent *entry.Entry) error {

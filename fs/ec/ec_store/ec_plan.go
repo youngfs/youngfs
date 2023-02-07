@@ -67,7 +67,7 @@ func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
 		_, _ = mutex.Unlock()
 	}()
 
-	setRules, err := ec.GetSetRules(ctx, set, false)
+	setRules, err := ec.GetRules(ctx, set)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return nil
@@ -87,7 +87,7 @@ func (ec *ECStore) initPlan(ctx context.Context, set set.Set) error {
 		if i < int(setRules.DataShards) {
 			shards[i] = PlanShard{
 				Host:      setRules.Hosts[(st+i)%len(setRules.Hosts)],
-				ShardSize: setRules.MAXShardSize,
+				ShardSize: setRules.MaxShardSize,
 			}
 		} else {
 			shards[i] = PlanShard{

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"youngfs/errors"
+	"youngfs/fs/rules"
 	"youngfs/fs/server"
 	fs_set "youngfs/fs/set"
 	"youngfs/log"
@@ -42,8 +43,8 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	setRules := &fs_set.SetRules{}
-	err := c.Bind(setRules)
+	r := &rules.Rules{}
+	err := c.Bind(r)
 	if err != nil {
 		apiErr := errors.ErrRouter
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
@@ -59,11 +60,11 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	if setRules.Set == "" || set == "" {
+	if r.Set == "" || set == "" {
 		if set != "" {
-			setRules.Set = set
+			r.Set = set
 		} else {
-			set = setRules.Set
+			set = r.Set
 		}
 
 		if set == "" {
@@ -82,7 +83,7 @@ func PutSetRulesHandler(c *gin.Context) {
 		}
 	}
 
-	if setRules.Set != set {
+	if r.Set != set {
 		err := errors.ErrIllegalSetName
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
@@ -97,9 +98,9 @@ func PutSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	setRules.MAXShardSize *= 1024 * 1024 // change MiB
+	r.MaxShardSize *= 1024 * 1024 // change MiB
 
-	err = server.InsertSetRules(c, setRules)
+	err = server.InsertRules(c, r)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {

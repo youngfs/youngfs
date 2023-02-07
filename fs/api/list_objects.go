@@ -12,7 +12,7 @@ import (
 	"youngfs/vars"
 )
 
-func ListObjectHandler(c *gin.Context) {
+func ListObjectsHandler(c *gin.Context) {
 	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if !set.IsLegal() {
 		err := errors.ErrIllegalSetName
@@ -88,7 +88,7 @@ func ListObjectHandler(c *gin.Context) {
 
 	c.HTML(
 		http.StatusOK,
-		ui.UiName,
+		ui.FSName,
 		gin.H{
 			"FullPath":  string(fp),
 			"Set":       string(set),

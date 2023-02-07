@@ -1,4 +1,4 @@
-all: gen
+all: entry_pb/entry.pb.go
 
-gen:
+entry_pb/entry.pb.go:
 	protoc --go_out=. entry.proto

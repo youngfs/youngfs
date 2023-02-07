@@ -5,6 +5,7 @@ type ErrorCode int
 // 100 error code
 const (
 	errKvNotFound ErrorCode = 1000 + iota
+	errECNotFinish
 )
 
 // 200  error code
@@ -24,7 +25,7 @@ const (
 	errRouter
 	errRecoverFailed
 	errObjectNotExist
-	errSetRulesNotExist
+	errRulesNotExist
 )
 
 // 500  error code

@@ -10,7 +10,7 @@ import (
 	"youngfs/vars"
 )
 
-func HeadSetRulesHandler(c *gin.Context) {
+func HeadRulesHandler(c *gin.Context) {
 	set := fs_set.Set(c.Param("set"))
 	if len(set) < 2 { // include /*set
 		err := errors.ErrIllegalSetName
@@ -24,7 +24,7 @@ func HeadSetRulesHandler(c *gin.Context) {
 		return
 	}
 
-	_, err := server.GetSetRules(c, set)
+	_, err := server.GetRules(c, set)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -36,14 +36,7 @@ func HeadSetRulesHandler(c *gin.Context) {
 		}
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
 		c.Set(vars.ErrorKey, apiErr.Error())
-		c.JSON(
-			apiErr.HTTPStatusCode,
-			gin.H{
-				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  apiErr.ErrorCode,
-				vars.ErrorKey: apiErr.Error(),
-			},
-		)
+		c.Status(apiErr.HTTPStatusCode)
 		return
 	}
 

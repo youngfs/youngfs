@@ -12,6 +12,7 @@ import (
 	"youngfs/fs/entry"
 	"youngfs/fs/filer"
 	"youngfs/fs/full_path"
+	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine"
 	"youngfs/util"
@@ -108,11 +109,6 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, size 
 		return err
 	}
 
-	err = svr.ecServer.ExecEC(ctx, ent.ECid)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -146,16 +142,16 @@ func RecoverObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath) e
 	return svr.filerStore.RecoverObject(ctx, frags)
 }
 
-func InsertSetRules(ctx context.Context, setRules *fs_set.SetRules) error {
-	return svr.ecServer.InsertSetRules(ctx, setRules)
+func InsertRules(ctx context.Context, r *rules.Rules) error {
+	return svr.ecServer.InsertRules(ctx, r)
 }
 
-func DeleteSetRules(ctx context.Context, set fs_set.Set) error {
-	return svr.ecServer.DeleteSetRules(ctx, set)
+func DeleteRules(ctx context.Context, set fs_set.Set) error {
+	return svr.ecServer.DeleteRules(ctx, set)
 }
 
-func GetSetRules(ctx context.Context, set fs_set.Set) (*fs_set.SetRules, error) {
-	return svr.ecServer.GetSetRules(ctx, set)
+func GetRules(ctx context.Context, set fs_set.Set) (*rules.Rules, error) {
+	return svr.ecServer.GetRules(ctx, set)
 }
 
 func GetHosts(ctx context.Context) ([]string, error) {

@@ -15,7 +15,7 @@ func GetObjectHandler(c *gin.Context) {
 	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
 	if fp == "/" || fp[len(fp)-1] == '/' {
 		//redirect to list object
-		ListObjectHandler(c)
+		ListObjectsHandler(c)
 		return
 	}
 
@@ -74,7 +74,7 @@ func GetObjectHandler(c *gin.Context) {
 
 	if ent.IsDirectory() {
 		//redirect to list object
-		ListObjectHandler(c)
+		ListObjectsHandler(c)
 		return
 	}
 

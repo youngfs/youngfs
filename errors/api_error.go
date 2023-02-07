@@ -39,7 +39,8 @@ func (e *APIError) Format(s fmt.State, verb rune) {
 
 var (
 	// 100
-	ErrKvNotFound = &APIError{ErrorCode: errKvNotFound, HTTPStatusCode: http.StatusContinue, Description: "Kv not found"}
+	ErrKvNotFound  = &APIError{ErrorCode: errKvNotFound, HTTPStatusCode: http.StatusContinue, Description: "Kv not found"}
+	ErrEcNotFinish = &APIError{ErrorCode: errECNotFinish, HTTPStatusCode: http.StatusContinue, Description: "Ec not finish"}
 	// 200
 	ErrNone    = &APIError{ErrorCode: errNone, HTTPStatusCode: http.StatusOK, Description: "Request succeeded"}
 	ErrCreated = &APIError{ErrorCode: errCreated, HTTPStatusCode: http.StatusCreated, Description: "Created succeeded"}
@@ -53,7 +54,7 @@ var (
 	ErrRouter            = &APIError{ErrorCode: errRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
 	ErrRecoverFailed     = &APIError{ErrorCode: errRecoverFailed, HTTPStatusCode: http.StatusBadRequest, Description: "Object recover failed"}
 	ErrObjectNotExist    = &APIError{ErrorCode: errObjectNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Object not exist"}
-	ErrSetRulesNotExist  = &APIError{ErrorCode: errSetRulesNotExist, HTTPStatusCode: http.StatusNotFound, Description: "set rules not exist"}
+	ErrRulesNotExist     = &APIError{ErrorCode: errRulesNotExist, HTTPStatusCode: http.StatusNotFound, Description: "set rules not exist"}
 	// 500
 	ErrKvSever         = &APIError{ErrorCode: errKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
 	ErrNonApiErr       = &APIError{ErrorCode: errNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}

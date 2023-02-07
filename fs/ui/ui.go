@@ -19,11 +19,11 @@ var FuncMap = template.FuncMap{
 	"printUrlPath":   printUrlPath,
 }
 
-//go:embed ui.html
+//go:embed fs.html
 var uiHtml string
 
-//go:embed set_rules.html
-var setRulesHtml string
+//go:embed rules.html
+var rulesHtml string
 
 //go:embed static
 var Static embed.FS
@@ -34,6 +34,6 @@ var Favicon []byte
 var StatusTpl *template.Template
 
 func init() {
-	tpl, _ := template.New(UiName).Funcs(FuncMap).Parse(uiHtml)
-	StatusTpl = template.Must(tpl.New(SetRulesName).Parse(setRulesHtml))
+	tpl, _ := template.New(FSName).Funcs(FuncMap).Parse(uiHtml)
+	StatusTpl = template.Must(tpl.New(RulesName).Parse(rulesHtml))
 }

@@ -7,6 +7,8 @@ import (
 	"youngfs/errors"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
+	"youngfs/fs/id_generator/snow_flake"
+	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine/seaweedfs"
 	"youngfs/kv/redis"
@@ -17,7 +19,7 @@ import (
 func TestEC_RecoverEC(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	client := NewEC(kvStore, se)
+	client := NewECStore(kvStore, se, snow_flake.NewSnowFlake(0))
 
 	ctx := context.Background()
 
@@ -26,17 +28,17 @@ func TestEC_RecoverEC(t *testing.T) {
 
 	set := fs_set.Set(util.RandString(16))
 
-	setRules := &fs_set.SetRules{
+	setRules := &rules.Rules{
 		Set:             set,
 		Hosts:           hosts,
 		DataShards:      uint64(len(hosts) - 1),
 		ParityShards:    1,
-		MAXShardSize:    16 * 1024 * 1024,
+		MaxShardSize:    16 * 1024 * 1024,
 		ECMode:          true,
 		ReplicationMode: true,
 	}
 
-	err = client.InsertSetRules(ctx, setRules)
+	err = client.InsertRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
 	plan, err := client.getPlan(ctx, set)
@@ -70,6 +72,6 @@ func TestEC_RecoverEC(t *testing.T) {
 		assert.Equal(t, frags, nil)
 	}
 
-	err = client.DeleteSetRules(ctx, set, true)
+	err = client.DeleteRules(ctx, set, true)
 	assert.Equal(t, err, nil)
 }

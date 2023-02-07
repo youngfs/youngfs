@@ -17,6 +17,8 @@ import (
 	"youngfs/fs/ec/ec_store"
 	"youngfs/fs/entry"
 	"youngfs/fs/full_path"
+	"youngfs/fs/id_generator/snow_flake"
+	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 	"youngfs/fs/storage_engine/seaweedfs"
 	"youngfs/kv/redis"
@@ -36,7 +38,7 @@ func TestECServer_Backup(t *testing.T) {
 
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewEC(kvStore, se)
+	ecStore := ec_store.NewECStore(kvStore, se, snow_flake.NewSnowFlake(0))
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
 
@@ -45,96 +47,100 @@ func TestECServer_Backup(t *testing.T) {
 	hosts, err := se.GetHosts(ctx)
 	assert.Equal(t, err, nil)
 	set := fs_set.Set("ec_test")
-	size := uint64(150 * 1024 * 1024)
+	size := uint64(32 * 1024 * 1024)
 
 	if len(hosts) < 2 {
 		fmt.Printf("Can't do backup unit test")
 		return
 	}
 
-	setRules := &fs_set.SetRules{
+	setRules := &rules.Rules{
 		Set:             set,
 		Hosts:           hosts,
 		DataShards:      0,
 		ParityShards:    0,
-		MAXShardSize:    0,
+		MaxShardSize:    0,
 		ECMode:          false,
 		ReplicationMode: true,
 	}
 
-	err = client.InsertSetRules(ctx, setRules)
+	err = client.InsertRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
+	lce := util.NewLimitedConcurrentExecutor(8)
 	for i := 0; i < 4; i++ {
-		ent := &entry.Entry{
-			FullPath: full_path.FullPath(util.RandString(16)),
-			Set:      set,
-			FileSize: size,
-		}
+		lce.Execute(func() {
+			ent := &entry.Entry{
+				FullPath: full_path.FullPath(util.RandString(16)),
+				Set:      set,
+				FileSize: size,
+			}
 
-		b := util.RandByte(size)
-		file := io.Reader(bytes.NewReader(b))
-		md5Hash := md5.New()
-		file = io.TeeReader(file, md5Hash)
+			b := util.RandByte(size)
+			file := io.Reader(bytes.NewReader(b))
+			md5Hash := md5.New()
+			file = io.TeeReader(file, md5Hash)
 
-		host, ecid, err := client.InsertObject(ctx, ent)
-		assert.Equal(t, err, nil)
+			host, ecid, err := client.InsertObject(ctx, ent)
+			assert.Equal(t, err, nil)
 
-		fid, err := se.PutObject(ctx, size, file, "", true, host)
-		assert.Equal(t, err, nil)
+			fid, err := se.PutObject(ctx, size, file, "", true, host)
+			assert.Equal(t, err, nil)
 
-		ent.Fid = fid
-		ent.ECid = ecid
-		ent.Md5 = md5Hash.Sum(nil)
+			ent.Fid = fid
+			ent.ECid = ecid
+			ent.Md5 = md5Hash.Sum(nil)
 
-		err = client.ConfirmEC(ctx, ent)
-		assert.Equal(t, err, nil)
+			err = client.ConfirmEC(ctx, ent)
+			assert.Equal(t, err, nil)
 
-		err = client.ExecEC(ctx, ent.ECid)
-		assert.Equal(t, err, nil)
+			err = client.ExecEC(ctx, ent.ECid)
+			assert.Equal(t, err, nil)
 
-		time.Sleep(3 * time.Second)
+			time.Sleep(3 * time.Second)
 
-		url, err := se.GetFidUrl(ctx, fid)
-		assert.Equal(t, err, nil)
+			url, err := se.GetFidUrl(ctx, fid)
+			assert.Equal(t, err, nil)
 
-		err = se.DeleteObject(ctx, fid)
-		assert.Equal(t, err, nil)
+			err = se.DeleteObject(ctx, fid)
+			assert.Equal(t, err, nil)
 
-		time.Sleep(3 * time.Second)
+			time.Sleep(3 * time.Second)
 
-		resp1, err := http.Get(url)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
-		defer func() {
-			_ = resp1.Body.Close()
-		}()
+			resp1, err := http.Get(url)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
+			defer func() {
+				_ = resp1.Body.Close()
+			}()
 
-		frag, err := client.RecoverObject(ctx, ent)
-		assert.Equal(t, err, nil)
+			frag, err := client.RecoverObject(ctx, ent)
+			assert.Equal(t, err, nil)
 
-		url, err = se.GetFidUrl(ctx, frag[0].Fid)
-		assert.Equal(t, err, nil)
+			url, err = se.GetFidUrl(ctx, frag[0].Fid)
+			assert.Equal(t, err, nil)
 
-		resp2, err := http.Get(url)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, resp2.StatusCode, http.StatusOK)
-		defer func() {
-			_ = resp2.Body.Close()
-		}()
+			resp2, err := http.Get(url)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, resp2.StatusCode, http.StatusOK)
+			defer func() {
+				_ = resp2.Body.Close()
+			}()
 
-		httpBody, err := io.ReadAll(resp2.Body)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, httpBody, b)
+			httpBody, err := io.ReadAll(resp2.Body)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, httpBody, b)
 
-		err = se.DeleteObject(ctx, frag[0].Fid)
-		assert.Equal(t, err, nil)
+			err = se.DeleteObject(ctx, frag[0].Fid)
+			assert.Equal(t, err, nil)
 
-		err = client.DeleteObject(ctx, ent.ECid)
-		assert.Equal(t, err, nil)
+			err = client.DeleteObject(ctx, ent.ECid)
+			assert.Equal(t, err, nil)
+		})
 	}
+	lce.Wait()
 
-	err = client.DeleteSetRules(ctx, set)
+	err = client.DeleteRules(ctx, set)
 	assert.Equal(t, err, nil)
 
 	time.Sleep(3 * time.Second)
@@ -143,7 +149,7 @@ func TestECServer_Backup(t *testing.T) {
 func TestECServer_NoEC(t *testing.T) {
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewEC(kvStore, se)
+	ecStore := ec_store.NewECStore(kvStore, se, snow_flake.NewSnowFlake(0))
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
 
@@ -152,74 +158,78 @@ func TestECServer_NoEC(t *testing.T) {
 	hosts, err := se.GetHosts(ctx)
 	assert.Equal(t, err, nil)
 	set := fs_set.Set("ec_test")
-	size := uint64(150 * 1024 * 1024)
+	size := uint64(32 * 1024 * 1024)
 
-	setRules := &fs_set.SetRules{
+	setRules := &rules.Rules{
 		Set:             set,
 		Hosts:           hosts[:1],
 		DataShards:      0,
 		ParityShards:    0,
-		MAXShardSize:    0,
+		MaxShardSize:    0,
 		ECMode:          false,
 		ReplicationMode: false,
 	}
 
-	err = client.InsertSetRules(ctx, setRules)
+	err = client.InsertRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
+	lce := util.NewLimitedConcurrentExecutor(8)
 	for i := 0; i < 16; i++ {
-		ent := &entry.Entry{
-			FullPath: full_path.FullPath(util.RandString(16)),
-			Set:      set,
-			FileSize: size,
-		}
+		lce.Execute(func() {
+			ent := &entry.Entry{
+				FullPath: full_path.FullPath(util.RandString(16)),
+				Set:      set,
+				FileSize: size,
+			}
 
-		b := util.RandByte(size)
-		file := io.Reader(bytes.NewReader(b))
-		md5Hash := md5.New()
-		file = io.TeeReader(file, md5Hash)
+			b := util.RandByte(size)
+			file := io.Reader(bytes.NewReader(b))
+			md5Hash := md5.New()
+			file = io.TeeReader(file, md5Hash)
 
-		host, ecid, err := client.InsertObject(ctx, ent)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, ecid, "")
-		assert.Equal(t, host, hosts[0])
+			host, ecid, err := client.InsertObject(ctx, ent)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, ecid, "")
+			assert.Equal(t, host, hosts[0])
 
-		fid, err := se.PutObject(ctx, size, file, "", true, host)
-		assert.Equal(t, err, nil)
+			fid, err := se.PutObject(ctx, size, file, "", true, host)
+			assert.Equal(t, err, nil)
 
-		ent.Fid = fid
-		ent.ECid = ecid
-		ent.Md5 = md5Hash.Sum(nil)
+			ent.Fid = fid
+			ent.ECid = ecid
+			ent.Md5 = md5Hash.Sum(nil)
 
-		err = client.ConfirmEC(ctx, ent)
-		assert.Equal(t, err, nil)
+			err = client.ConfirmEC(ctx, ent)
+			assert.Equal(t, err, nil)
 
-		err = client.ExecEC(ctx, ent.ECid)
-		assert.Equal(t, err, nil)
+			err = client.ExecEC(ctx, ent.ECid)
+			assert.Equal(t, err, nil)
 
-		time.Sleep(1 * time.Second)
+			time.Sleep(3 * time.Second)
 
-		url, err := se.GetFidUrl(ctx, fid)
-		assert.Equal(t, err, nil)
+			url, err := se.GetFidUrl(ctx, fid)
+			assert.Equal(t, err, nil)
 
-		err = se.DeleteObject(ctx, fid)
-		assert.Equal(t, err, nil)
+			err = se.DeleteObject(ctx, fid)
+			assert.Equal(t, err, nil)
 
-		time.Sleep(3 * time.Second)
+			time.Sleep(3 * time.Second)
 
-		resp1, err := http.Get(url)
-		assert.Equal(t, err, nil)
-		assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
-		defer func() {
-			_ = resp1.Body.Close()
-		}()
+			resp1, err := http.Get(url)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
+			defer func() {
+				_ = resp1.Body.Close()
+			}()
 
-		frag, err := client.RecoverObject(ctx, ent)
-		assert.Equal(t, errors.Is(err, errors.ErrRecoverFailed), true)
-		assert.Equal(t, frag, nil)
+			frag, err := client.RecoverObject(ctx, ent)
+			assert.Equal(t, errors.Is(err, errors.ErrRecoverFailed), true)
+			assert.Equal(t, frag, nil)
+		})
 	}
+	lce.Wait()
 
-	err = client.DeleteSetRules(ctx, set)
+	err = client.DeleteRules(ctx, set)
 	assert.Equal(t, err, nil)
 }
 
@@ -234,7 +244,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 
 	kvStore := redis.NewKvStore(vars.RedisSocket, vars.RedisPassword, vars.RedisDatabase)
 	se := seaweedfs.NewStorageEngine(vars.SeaweedFSMaster, kvStore)
-	ecStore := ec_store.NewEC(kvStore, se)
+	ecStore := ec_store.NewECStore(kvStore, se, snow_flake.NewSnowFlake(0))
 	ecCalc := ec_calc.NewECCalc(ecStore, se)
 	client := NewECServer(ecStore, ecCalc)
 
@@ -250,20 +260,21 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		return
 	}
 
-	setRules := &fs_set.SetRules{
+	setRules := &rules.Rules{
 		Set:             set,
 		Hosts:           hosts[:3],
 		DataShards:      2,
 		ParityShards:    1,
-		MAXShardSize:    384 * 1024 * 1024,
+		MaxShardSize:    384 * 1024 * 1024,
 		ECMode:          true,
 		ReplicationMode: true,
 	}
 
-	err = client.InsertSetRules(ctx, setRules)
+	err = client.InsertRules(ctx, setRules)
 	assert.Equal(t, err, nil)
 
 	ents := make([]*entry.Entry, 9)
+	lce := util.NewLimitedConcurrentExecutor(8)
 	for i := 0; i < 5; i++ {
 		sz := size - 128 + uint64(rand.Intn(256))
 		ent := &entry.Entry{
@@ -271,32 +282,33 @@ func TestECServer_ReedSolomon(t *testing.T) {
 			Set:      set,
 			FileSize: sz,
 		}
-
-		b := util.RandByte(sz)
-		file := io.Reader(bytes.NewReader(b))
-		md5Hash := md5.New()
-		file = io.TeeReader(file, md5Hash)
-
-		host, ecid, err := client.InsertObject(ctx, ent)
-		assert.Equal(t, err, nil)
-
-		fid, err := se.PutObject(ctx, size, file, "", true, host)
-		assert.Equal(t, err, nil)
-
-		ent.Fid = fid
-		ent.ECid = ecid
-		ent.Md5 = md5Hash.Sum(nil)
-
-		err = client.ConfirmEC(ctx, ent)
-		assert.Equal(t, err, nil)
-
-		err = client.ExecEC(ctx, ent.ECid)
-		assert.Equal(t, err, nil)
-
 		ents[i] = ent
-	}
+		lce.Execute(func() {
+			b := util.RandByte(sz)
+			file := io.Reader(bytes.NewReader(b))
+			md5Hash := md5.New()
+			file = io.TeeReader(file, md5Hash)
 
-	time.Sleep(60 * time.Second)
+			host, ecid, err := client.InsertObject(ctx, ent)
+			assert.Equal(t, err, nil)
+
+			fid, err := se.PutObject(ctx, size, file, "", true, host)
+			assert.Equal(t, err, nil)
+
+			ent.Fid = fid
+			ent.ECid = ecid
+			ent.Md5 = md5Hash.Sum(nil)
+
+			err = client.ConfirmEC(ctx, ent)
+			assert.Equal(t, err, nil)
+
+			err = client.ExecEC(ctx, ent.ECid)
+			assert.Equal(t, err, nil)
+		})
+	}
+	lce.Wait()
+
+	time.Sleep(15 * time.Second)
 
 	url, err := se.GetFidUrl(ctx, ents[0].Fid)
 	assert.Equal(t, err, nil)
@@ -413,84 +425,86 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		}
 	}
 
-	for i := 5; i < 9; i++ {
+	for i_ := 5; i_ < 9; i_++ {
+		i := i_
 		sz := size - 128 + uint64(rand.Intn(256))
 		ent := &entry.Entry{
 			FullPath: full_path.FullPath(util.RandString(16)),
 			Set:      set,
 			FileSize: sz,
 		}
-
-		b := util.RandByte(sz)
-		file := io.Reader(bytes.NewReader(b))
-		md5Hash := md5.New()
-		file = io.TeeReader(file, md5Hash)
-
-		host, ecid, err := client.InsertObject(ctx, ent)
-		assert.Equal(t, err, nil)
-
-		fid, err := se.PutObject(ctx, size, file, "", true, host)
-		assert.Equal(t, err, nil)
-
-		ent.Fid = fid
-		ent.ECid = ecid
-		ent.Md5 = md5Hash.Sum(nil)
-
-		err = client.ConfirmEC(ctx, ent)
-		assert.Equal(t, err, nil)
-
 		ents[i] = ent
+		lce.Execute(func() {
+			b := util.RandByte(sz)
+			file := io.Reader(bytes.NewReader(b))
+			md5Hash := md5.New()
+			file = io.TeeReader(file, md5Hash)
 
-		err = client.ExecEC(ctx, ent.ECid)
-		assert.Equal(t, err, nil)
-
-		if i == 5 {
-			time.Sleep(30 * time.Second)
-
-			url, err = se.GetFidUrl(ctx, ents[i].Fid)
+			host, ecid, err := client.InsertObject(ctx, ent)
 			assert.Equal(t, err, nil)
 
-			err = se.DeleteObject(ctx, ents[i].Fid)
+			fid, err := se.PutObject(ctx, size, file, "", true, host)
 			assert.Equal(t, err, nil)
 
-			time.Sleep(3 * time.Second)
+			ent.Fid = fid
+			ent.ECid = ecid
+			ent.Md5 = md5Hash.Sum(nil)
 
-			url2, err := se.GetFidUrl(ctx, ents[i].Fid)
-			assert.Equal(t, errors.Is(err, errors.ErrObjectNotExist), true)
-			assert.Equal(t, url2, "")
-
-			resp1, err := http.Get(url)
-			assert.Equal(t, err, nil)
-			assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
-			defer func() {
-				_ = resp1.Body.Close()
-			}()
-
-			frags, err = client.RecoverObject(ctx, ents[i])
+			err = client.ConfirmEC(ctx, ent)
 			assert.Equal(t, err, nil)
 
-			url, err = se.GetFidUrl(ctx, frags[0].Fid)
+			err = client.ExecEC(ctx, ent.ECid)
 			assert.Equal(t, err, nil)
 
-			resp2, err := http.Get(url)
-			assert.Equal(t, err, nil)
-			assert.Equal(t, resp2.StatusCode, http.StatusOK)
-			defer func() {
-				_ = resp2.Body.Close()
-			}()
+			if i == 5 {
+				time.Sleep(5 * time.Second)
 
-			b2, err := io.ReadAll(resp2.Body)
-			assert.Equal(t, err, nil)
+				url, err = se.GetFidUrl(ctx, ents[i].Fid)
+				assert.Equal(t, err, nil)
 
-			md5Hash2 := md5.New()
-			md5Hash2.Write(b2)
-			assert.Equal(t, md5Hash2.Sum(nil), md5Hash.Sum(nil))
+				err = se.DeleteObject(ctx, ents[i].Fid)
+				assert.Equal(t, err, nil)
 
-			ents[i].Fid = frags[0].Fid
-		}
+				time.Sleep(3 * time.Second)
+
+				url2, err := se.GetFidUrl(ctx, ents[i].Fid)
+				assert.Equal(t, errors.Is(err, errors.ErrObjectNotExist), true)
+				assert.Equal(t, url2, "")
+
+				resp1, err := http.Get(url)
+				assert.Equal(t, err, nil)
+				assert.Equal(t, resp1.StatusCode, http.StatusNotFound)
+				defer func() {
+					_ = resp1.Body.Close()
+				}()
+
+				frags, err = client.RecoverObject(ctx, ents[i])
+				assert.Equal(t, err, nil)
+
+				url, err = se.GetFidUrl(ctx, frags[0].Fid)
+				assert.Equal(t, err, nil)
+
+				resp2, err := http.Get(url)
+				assert.Equal(t, err, nil)
+				assert.Equal(t, resp2.StatusCode, http.StatusOK)
+				defer func() {
+					_ = resp2.Body.Close()
+				}()
+
+				b2, err := io.ReadAll(resp2.Body)
+				assert.Equal(t, err, nil)
+
+				md5Hash2 := md5.New()
+				md5Hash2.Write(b2)
+				assert.Equal(t, md5Hash2.Sum(nil), md5Hash.Sum(nil))
+
+				ents[i].Fid = frags[0].Fid
+			}
+		})
 	}
+	lce.Wait()
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	url, err = se.GetFidUrl(ctx, ents[6].Fid)
 	assert.Equal(t, err, nil)
@@ -562,7 +576,7 @@ func TestECServer_ReedSolomon(t *testing.T) {
 		}
 	}
 
-	err = client.DeleteSetRules(ctx, set)
+	err = client.DeleteRules(ctx, set)
 	assert.Equal(t, err, nil)
 
 	for i := 0; i < 8; i++ {
@@ -579,5 +593,5 @@ func TestECServer_ReedSolomon(t *testing.T) {
 	err = client.DeleteObject(ctx, ents[8].ECid)
 	assert.Equal(t, err, nil)
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(3 * time.Second)
 }

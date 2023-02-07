@@ -3,23 +3,24 @@ package ec_store
 import (
 	"context"
 	"youngfs/errors"
+	"youngfs/fs/rules"
 	fs_set "youngfs/fs/set"
 )
 
-func setRulesKey(set fs_set.Set) string {
-	return string(set) + setRulesKv
+func rulesKey(set fs_set.Set) string {
+	return string(set) + rulesKv
 }
 
-func setRulesLockKey(set fs_set.Set) string {
-	return string(set) + setRulesLock
+func rulesLockKey(set fs_set.Set) string {
+	return string(set) + rulesLock
 }
 
 func setTurnKey(set fs_set.Set) string {
 	return string(set) + setTurnsKv
 }
 
-func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *fs_set.SetRules) error {
-	mutex := ec.kvStore.NewMutex(setRulesLockKey(setRules.Set))
+func (ec *ECStore) InsertRules(ctx context.Context, rules *rules.Rules) error {
+	mutex := ec.kvStore.NewMutex(rulesLockKey(rules.Set))
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrRedisSync.WithStack()
 	}
@@ -27,11 +28,11 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *fs_set.SetRules
 		_, _ = mutex.Unlock()
 	}()
 
-	if !setRules.Set.IsLegal() {
+	if !rules.Set.IsLegal() {
 		return errors.ErrIllegalSetName
 	}
 
-	if !setRules.IsLegal() {
+	if !rules.IsLegal() {
 		return errors.ErrIllegalSetRules
 	}
 
@@ -46,34 +47,34 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *fs_set.SetRules
 	}
 
 	//check hosts is existential
-	for _, u := range setRules.Hosts {
+	for _, u := range rules.Hosts {
 		if !hostSet[u] {
 			return errors.ErrIllegalSetRules
 		}
 	}
 
-	err = ec.DeleteSetRules(ctx, setRules.Set, false)
+	err = ec.DeleteRules(ctx, rules.Set, false)
 	if err != nil {
 		return err
 	}
 
-	proto, err := setRules.EncodeProto(ctx)
+	proto, err := rules.EncodeProto(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = ec.kvStore.KvPut(ctx, setRulesKey(setRules.Set), proto)
+	err = ec.kvStore.KvPut(ctx, rulesKey(rules.Set), proto)
 	if err != nil {
 		return err
 	}
 
-	err = ec.kvStore.SetNum(ctx, setTurnKey(setRules.Set), 0)
+	err = ec.kvStore.SetNum(ctx, setTurnKey(rules.Set), 0)
 	if err != nil {
 		return err
 	}
 
-	if setRules.ECMode {
-		err = ec.initPlan(ctx, setRules.Set)
+	if rules.ECMode {
+		err = ec.initPlan(ctx, rules.Set)
 		if err != nil {
 			return err
 		}
@@ -82,9 +83,9 @@ func (ec *ECStore) InsertSetRules(ctx context.Context, setRules *fs_set.SetRules
 	return nil
 }
 
-func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool) error {
+func (ec *ECStore) DeleteRules(ctx context.Context, set fs_set.Set, lock bool) error {
 	if lock {
-		mutex := ec.kvStore.NewMutex(setRulesLockKey(set))
+		mutex := ec.kvStore.NewMutex(rulesLockKey(set))
 		if err := mutex.Lock(); err != nil {
 			return errors.ErrRedisSync.WithStack()
 		}
@@ -93,7 +94,7 @@ func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool
 		}()
 	}
 
-	setRules, err := ec.GetSetRules(ctx, set, false)
+	r, err := ec.GetRules(ctx, set)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return nil
@@ -102,9 +103,9 @@ func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool
 	}
 
 	// clear set rules map
-	ec.setRulesMap[set] = nil
+	ec.rulesMap.Delete(set)
 
-	_, err = ec.kvStore.KvDelete(ctx, setRulesKey(set))
+	_, err = ec.kvStore.KvDelete(ctx, rulesKey(set))
 	if err != nil && errors.IsKvNotFound(err) {
 		return err
 	}
@@ -119,8 +120,8 @@ func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool
 		return err
 	}
 
-	if setRules != nil {
-		for turns := 0; turns < int(setRules.DataShards+setRules.ParityShards); turns++ {
+	if r != nil {
+		for turns := 0; turns < int(r.DataShards+r.ParityShards); turns++ {
 			_, err := ec.kvStore.SDelete(ctx, setPlanShardKey(set, turns))
 			if err != nil {
 				return errors.WithMessage(err, "delete set rules error: clear plan shard")
@@ -132,31 +133,23 @@ func (ec *ECStore) DeleteSetRules(ctx context.Context, set fs_set.Set, lock bool
 }
 
 // if don't have set rules, return nil,nil
-func (ec *ECStore) GetSetRules(ctx context.Context, set fs_set.Set, lock bool) (*fs_set.SetRules, error) {
-	if lock {
-		mutex := ec.kvStore.NewMutex(setRulesLockKey(set))
-		if err := mutex.Lock(); err != nil {
-			return nil, errors.ErrRedisSync.WithStack()
+func (ec *ECStore) GetRules(ctx context.Context, set fs_set.Set) (*rules.Rules, error) {
+	if val, ok := ec.rulesMap.Load(set); !ok {
+		if r, ok := val.(*rules.Rules); !ok {
+			return r, nil
 		}
-		defer func() {
-			_, _ = mutex.Unlock()
-		}()
 	}
 
-	if ec.setRulesMap[set] != nil {
-		return ec.setRulesMap[set], nil
-	}
-
-	proto, err := ec.kvStore.KvGet(ctx, setRulesKey(set))
+	proto, err := ec.kvStore.KvGet(ctx, rulesKey(set))
 	if err != nil {
 		return nil, err
 	}
 
-	setRules, err := fs_set.DecodeSetRulesProto(ctx, proto)
+	r, err := rules.DecodeRulesProto(ctx, proto)
 	if err != nil {
 		return nil, err
 	}
 
-	ec.setRulesMap[set] = setRules
-	return setRules, nil
+	ec.rulesMap.Store(set, r)
+	return r, nil
 }

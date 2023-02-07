@@ -1,4 +1,4 @@
-package set
+package rules
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 func TestSetRules_EnDecodeProto(t *testing.T) {
 	ctx := context.Background()
 
-	val := &SetRules{
+	val := &Rules{
 		Set:             "test",
 		Hosts:           []string{util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16), util.RandString(16)},
 		DataShards:      4,
 		ParityShards:    2,
-		MAXShardSize:    1024 * 1024 * 1024,
+		MaxShardSize:    1024 * 1024 * 1024,
 		ECMode:          true,
 		ReplicationMode: true,
 	}
@@ -23,7 +23,7 @@ func TestSetRules_EnDecodeProto(t *testing.T) {
 	b, err := val.EncodeProto(ctx)
 	assert.Equal(t, err, nil)
 
-	val2, err := DecodeSetRulesProto(ctx, b)
+	val2, err := DecodeRulesProto(ctx, b)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, val2, val)
 }

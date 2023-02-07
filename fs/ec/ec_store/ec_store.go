@@ -3,25 +3,27 @@ package ec_store
 import (
 	"context"
 	"math/rand"
-	"strconv"
+	"sync"
 	"youngfs/errors"
 	"youngfs/fs/entry"
-	"youngfs/fs/set"
+	"youngfs/fs/id_generator"
 	"youngfs/fs/storage_engine"
 	"youngfs/kv"
 )
 
 type ECStore struct {
 	kvStore       kv.KvSetStoreWithRedisMutex
-	setRulesMap   map[set.Set]*set.SetRules
+	rulesMap      *sync.Map
 	storageEngine storage_engine.StorageEngine
+	generator     id_generator.IdGenerator
 }
 
-func NewEC(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storage_engine.StorageEngine) *ECStore {
+func NewECStore(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storage_engine.StorageEngine, generator id_generator.IdGenerator) *ECStore {
 	return &ECStore{
 		kvStore:       kvStore,
-		setRulesMap:   make(map[set.Set]*set.SetRules),
+		rulesMap:      &sync.Map{},
 		storageEngine: storageEngine,
+		generator:     generator,
 	}
 }
 
@@ -29,17 +31,13 @@ func ecidKey(ecid string) string {
 	return ecid + ecidKv
 }
 
-func (ec *ECStore) genECid(ctx context.Context) (string, error) {
-	num, err := ec.kvStore.Incr(ctx, genECidKv)
-	if err != nil {
-		return "", err
-	}
-	return strconv.FormatInt(num, 10), nil
+func (ec *ECStore) genECid() (string, error) {
+	return ec.generator.Generate()
 }
 
 // return host, ecid, suiteid, err
 func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, string, string, error) {
-	mutex := ec.kvStore.NewMutex(setRulesLockKey(ent.Set))
+	mutex := ec.kvStore.NewMutex(rulesLockKey(ent.Set))
 	if err := mutex.Lock(); err != nil {
 		return "", "", "", errors.ErrRedisSync.WithStack()
 	}
@@ -47,7 +45,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 		_, _ = mutex.Unlock()
 	}()
 
-	setRules, err := ec.GetSetRules(ctx, ent.Set, false)
+	setRules, err := ec.GetRules(ctx, ent.Set)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return "", "", "", nil
@@ -55,7 +53,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 		return "", "", "", err
 	}
 
-	if setRules.ECMode && ent.FileSize > setRules.MAXShardSize {
+	if setRules.ECMode && ent.FileSize > setRules.MaxShardSize {
 		return "", "", "", errors.ErrIllegalObjectSize
 	}
 
@@ -64,7 +62,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 		return "", "", "", nil
 	}
 
-	ecid, err := ec.genECid(ctx)
+	ecid, err := ec.genECid()
 	if err != nil {
 		return "", "", "", errors.ErrServer.WithMessage("ec_store insert object error gen ecid")
 	}
@@ -102,7 +100,7 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 		}
 
 		if host == "" {
-			suiteId, err = ec.genECid(ctx)
+			suiteId, err = ec.genECid()
 			if err != nil {
 				return "", "", "", errors.ErrServer.WithMessage("ec_store insert object error gen ecid")
 			}
@@ -149,13 +147,13 @@ func (ec *ECStore) InsertObject(ctx context.Context, ent *entry.Entry) (string, 
 				if u.ShardSize >= ent.FileSize {
 					host = u.Host
 					if i >= len(plan.Shards)-1 {
-						return "", "", "", errors.ErrServer.WithMessage("ec_store insert object error get bakhost error")
+						return "", "", "", errors.ErrServer.WithMessage("ec_store insert object error: get bakhost error")
 					}
 					bakHost = plan.Shards[i+1].Host
 					plan.Shards[i].ShardSize -= ent.FileSize
 					err := ec.kvStore.SAdd(ctx, setPlanShardKey(ent.Set, i), []byte(ecid))
 					if err != nil {
-						return "", "", "", errors.WithMessage(err, "ec_store insert object error insert plan shard ecid")
+						return "", "", "", errors.WithMessage(err, "ec_store insert object error: insert plan shard ecid")
 					}
 					break
 				}
@@ -221,7 +219,7 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 		return nil
 	}
 
-	mutex := ec.kvStore.NewMutex(setRulesLockKey(ent.Set))
+	mutex := ec.kvStore.NewMutex(rulesLockKey(ent.Set))
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrRedisSync.WithStack()
 	}
@@ -229,7 +227,7 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 		_, _ = mutex.Unlock()
 	}()
 
-	setRules, err := ec.GetSetRules(ctx, ent.Set, false)
+	setRules, err := ec.GetRules(ctx, ent.Set)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return nil
@@ -245,7 +243,7 @@ func (ec *ECStore) RecoverEC(ctx context.Context, ent *entry.Entry) error {
 	if setRules.ECMode {
 		plan, err := ec.getPlan(ctx, ent.Set)
 		if err != nil {
-			return errors.ErrServer.WithMessage("rocover ec_store get plan")
+			return errors.ErrServer.WithMessage("rocover ec_store: get plan")
 		}
 
 		for i, u := range plan.Shards {

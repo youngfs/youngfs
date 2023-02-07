@@ -1,5 +1,5 @@
 package seaweedfs
 
 const (
-	seaweedfsFidLinkKey = "_seaweedfs_fid_link_key"
+	seaweedfsFidLinkKey = "_weed_fid_link_key"
 )
