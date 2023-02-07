@@ -1,6 +1,7 @@
 package api
 
 import (
+	"compress/gzip"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -43,11 +44,45 @@ func PutObjectHandler(c *gin.Context) {
 	if head != nil && err == nil {
 		contentLength = uint64(head.Size)
 		filename = head.Filename
+		if head.Header.Get("Content-Encoding") == "gzip" {
+			file, err = gzip.NewReader(file)
+			if err != nil {
+				err := errors.ErrContentEncoding
+				c.Set(vars.CodeKey, err.ErrorCode)
+				c.Set(vars.ErrorKey, err.Error())
+				c.JSON(
+					err.HTTPStatusCode,
+					gin.H{
+						vars.UUIDKey:  c.Value(vars.UUIDKey),
+						vars.CodeKey:  err.ErrorCode,
+						vars.ErrorKey: err.Error(),
+					},
+				)
+				return
+			}
+		}
 	}
 	if err != nil {
 		file = c.Request.Body
 		contentLength = util.GetContentLength(c.Request.Header)
 		filename = ""
+		if c.Request.Header.Get("Content-Encoding") == "gzip" {
+			file, err = gzip.NewReader(file)
+			if err != nil {
+				err := errors.ErrContentEncoding
+				c.Set(vars.CodeKey, err.ErrorCode)
+				c.Set(vars.ErrorKey, err.Error())
+				c.JSON(
+					err.HTTPStatusCode,
+					gin.H{
+						vars.UUIDKey:  c.Value(vars.UUIDKey),
+						vars.CodeKey:  err.ErrorCode,
+						vars.ErrorKey: err.Error(),
+					},
+				)
+				return
+			}
+		}
 	}
 	defer func() {
 		_ = file.Close()

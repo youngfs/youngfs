@@ -50,6 +50,7 @@ var (
 	ErrIllegalSetName    = &APIError{ErrorCode: errIllegalSetName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal set name"}
 	ErrRouter            = &APIError{ErrorCode: errRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
 	ErrObjectNotExist    = &APIError{ErrorCode: errObjectNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Object not exist"}
+	ErrContentEncoding   = &APIError{ErrorCode: errContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
 	// 500
 	ErrKvSever                 = &APIError{ErrorCode: errKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
 	ErrNonApiErr               = &APIError{ErrorCode: errNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}
