@@ -19,19 +19,19 @@ type ListEntry struct {
 }
 
 type ListChunk struct {
-	Offset uint64     // offset
-	Size   uint64     // size
-	Md5    string     // MD5
-	Frags  []ListFrag // frags
+	Offset        uint64     // offset
+	Size          uint64     // size
+	Md5           string     // MD5
+	IsReplication bool       // is replication
+	Frags         []ListFrag // frags
 }
 
 type ListFrag struct {
-	Size          uint64 // size
-	Id            int64  // id
-	Md5           string // MD5
-	IsReplication bool   // is replication
-	IsDataShard   bool   // is data shard
-	Fid           string // fid
+	Size        uint64 // size
+	Id          int64  // id
+	Md5         string // MD5
+	IsDataShard bool   // is data shard
+	Fid         string // fid
 }
 
 func (ent *Entry) ToListEntry() *ListEntry {
@@ -68,10 +68,11 @@ func (c *Chunk) ToListChunk() *ListChunk {
 	}
 
 	return &ListChunk{
-		Offset: c.Offset,
-		Size:   c.Size,
-		Md5:    hex.EncodeToString(c.Md5),
-		Frags:  frags,
+		Offset:        c.Offset,
+		Size:          c.Size,
+		Md5:           hex.EncodeToString(c.Md5),
+		IsReplication: c.IsReplication,
+		Frags:         frags,
 	}
 }
 
@@ -81,12 +82,11 @@ func (f *Frag) ToListFrag() *ListFrag {
 	}
 
 	return &ListFrag{
-		Size:          f.Size,
-		Id:            f.Id,
-		Md5:           hex.EncodeToString(f.Md5),
-		IsReplication: f.IsReplication,
-		IsDataShard:   f.IsDataShard,
-		Fid:           f.Fid,
+		Size:        f.Size,
+		Id:          f.Id,
+		Md5:         hex.EncodeToString(f.Md5),
+		IsDataShard: f.IsDataShard,
+		Fid:         f.Fid,
 	}
 }
 

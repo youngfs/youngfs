@@ -10,7 +10,6 @@ import (
 	"youngfs/fs/server"
 	fs_set "youngfs/fs/set"
 	"youngfs/log"
-	"youngfs/util"
 	"youngfs/vars"
 )
 
@@ -38,11 +37,9 @@ func PutObjectHandler(c *gin.Context) {
 	}
 
 	var file io.ReadCloser
-	var contentLength uint64
 	var filename string
 	file, head, err := c.Request.FormFile("file")
 	if head != nil && err == nil {
-		contentLength = uint64(head.Size)
 		filename = head.Filename
 		if head.Header.Get("Content-Encoding") == "gzip" {
 			file, err = gzip.NewReader(file)
@@ -64,7 +61,6 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	if err != nil {
 		file = c.Request.Body
-		contentLength = util.GetContentLength(c.Request.Header)
 		filename = ""
 		if c.Request.Header.Get("Content-Encoding") == "gzip" {
 			file, err = gzip.NewReader(file)
@@ -139,7 +135,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.PutObject(c, set, fp, contentLength, file, putObjectInfo.Compress)
+	err = server.PutObject(c, set, fp, file)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -147,7 +143,7 @@ func PutObjectHandler(c *gin.Context) {
 			apiErr = errors.ErrNonApiErr
 		}
 		if apiErr.IsServerErr() {
-			log.Errorf("uuid:%s\n error:%+v\n", c.Value(vars.UUIDKey), apiErr)
+			log.Errorf("uuid:%s\n error:%v\n", c.Value(vars.UUIDKey), err)
 		}
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
 		c.Set(vars.ErrorKey, apiErr.Error())

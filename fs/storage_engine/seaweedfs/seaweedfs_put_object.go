@@ -1,7 +1,6 @@
 package seaweedfs
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -13,28 +12,24 @@ type PutObjectInfo struct {
 	ETag string `json:"eTag"`
 }
 
-func (se *StorageEngine) PutObject(ctx context.Context, size uint64, reader io.Reader, compress bool, hosts ...string) (string, error) {
+func (se *StorageEngine) PutObject(ctx context.Context, size uint64, reader io.Reader, hosts ...string) (string, error) {
 	info, err := se.assignObject(size, hosts...)
 	if err != nil {
 		return "", err
 	}
 
-	if compress {
-		b := &bytes.Buffer{}
-		_, err := se.gzipWriterPool.GzipStream(b, reader)
-		if err != nil {
-			return "", errors.ErrServer.Wrap("seaweedfs put object: gzip copy")
-		}
-		reader = b
+	buffer := se.bufferPool.Get()
+	defer se.bufferPool.Put(buffer)
+	_, err = se.gzipWriterPool.GzipStream(buffer, reader)
+	if err != nil {
+		return "", errors.ErrServer.Wrap("seaweedfs put object: gzip copy")
 	}
 
-	req, err := http.NewRequest("PUT", "http://"+info.Url+"/"+info.Fid, reader)
+	req, err := http.NewRequest("PUT", "http://"+info.Url+"/"+info.Fid, buffer)
 	if err != nil {
 		return "", errors.ErrServer.Wrap("seaweedfs put object: new request put error")
 	}
-	if compress {
-		req.Header.Set("Content-Encoding", "gzip")
-	}
+	req.Header.Set("Content-Encoding", "gzip")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

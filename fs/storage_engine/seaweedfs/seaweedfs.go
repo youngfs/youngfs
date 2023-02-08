@@ -1,15 +1,18 @@
 package seaweedfs
 
 import (
+	"github.com/oxtoacart/bpool"
 	"sync"
 	"youngfs/util"
+	"youngfs/util/gizp_pool"
 )
 
 type StorageEngine struct {
 	masterServer   string
 	volumeIpMap    *sync.Map
 	deletionQueue  *util.UnboundedQueue[string]
-	gzipWriterPool *util.GzipWriterPool
+	gzipWriterPool *gizp_pool.GzipWriterPool
+	bufferPool     *bpool.BufferPool
 	hosts          []string
 	hostsMutex     *sync.RWMutex
 }
@@ -19,7 +22,8 @@ func NewStorageEngine(masterServer string) *StorageEngine {
 		masterServer:   masterServer,
 		volumeIpMap:    &sync.Map{},
 		deletionQueue:  util.NewUnboundedQueue[string](),
-		gzipWriterPool: util.NewGzipWriterPool(),
+		gzipWriterPool: gizp_pool.NewGzipWriterPool(),
+		bufferPool:     bpool.NewBufferPool(128),
 		hosts:          make([]string, 0),
 		hostsMutex:     &sync.RWMutex{},
 	}

@@ -57,7 +57,7 @@ func GetObjectHandler(c *gin.Context) {
 			apiErr = errors.ErrNonApiErr
 		}
 		if apiErr.IsServerErr() {
-			log.Errorf("uuid:%s\n error:%+v\n", c.Value(vars.UUIDKey), apiErr)
+			log.Errorf("uuid:%s\n error:%v\n", c.Value(vars.UUIDKey), err)
 		}
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
 		c.Set(vars.ErrorKey, apiErr.Error())
@@ -86,7 +86,7 @@ func GetObjectHandler(c *gin.Context) {
 			apiErr = errors.ErrNonApiErr
 		}
 		if apiErr.IsServerErr() {
-			log.Errorf("uuid:%s\n error:%+v\n", c.Value(vars.UUIDKey), apiErr)
+			log.Errorf("uuid:%s\n error:%v\n", c.Value(vars.UUIDKey), err)
 		}
 		c.Set(vars.CodeKey, apiErr.ErrorCode)
 		c.Set(vars.ErrorKey, apiErr.Error())

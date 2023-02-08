@@ -669,55 +669,53 @@ func putObject(t *testing.T, ctx context.Context, vfs *VFS, size uint64) entry.C
 
 	fids := make([]string, 4)
 	for i := 0; i < 4; i++ {
-		fid, err := vfs.storageEngine.PutObject(ctx, sizes[i], bytes.NewReader(util.RandByte(sizes[i])), true)
+		fid, err := vfs.storageEngine.PutObject(ctx, sizes[i], bytes.NewReader(util.RandByte(sizes[i])))
 		assert.Equal(t, err, nil)
 		fids[i] = fid
 	}
 
-	return []entry.Chunk{
+	return []*entry.Chunk{
 		{
-			Offset: 0,
-			Size:   sizes[0] + sizes[1],
-			Md5:    util.RandMd5(),
-			Frags: []entry.Frag{
+			Offset:        0,
+			Size:          sizes[0] + sizes[1],
+			Md5:           util.RandMd5(),
+			IsReplication: false,
+			Frags: []*entry.Frag{
 				{
-					Size:          sizes[0],
-					Id:            1,
-					Md5:           util.RandMd5(),
-					IsReplication: false,
-					IsDataShard:   true,
-					Fid:           fids[0],
+					Size:        sizes[0],
+					Id:          1,
+					Md5:         util.RandMd5(),
+					IsDataShard: true,
+					Fid:         fids[0],
 				},
 				{
-					Size:          sizes[1],
-					Id:            2,
-					Md5:           util.RandMd5(),
-					IsReplication: false,
-					IsDataShard:   true,
-					Fid:           fids[1],
+					Size:        sizes[1],
+					Id:          2,
+					Md5:         util.RandMd5(),
+					IsDataShard: true,
+					Fid:         fids[1],
 				},
 			},
 		},
 		{
-			Offset: sizes[0] + sizes[1],
-			Size:   sizes[2] + sizes[3],
-			Md5:    util.RandMd5(),
-			Frags: []entry.Frag{
+			Offset:        sizes[0] + sizes[1],
+			Size:          sizes[2] + sizes[3],
+			Md5:           util.RandMd5(),
+			IsReplication: false,
+			Frags: []*entry.Frag{
 				{
-					Size:          sizes[2],
-					Id:            1,
-					Md5:           util.RandMd5(),
-					IsReplication: false,
-					IsDataShard:   true,
-					Fid:           fids[2],
+					Size:        sizes[2],
+					Id:          1,
+					Md5:         util.RandMd5(),
+					IsDataShard: true,
+					Fid:         fids[2],
 				},
 				{
-					Size:          sizes[3],
-					Id:            2,
-					Md5:           util.RandMd5(),
-					IsReplication: false,
-					IsDataShard:   true,
-					Fid:           fids[3],
+					Size:        sizes[3],
+					Id:          2,
+					Md5:         util.RandMd5(),
+					IsDataShard: true,
+					Fid:         fids[3],
 				},
 			},
 		},

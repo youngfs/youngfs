@@ -18,14 +18,14 @@ message Chunk{
   uint64 offset = 1;
   uint64 size = 2;
   bytes md5 = 3;
-  repeated Frag frags = 4;
+  bool is_replication = 4;
+  repeated Frag frags = 5;
 }
 
 message Frag {
   uint64 size = 1;
   int64 id = 2;
   bytes md5 = 3;
-  bool is_replication = 4;
-  bool is_dataShard = 5;
-  string fid = 6;
+  bool is_dataShard = 4;
+  string fid = 5;
 }

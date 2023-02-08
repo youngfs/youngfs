@@ -102,5 +102,7 @@ func (se *StorageEngine) scheduledUpdateHosts() {
 func (se *StorageEngine) GetHosts(ctx context.Context) ([]string, error) {
 	se.hostsMutex.RLock()
 	defer se.hostsMutex.RUnlock()
-	return se.hosts, nil
+	ret := make([]string, len(se.hosts))
+	copy(ret, se.hosts)
+	return ret, nil
 }

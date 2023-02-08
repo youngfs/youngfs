@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-playground/assert/v2"
 	"math/rand"
 	"testing"
@@ -110,7 +109,6 @@ func TestRedis_Num(t *testing.T) {
 
 	ret2, err := client.Incr(ctx, key)
 	assert.Equal(t, ret2, int64(0))
-	fmt.Printf("%#v\n", err)
 	assert.Equal(t, errors.Is(err, errors.ErrKvSever), true)
 
 	ret2, err = client.Decr(ctx, key)

@@ -44,10 +44,11 @@ func (c *Chunk) toPb() *entry_pb.Chunk {
 	}
 
 	return &entry_pb.Chunk{
-		Offset: c.Offset,
-		Size:   c.Size,
-		Md5:    c.Md5,
-		Frags:  frags,
+		Offset:        c.Offset,
+		Size:          c.Size,
+		Md5:           c.Md5,
+		IsReplication: c.IsReplication,
+		Frags:         frags,
 	}
 }
 
@@ -57,12 +58,11 @@ func (f *Frag) toPb() *entry_pb.Frag {
 	}
 
 	return &entry_pb.Frag{
-		Size:          f.Size,
-		Id:            f.Id,
-		Md5:           f.Md5,
-		IsReplication: f.IsReplication,
-		IsDataShard:   f.IsDataShard,
-		Fid:           f.Fid,
+		Size:        f.Size,
+		Id:          f.Id,
+		Md5:         f.Md5,
+		IsDataShard: f.IsDataShard,
+		Fid:         f.Fid,
 	}
 }
 
@@ -71,12 +71,12 @@ func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 		return nil
 	}
 
-	chunks := make([]Chunk, len(pb.Chunks))
+	chunks := make([]*Chunk, len(pb.Chunks))
 	for i, u := range pb.Chunks {
 		if u == nil {
 			continue
 		}
-		chunks[i] = *chunkPbToInstance(u)
+		chunks[i] = chunkPbToInstance(u)
 	}
 
 	if pb.Chunks == nil {
@@ -101,12 +101,12 @@ func chunkPbToInstance(pb *entry_pb.Chunk) *Chunk {
 		return nil
 	}
 
-	frags := make([]Frag, len(pb.Frags))
+	frags := make([]*Frag, len(pb.Frags))
 	for i, u := range pb.Frags {
 		if u == nil {
 			continue
 		}
-		frags[i] = *frgaPbToInstance(u)
+		frags[i] = frgaPbToInstance(u)
 	}
 
 	if pb.Frags == nil {
@@ -114,10 +114,11 @@ func chunkPbToInstance(pb *entry_pb.Chunk) *Chunk {
 	}
 
 	return &Chunk{
-		Offset: pb.Offset,
-		Size:   pb.Size,
-		Md5:    pb.Md5,
-		Frags:  frags,
+		Offset:        pb.Offset,
+		Size:          pb.Size,
+		Md5:           pb.Md5,
+		IsReplication: pb.IsReplication,
+		Frags:         frags,
 	}
 }
 
@@ -127,12 +128,11 @@ func frgaPbToInstance(pb *entry_pb.Frag) *Frag {
 	}
 
 	return &Frag{
-		Size:          pb.Size,
-		Id:            pb.Id,
-		Md5:           pb.Md5,
-		IsReplication: pb.IsReplication,
-		IsDataShard:   pb.IsDataShard,
-		Fid:           pb.Fid,
+		Size:        pb.Size,
+		Id:          pb.Id,
+		Md5:         pb.Md5,
+		IsDataShard: pb.IsDataShard,
+		Fid:         pb.Fid,
 	}
 }
 
