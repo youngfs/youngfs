@@ -8,17 +8,17 @@ import (
 	"strconv"
 	"time"
 	"youngfs/errors"
-	"youngfs/fs/full_path"
+	"youngfs/fs/bucket"
+	"youngfs/fs/fullpath"
 	"youngfs/fs/server"
-	fs_set "youngfs/fs/set"
 	"youngfs/log"
 	"youngfs/vars"
 )
 
 func HeadObjectHandler(c *gin.Context) {
-	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
-	if !set.IsLegal() {
-		err := errors.ErrIllegalSetName
+	bkt, fp := bucket.Bucket(c.Param("bucket")), fullpath.FullPath(c.Param("path"))
+	if !bkt.IsLegal() {
+		err := errors.ErrIllegalBucketName
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.Status(err.HTTPStatusCode)
@@ -33,7 +33,7 @@ func HeadObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.GetEntry(c, set, fp)
+	ent, err := server.GetEntry(c, bkt, fp)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {
@@ -59,7 +59,7 @@ func HeadObjectHandler(c *gin.Context) {
 	// url encode but not code /
 	c.Header("Full-Path", (&url.URL{Path: string(ent.FullPath)}).String())
 	// url encode and code /
-	c.Header("Set", url.PathEscape(string(ent.Set)))
+	c.Header("Bucket", url.PathEscape(string(ent.Bucket)))
 	c.Header("Last-Modified-Time", ent.Mtime.Format(time.RFC3339))
 	c.Header("Creation-Time", ent.Ctime.Format(time.RFC3339))
 	c.Header("Mode", strconv.FormatUint(uint64(ent.Mode), 10))

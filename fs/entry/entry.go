@@ -3,28 +3,28 @@ package entry
 import (
 	"os"
 	"time"
-	"youngfs/fs/full_path"
-	"youngfs/fs/set"
+	"youngfs/fs/bucket"
+	"youngfs/fs/fullpath"
 )
 
 type Entry struct {
-	full_path.FullPath             // file full full_path
-	set.Set                        // own set
-	Mtime              time.Time   // time of last modification
-	Ctime              time.Time   // time of creation
-	Mode               os.FileMode // file mode
-	Mime               string      // MIME type
-	Md5                []byte      // MD5
-	FileSize           uint64      // file size
-	Chunks                         // chunks
+	fullpath.FullPath             // file full path
+	bucket.Bucket                 // own bucket
+	Mtime             time.Time   // time of last modification
+	Ctime             time.Time   // time of creation
+	Mode              os.FileMode // file mode
+	Mime              string      // MIME type
+	Md5               []byte      // MD5
+	FileSize          uint64      // file size
+	Chunks                        // chunks
 }
 
 func (ent *Entry) Key() string {
-	return string(ent.Set) + string(ent.FullPath) + entryKv
+	return string(ent.Bucket) + string(ent.FullPath) + entryKv
 }
 
-func EntryKey(set set.Set, fp full_path.FullPath) string {
-	return string(set) + string(fp) + entryKv
+func EntryKey(bkt bucket.Bucket, fp fullpath.FullPath) string {
+	return string(bkt) + string(fp) + entryKv
 }
 
 func (ent *Entry) IsDirectory() bool {

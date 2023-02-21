@@ -18,7 +18,7 @@ const (
 	errInvalidPath ErrorCode = 4000 + iota
 	errInvalidDelete
 	errIllegalObjectName
-	errIllegalSetName
+	errIllegalBucketName
 	errRouter
 	errObjectNotExist
 	errContentEncoding
@@ -33,6 +33,5 @@ const (
 	errSeaweedFSVolume
 	errRedisSync
 	errServer
-	errNotSupportChunkTransfer
 	errChunkMisalignment
 )

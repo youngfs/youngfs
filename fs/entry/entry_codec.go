@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 	"youngfs/errors"
+	"youngfs/fs/bucket"
 	"youngfs/fs/entry/entry_pb"
-	"youngfs/fs/full_path"
-	"youngfs/fs/set"
+	"youngfs/fs/fullpath"
 )
 
 func (ent *Entry) toPb() *entry_pb.Entry {
@@ -22,7 +22,7 @@ func (ent *Entry) toPb() *entry_pb.Entry {
 
 	return &entry_pb.Entry{
 		FullPath: string(ent.FullPath),
-		Set:      string(ent.Set),
+		Bucket:   string(ent.Bucket),
 		Mtime:    ent.Mtime.Unix(),
 		Ctime:    ent.Ctime.Unix(),
 		Mode:     uint32(ent.Mode),
@@ -84,8 +84,8 @@ func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 	}
 
 	return &Entry{
-		FullPath: full_path.FullPath(pb.FullPath),
-		Set:      set.Set(pb.Set),
+		FullPath: fullpath.FullPath(pb.FullPath),
+		Bucket:   bucket.Bucket(pb.Bucket),
 		Mtime:    time.Unix(pb.Mtime, 0),
 		Ctime:    time.Unix(pb.Ctime, 0),
 		Mode:     os.FileMode(pb.Mode),

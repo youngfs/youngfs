@@ -2,7 +2,7 @@ package server
 
 import (
 	"youngfs/fs/filer/vfs"
-	"youngfs/fs/storage_engine/seaweedfs"
+	"youngfs/fs/storageengine/seaweedfs"
 	"youngfs/kv/redis"
 	"youngfs/vars"
 )

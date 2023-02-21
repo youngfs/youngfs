@@ -1,4 +1,4 @@
-package gizp_pool
+package gzippool
 
 import (
 	"compress/gzip"

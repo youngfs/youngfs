@@ -4,6 +4,8 @@ import (
 	"sync"
 )
 
+// learn from https://github.com/seaweedfs/seaweedfs
+
 type UnboundedQueue[T any] struct {
 	outbound     []T
 	outboundLock sync.RWMutex

@@ -4,23 +4,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"youngfs/errors"
-	"youngfs/fs/full_path"
+	"youngfs/fs/bucket"
+	"youngfs/fs/fullpath"
 	"youngfs/fs/server"
-	fs_set "youngfs/fs/set"
 	"youngfs/log"
 	"youngfs/vars"
 )
 
 func GetObjectHandler(c *gin.Context) {
-	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	bkt, fp := bucket.Bucket(c.Param("bucket")), fullpath.FullPath(c.Param("path"))
 	if fp == "/" || fp[len(fp)-1] == '/' {
 		//redirect to list object
 		ListObjectsHandler(c)
 		return
 	}
 
-	if !set.IsLegal() {
-		err := errors.ErrIllegalSetName
+	if !bkt.IsLegal() {
+		err := errors.ErrIllegalBucketName
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
@@ -49,7 +49,7 @@ func GetObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	ent, err := server.GetEntry(c, set, fp)
+	ent, err := server.GetEntry(c, bkt, fp)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {

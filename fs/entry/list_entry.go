@@ -3,12 +3,12 @@ package entry
 import (
 	"encoding/hex"
 	"os"
-	"youngfs/fs/full_path"
+	"youngfs/fs/fullpath"
 )
 
 type ListEntry struct {
-	FullPath string      // file full full_path
-	Set      string      // own set
+	FullPath string      // file full fullpath
+	Set      string      // own bucket
 	Mtime    string      // time of last modification
 	Ctime    string      // time of creation
 	Mode     os.FileMode // file mode
@@ -46,7 +46,7 @@ func (ent *Entry) ToListEntry() *ListEntry {
 
 	return &ListEntry{
 		FullPath: string(ent.FullPath),
-		Set:      string(ent.Set),
+		Set:      string(ent.Bucket),
 		Mtime:    ent.Mtime.Format(timeFormat),
 		Ctime:    ent.Ctime.Format(timeFormat),
 		Mode:     ent.Mode,
@@ -109,5 +109,5 @@ func (ent *ListEntry) IsFile() bool {
 }
 
 func (ent *ListEntry) Name() string {
-	return full_path.FullPath(ent.FullPath).Name()
+	return fullpath.FullPath(ent.FullPath).Name()
 }

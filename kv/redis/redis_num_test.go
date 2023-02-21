@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 	"youngfs/errors"
-	"youngfs/util"
+	"youngfs/util/randutil"
 	"youngfs/vars"
 )
 
@@ -104,7 +104,7 @@ func TestRedis_Num(t *testing.T) {
 	assert.Equal(t, ret, true)
 	assert.Equal(t, err, nil)
 
-	err = client.KvPut(ctx, key, util.RandByte(1024))
+	err = client.KvPut(ctx, key, randutil.RandByte(1024))
 	assert.Equal(t, err, nil)
 
 	ret2, err := client.Incr(ctx, key)

@@ -5,29 +5,29 @@ import (
 	"os"
 	"time"
 	"youngfs/errors"
+	"youngfs/fs/bucket"
 	"youngfs/fs/entry"
-	"youngfs/fs/full_path"
-	"youngfs/fs/set"
+	"youngfs/fs/fullpath"
 )
 
-func inodeBelongKey(set set.Set, fp full_path.FullPath) string {
-	return string(set) + string(fp.Dir()) + inodeKv
+func inodeBelongKey(bkt bucket.Bucket, fp fullpath.FullPath) string {
+	return string(bkt) + string(fp.Dir()) + inodeKv
 }
 
-func inodeKey(set set.Set, fp full_path.FullPath) string {
-	return string(set) + string(fp) + inodeKv
+func inodeKey(bkt bucket.Bucket, fp fullpath.FullPath) string {
+	return string(bkt) + string(fp) + inodeKv
 }
 
-func inodeLockKey(set set.Set, fp full_path.FullPath) string {
-	return string(set) + string(fp) + inodeLock
+func inodeLockKey(bkt bucket.Bucket, fp fullpath.FullPath) string {
+	return string(bkt) + string(fp) + inodeLock
 }
 
-func (vfs *VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) insertInodeFa(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) error {
 	if fp == inodeRoot {
 		return errors.ErrServer.Wrap("insert inode: inode root")
 	}
 
-	err := vfs.kvStore.ZAdd(ctx, inodeBelongKey(set, fp), string(fp))
+	err := vfs.kvStore.ZAdd(ctx, inodeBelongKey(bkt, fp), string(fp))
 	if err != nil {
 		return err
 	}
@@ -35,26 +35,26 @@ func (vfs *VFS) insertInodeFa(ctx context.Context, set set.Set, fp full_path.Ful
 	return nil
 }
 
-func (vfs *VFS) getInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) ([]full_path.FullPath, error) {
-	fps, err := vfs.kvStore.ZRangeByLex(ctx, inodeKey(set, fp), "", "")
+func (vfs *VFS) getInodeChs(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) ([]fullpath.FullPath, error) {
+	fps, err := vfs.kvStore.ZRangeByLex(ctx, inodeKey(bkt, fp), "", "")
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]full_path.FullPath, len(fps))
+	ret := make([]fullpath.FullPath, len(fps))
 	for i, v := range fps {
-		ret[i] = full_path.FullPath(v)
+		ret[i] = fullpath.FullPath(v)
 	}
 
 	return ret, nil
 }
 
-func (vfs *VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.FullPath) error {
+func (vfs *VFS) deleteInodeFa(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) error {
 	if fp == inodeRoot {
 		return errors.ErrServer.Wrap("delete inode: inode root")
 	}
 
-	_, err := vfs.kvStore.ZRem(ctx, inodeBelongKey(set, fp), string(fp))
+	_, err := vfs.kvStore.ZRem(ctx, inodeBelongKey(bkt, fp), string(fp))
 	if err != nil {
 		return err
 	}
@@ -62,20 +62,20 @@ func (vfs *VFS) deleteInodeFa(ctx context.Context, set set.Set, fp full_path.Ful
 	return nil
 }
 
-func (vfs *VFS) deleteInodeChs(ctx context.Context, set set.Set, fp full_path.FullPath) error {
-	_, err := vfs.kvStore.ZRemRangeByLex(ctx, inodeKey(set, fp), "", "")
+func (vfs *VFS) deleteInodeChs(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) error {
+	_, err := vfs.kvStore.ZRemRangeByLex(ctx, inodeKey(bkt, fp), "", "")
 	if err != nil {
 		return err
 	}
 	return err
 }
 
-func (vfs *VFS) inodeCnt(ctx context.Context, set set.Set, fp full_path.FullPath) (int64, error) {
-	return vfs.kvStore.ZCard(ctx, inodeKey(set, fp))
+func (vfs *VFS) inodeCnt(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) (int64, error) {
+	return vfs.kvStore.ZCard(ctx, inodeKey(bkt, fp))
 }
 
-func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullPath, mtime time.Time) error {
-	mutex := vfs.kvStore.NewMutex(inodeLockKey(set, fp))
+func (vfs *VFS) updateMtime(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath, mtime time.Time) error {
+	mutex := vfs.kvStore.NewMutex(inodeLockKey(bkt, fp))
 	if err := mutex.Lock(); err != nil {
 		return errors.ErrRedisSync.WithStack()
 	}
@@ -83,7 +83,7 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 		_, _ = mutex.Unlock()
 	}()
 
-	ent, err := vfs.getEntry(ctx, set, fp)
+	ent, err := vfs.getEntry(ctx, bkt, fp)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return errors.ErrServer.Wrap("update mtime: entry not found")
@@ -101,8 +101,8 @@ func (vfs *VFS) updateMtime(ctx context.Context, set set.Set, fp full_path.FullP
 }
 
 // return is create file or folder and err
-func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir full_path.FullPath, cover bool) (bool, error) {
-	mutex := vfs.kvStore.NewMutex(inodeLockKey(ent.Set, dir))
+func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir fullpath.FullPath, cover bool) (bool, error) {
+	mutex := vfs.kvStore.NewMutex(inodeLockKey(ent.Bucket, dir))
 	if err := mutex.Lock(); err != nil {
 		return false, errors.ErrRedisSync.WithStack()
 	}
@@ -110,13 +110,13 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 		_, _ = mutex.Unlock()
 	}()
 
-	dirEnt, err := vfs.getEntry(ctx, ent.Set, dir)
+	dirEnt, err := vfs.getEntry(ctx, ent.Bucket, dir)
 	if errors.IsKvNotFound(err) {
 		if dir != ent.FullPath {
 			err := vfs.insertEntry(ctx,
 				&entry.Entry{
 					FullPath: dir,
-					Set:      ent.Set,
+					Bucket:   ent.Bucket,
 					Mtime:    ent.Mtime,
 					Ctime:    ent.Ctime,
 					Mode:     os.ModeDir,
@@ -132,7 +132,7 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 			}
 		}
 
-		err := vfs.insertInodeFa(ctx, ent.Set, dir)
+		err := vfs.insertInodeFa(ctx, ent.Bucket, dir)
 		if err != nil {
 			return false, err
 		}
@@ -142,7 +142,7 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 		return false, err
 	} else if dirEnt.IsFile() || dir == ent.FullPath {
 		if cover {
-			err = vfs.deleteInodeAndEntry(ctx, dirEnt.Set, dir, false)
+			err = vfs.deleteInodeAndEntry(ctx, dirEnt.Bucket, dir, false)
 			if err != nil {
 				return false, err
 			}
@@ -151,7 +151,7 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 				err := vfs.insertEntry(ctx,
 					&entry.Entry{
 						FullPath: dir,
-						Set:      ent.Set,
+						Bucket:   ent.Bucket,
 						Mtime:    ent.Mtime,
 						Ctime:    ent.Ctime,
 						Mode:     os.ModeDir,
@@ -167,7 +167,7 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 				}
 			}
 
-			err := vfs.insertInodeFa(ctx, ent.Set, dir)
+			err := vfs.insertInodeFa(ctx, ent.Bucket, dir)
 			if err != nil {
 				return false, err
 			}
@@ -180,9 +180,9 @@ func (vfs *VFS) insertInodeAndEntry(ctx context.Context, ent *entry.Entry, dir f
 	return false, nil
 }
 
-func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_path.FullPath, lock bool) error {
+func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath, lock bool) error {
 	if lock {
-		mutex := vfs.kvStore.NewMutex(inodeLockKey(set, fp))
+		mutex := vfs.kvStore.NewMutex(inodeLockKey(bkt, fp))
 		if err := mutex.Lock(); err != nil {
 			return errors.ErrRedisSync.WithStack()
 		}
@@ -190,24 +190,24 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 			_, _ = mutex.Unlock()
 		}()
 	}
-	inodes, err := vfs.getInodeChs(ctx, set, fp)
+	inodes, err := vfs.getInodeChs(ctx, bkt, fp)
 	if err != nil && !errors.IsKvNotFound(err) {
 		return err
 	}
 
 	for _, inode := range inodes {
-		ent, err := vfs.getEntry(ctx, set, inode)
+		ent, err := vfs.getEntry(ctx, bkt, inode)
 		if err != nil {
 			return err
 		}
 
 		if ent.IsDirectory() {
-			err = vfs.deleteInodeAndEntry(ctx, set, ent.FullPath, true)
+			err = vfs.deleteInodeAndEntry(ctx, bkt, ent.FullPath, true)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = vfs.deleteEntry(ctx, set, ent.FullPath)
+			err = vfs.deleteEntry(ctx, bkt, ent.FullPath)
 			if err != nil {
 				return err
 			}
@@ -216,20 +216,20 @@ func (vfs *VFS) deleteInodeAndEntry(ctx context.Context, set set.Set, fp full_pa
 
 	// fp != /  delete fp.dir inode -> fp
 	if fp != inodeRoot {
-		err := vfs.deleteInodeFa(ctx, set, fp)
+		err := vfs.deleteInodeFa(ctx, bkt, fp)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = vfs.deleteInodeChs(ctx, set, fp)
+	err = vfs.deleteInodeChs(ctx, bkt, fp)
 	if err != nil {
 		return err
 	}
 
 	// fp != /  delete fp
 	if fp != inodeRoot {
-		err = vfs.deleteEntry(ctx, set, fp)
+		err = vfs.deleteEntry(ctx, bkt, fp)
 		if err != nil {
 			return err
 		}

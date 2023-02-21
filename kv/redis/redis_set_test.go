@@ -8,7 +8,7 @@ import (
 	"sort"
 	"testing"
 	"youngfs/errors"
-	"youngfs/util"
+	"youngfs/util/randutil"
 	"youngfs/vars"
 )
 
@@ -31,11 +31,11 @@ func TestRedis_Set(t *testing.T) {
 	key := "test_redis_set"
 	ctx := context.Background()
 
-	b := util.RandByte(512)
+	b := randutil.RandByte(512)
 
 	bList := make([][]byte, 10)
 	for i := 0; i < 10; i++ {
-		bList[i] = util.RandByte(uint64(128 + rand.Int()%128))
+		bList[i] = randutil.RandByte(uint64(128 + rand.Int()%128))
 	}
 
 	// not add members

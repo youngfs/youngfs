@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 	"youngfs/errors"
-	"youngfs/util"
+	"youngfs/util/randutil"
 )
 
 func TestLeveldb_Kv(t *testing.T) {
@@ -26,7 +26,7 @@ func TestLeveldb_Kv(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, true)
 
-	b = util.RandByte(1024)
+	b = randutil.RandByte(1024)
 	err = client.KvPut(ctx, key, b)
 	assert.Equal(t, err, nil)
 
@@ -34,7 +34,7 @@ func TestLeveldb_Kv(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, b2, b)
 
-	b = util.RandByte(512)
+	b = randutil.RandByte(512)
 	err = client.KvPut(ctx, key, b)
 	assert.Equal(t, err, nil)
 

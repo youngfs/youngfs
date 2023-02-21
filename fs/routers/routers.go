@@ -42,11 +42,11 @@ func InitRouter() {
 
 	// api handler
 	// object
-	r.PUT("/:set/*fp", Logger("put object"), api.PutObjectHandler)
-	r.POST("/:set/*fp", Logger("put object"), api.PutObjectHandler)
-	r.GET("/:set/*fp", Logger("get object"), api.GetObjectHandler)
-	r.DELETE("/:set/*fp", Logger("delete object"), api.DeleteObjectHandler)
-	r.HEAD("/:set/*fp", Logger("head object"), api.HeadObjectHandler)
+	r.PUT("/:bucket/*path", Logger("put object"), api.PutObjectHandler)
+	r.POST("/:bucket/*path", Logger("put object"), api.PutObjectHandler)
+	r.GET("/:bucket/*path", Logger("get object"), api.GetObjectHandler)
+	r.DELETE("/:bucket/*path", Logger("delete object"), api.DeleteObjectHandler)
+	r.HEAD("/:bucket/*path", Logger("head object"), api.HeadObjectHandler)
 
 	router = r
 }

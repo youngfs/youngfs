@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 	"youngfs/errors"
-	"youngfs/util"
+	"youngfs/util/randutil"
 	"youngfs/vars"
 )
 
@@ -18,7 +18,7 @@ func TestSeaweedFS_DeleteObject(t *testing.T) {
 	size := uint64(5 * 1024)
 	ctx := context.Background()
 
-	b := util.RandByte(size)
+	b := randutil.RandByte(size)
 
 	fid, err := client.PutObject(ctx, size, bytes.NewReader(b))
 	assert.Equal(t, err, nil)

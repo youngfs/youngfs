@@ -4,7 +4,7 @@ option go_package = "./entry_pb";
 
 message Entry{
   string full_path = 1;
-  string set = 2;
+  string bucket = 2;
   int64 mtime = 3;
   int64 ctime = 4;
   uint32 mode = 5;
@@ -26,6 +26,6 @@ message Frag {
   uint64 size = 1;
   int64 id = 2;
   bytes md5 = 3;
-  bool is_dataShard = 4;
+  bool is_data_shard = 4;
   string fid = 5;
 }

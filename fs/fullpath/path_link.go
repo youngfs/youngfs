@@ -1,4 +1,4 @@
-package full_path
+package fullpath
 
 type PathLink struct {
 	Name string

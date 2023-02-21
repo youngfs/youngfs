@@ -12,6 +12,7 @@ import (
 	"time"
 	"youngfs/errors"
 	"youngfs/util"
+	"youngfs/util/randutil"
 	"youngfs/vars"
 )
 
@@ -21,7 +22,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 	ctx := context.Background()
 	rand.Seed(time.Now().UnixNano())
 
-	b := util.RandByte(size)
+	b := randutil.RandByte(size)
 
 	fid, err := client.PutObject(ctx, size, bytes.NewReader(b), "")
 	assert.Equal(t, err, nil)
@@ -63,7 +64,7 @@ func TestSeaweedFS_PutObject(t *testing.T) {
 	mutex := &sync.Mutex{}
 	for i := 0; i < 128; i++ {
 		lce.Execute(func() {
-			b := util.RandByte(size)
+			b := randutil.RandByte(size)
 
 			host := hosts[rand.Intn(len(hosts))]
 

@@ -1,4 +1,4 @@
-package bytes_pool
+package mem
 
 const (
 	minSize = 1024

@@ -50,7 +50,7 @@ func (store *KvStore) SetNum(ctx context.Context, key string, num int64) error {
 	val := strconv.FormatInt(num, 10)
 	_, err := store.client.Set(ctx, key, val, 0).Result()
 	if err != nil {
-		return errors.ErrKvSever.Wrap("redis set num: kv put error")
+		return errors.ErrKvSever.Wrap("redis bucket num: kv put error")
 	}
 	return nil
 }

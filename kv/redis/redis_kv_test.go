@@ -5,7 +5,7 @@ import (
 	"github.com/go-playground/assert/v2"
 	"testing"
 	"youngfs/errors"
-	"youngfs/util"
+	"youngfs/util/randutil"
 	"youngfs/vars"
 )
 
@@ -22,7 +22,7 @@ func TestRedis_Kv(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ret, false)
 
-	b = util.RandByte(1024)
+	b = randutil.RandByte(1024)
 	err = client.KvPut(ctx, key, b)
 	assert.Equal(t, err, nil)
 
@@ -30,7 +30,7 @@ func TestRedis_Kv(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, b2, b)
 
-	b = util.RandByte(512)
+	b = randutil.RandByte(512)
 	err = client.KvPut(ctx, key, b)
 	assert.Equal(t, err, nil)
 

@@ -1,4 +1,4 @@
-package full_path
+package fullpath
 
 import (
 	"github.com/go-playground/assert/v2"

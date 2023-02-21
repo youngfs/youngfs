@@ -54,7 +54,7 @@ func (store *KvStore) SIsMember(ctx context.Context, key string, member []byte) 
 	return ret, err
 }
 
-// delete all members of the set
+// delete all members of the bucket
 func (store *KvStore) SDelete(ctx context.Context, key string) (bool, error) {
 	cnt, err := store.SCard(ctx, key)
 	if err != nil {

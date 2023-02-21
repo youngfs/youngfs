@@ -1,4 +1,4 @@
-package bytes_pool
+package mem
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"github.com/oxtoacart/bpool"
 	"math/rand"
 	"testing"
-	"youngfs/util"
+	"youngfs/util/randutil"
 )
 
 func TestBytesPool(t *testing.T) {
@@ -33,7 +33,7 @@ func TestBytesPool(t *testing.T) {
 const testSize = 64 * 1024
 
 func BenchmarkBytes(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	for i := 0; i < b.N; i++ {
 		var b []byte
 		b = append(b, info...)
@@ -41,7 +41,7 @@ func BenchmarkBytes(b *testing.B) {
 }
 
 func BenchmarkMakeBytes(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	for i := 0; i < b.N; i++ {
 		b := make([]byte, testSize)
 		copy(b, info)
@@ -49,7 +49,7 @@ func BenchmarkMakeBytes(b *testing.B) {
 }
 
 func BenchmarkBuffer(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	for i := 0; i < b.N; i++ {
 		var b bytes.Buffer
 		b.Write(info)
@@ -57,7 +57,7 @@ func BenchmarkBuffer(b *testing.B) {
 }
 
 func BenchmarkBufferAllocate(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	for i := 0; i < b.N; i++ {
 		b := bytes.NewBuffer(make([]byte, 0, testSize))
 		b.Write(info)
@@ -65,7 +65,7 @@ func BenchmarkBufferAllocate(b *testing.B) {
 }
 
 func BenchmarkBufferPool(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	bufferPool := bpool.NewBufferPool(64)
 	for i := 0; i < b.N; i++ {
 		b := bufferPool.Get()
@@ -75,7 +75,7 @@ func BenchmarkBufferPool(b *testing.B) {
 }
 
 func BenchmarkBytePool(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	bytePool := bpool.NewBytePool(64, testSize)
 	for i := 0; i < b.N; i++ {
 		b := bytePool.Get()
@@ -85,7 +85,7 @@ func BenchmarkBytePool(b *testing.B) {
 }
 
 func BenchmarkSizedBufferPool(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	sizedBufferPool := bpool.NewSizedBufferPool(64, testSize)
 	for i := 0; i < b.N; i++ {
 		b := sizedBufferPool.Get()
@@ -95,7 +95,7 @@ func BenchmarkSizedBufferPool(b *testing.B) {
 }
 
 func BenchmarkBytesPool(b *testing.B) {
-	info := util.RandByte(testSize)
+	info := randutil.RandByte(testSize)
 	for i := 0; i < b.N; i++ {
 		b := Allocate(testSize)
 		copy(b, info)

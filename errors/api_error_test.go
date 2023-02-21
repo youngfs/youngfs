@@ -2,7 +2,7 @@ package errors
 
 import (
 	"fmt"
-	"gotest.tools/v3/assert"
+	"github.com/go-playground/assert/v2"
 	"testing"
 )
 

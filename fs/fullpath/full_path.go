@@ -1,4 +1,4 @@
-package full_path
+package fullpath
 
 import (
 	"path/filepath"
@@ -32,7 +32,6 @@ func (fp FullPath) IsLegal() bool {
 	if !utf8.ValidString(string(fp)) {
 		return false
 	}
-
 	if fp == "" {
 		return false
 	}

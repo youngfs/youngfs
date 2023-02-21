@@ -6,36 +6,14 @@ import (
 	"io"
 	"net/http"
 	"youngfs/errors"
-	"youngfs/fs/full_path"
+	"youngfs/fs/bucket"
+	"youngfs/fs/fullpath"
 	"youngfs/fs/server"
-	fs_set "youngfs/fs/set"
 	"youngfs/log"
 	"youngfs/vars"
 )
 
-type PutObjectInfo struct {
-	Compress bool `form:"compress" json:"compress" uri:"compress"`
-}
-
 func PutObjectHandler(c *gin.Context) {
-	putObjectInfo := &PutObjectInfo{}
-
-	err := c.Bind(putObjectInfo)
-	if err != nil {
-		apiErr := errors.ErrRouter
-		c.Set(vars.CodeKey, apiErr.ErrorCode)
-		c.Set(vars.ErrorKey, err.Error())
-		c.JSON(
-			apiErr.HTTPStatusCode,
-			gin.H{
-				vars.UUIDKey:  c.Value(vars.UUIDKey),
-				vars.CodeKey:  apiErr.ErrorCode,
-				vars.ErrorKey: err.Error(),
-			},
-		)
-		return
-	}
-
 	var file io.ReadCloser
 	var filename string
 	file, head, err := c.Request.FormFile("file")
@@ -84,29 +62,12 @@ func PutObjectHandler(c *gin.Context) {
 		_ = file.Close()
 	}()
 
-	for _, transfer := range c.Request.TransferEncoding {
-		if transfer == "chunked" {
-			err := errors.ErrNotSupportChunkTransfer
-			c.Set(vars.CodeKey, err.ErrorCode)
-			c.Set(vars.ErrorKey, err.Error())
-			c.JSON(
-				err.HTTPStatusCode,
-				gin.H{
-					vars.UUIDKey:  c.Value(vars.UUIDKey),
-					vars.CodeKey:  err.ErrorCode,
-					vars.ErrorKey: err.Error(),
-				},
-			)
-			return
-		}
-	}
-
-	set, fp := fs_set.Set(c.Param("set")), full_path.FullPath(c.Param("fp"))
+	bkt, fp := bucket.Bucket(c.Param("bucket")), fullpath.FullPath(c.Param("path"))
 	if len(fp) == 0 || fp[len(fp)-1] == '/' {
-		fp += full_path.FullPath(filename)
+		fp += fullpath.FullPath(filename)
 	}
-	if !set.IsLegal() {
-		err := errors.ErrIllegalSetName
+	if !bkt.IsLegal() {
+		err := errors.ErrIllegalBucketName
 		c.Set(vars.CodeKey, err.ErrorCode)
 		c.Set(vars.ErrorKey, err.Error())
 		c.JSON(
@@ -135,7 +96,7 @@ func PutObjectHandler(c *gin.Context) {
 	}
 	fp = fp.Clean()
 
-	err = server.PutObject(c, set, fp, file)
+	err = server.PutObject(c, bkt, fp, file)
 	if err != nil {
 		apiErr := &errors.APIError{}
 		if !errors.As(err, &apiErr) {

@@ -1,3 +1,4 @@
+{{/* learn from https://github.com/seaweedfs/seaweedfs */}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -68,7 +69,7 @@
         <div>
             <span style="font-size: medium; float: left; margin-top: 8px;">
                 {{ range $pathLink := .PathLinks }}
-                <a href="{{ printUrlPath "/" $.Set $pathLink.Link }}">
+                <a href="{{ printUrlPath "/" $.Bucket $pathLink.Link }}">
                     {{ $pathLink.Name }}
                 </a>
                 {{ end }}
@@ -93,7 +94,7 @@
                     {{if $ent.IsDirectory }}
                     <img src="/static/images/folder.png" width="20" height="20">
                     {{end}}
-                    <a href="{{ printUrlPath "/" $.Set $ent.FullPath }}" >
+                    <a href="{{ printUrlPath "/" $.Bucket $ent.FullPath }}" >
                     {{ $ent.Name }}
                     </a>
                 </td>

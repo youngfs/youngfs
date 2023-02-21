@@ -6,61 +6,61 @@ import (
 	"os"
 	"testing"
 	"time"
-	"youngfs/util"
+	"youngfs/util/randutil"
 )
 
 func TestEntry_EnDecodeProto(t *testing.T) {
 	val := &Entry{
 		FullPath: "/aa/bb/cc",
-		Set:      "test",
+		Bucket:   "test",
 		Mtime:    time.Unix(time.Now().Unix(), 0),
 		Ctime:    time.Unix(time.Now().Unix(), 0),
 		Mode:     os.ModePerm,
 		Mime:     "",
-		Md5:      util.RandMd5(),
+		Md5:      randutil.RandMd5(),
 		FileSize: rand.Uint64(),
 		Chunks: []*Chunk{
 			{
 				Offset:        rand.Uint64(),
 				Size:          rand.Uint64(),
-				Md5:           util.RandMd5(),
+				Md5:           randutil.RandMd5(),
 				IsReplication: rand.Int()%2 == 0,
 				Frags: []*Frag{
 					{
 						Size:        rand.Uint64(),
 						Id:          1,
-						Md5:         util.RandMd5(),
+						Md5:         randutil.RandMd5(),
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 					{
 						Size:        rand.Uint64(),
 						Id:          2,
-						Md5:         util.RandMd5(),
+						Md5:         randutil.RandMd5(),
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 				},
 			},
 			{
 				Offset:        rand.Uint64(),
 				Size:          rand.Uint64(),
-				Md5:           util.RandMd5(),
+				Md5:           randutil.RandMd5(),
 				IsReplication: rand.Int()%2 == 0,
 				Frags: []*Frag{
 					{
 						Size:        rand.Uint64(),
 						Id:          1,
-						Md5:         util.RandMd5(),
+						Md5:         randutil.RandMd5(),
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 					{
 						Size:        rand.Uint64(),
 						Id:          2,
-						Md5:         util.RandMd5(),
+						Md5:         randutil.RandMd5(),
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 				},
 			},
@@ -76,7 +76,7 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 
 	val = &Entry{
 		FullPath: "/aa/bb/cc",
-		Set:      "test",
+		Bucket:   "test",
 		Mtime:    time.Unix(time.Now().Unix(), 0),
 		Ctime:    time.Unix(time.Now().Unix(), 0),
 		Mode:     os.ModePerm,
@@ -92,13 +92,13 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 						Size:        rand.Uint64(),
 						Id:          1,
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 					{
 						Size:        rand.Uint64(),
 						Id:          2,
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 				},
 			},
@@ -111,13 +111,13 @@ func TestEntry_EnDecodeProto(t *testing.T) {
 						Size:        rand.Uint64(),
 						Id:          1,
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 					{
 						Size:        rand.Uint64(),
 						Id:          2,
 						IsDataShard: rand.Int()%2 == 0,
-						Fid:         util.RandString(16),
+						Fid:         randutil.RandString(16),
 					},
 				},
 			},

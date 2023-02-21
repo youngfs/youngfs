@@ -1,6 +1,8 @@
-package bytes_pool
+package mem
 
 import "sync"
+
+// learn from https://github.com/seaweedfs/seaweedfs
 
 var pools []*sync.Pool
 

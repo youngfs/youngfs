@@ -47,20 +47,19 @@ var (
 	ErrInvalidPath       = &APIError{ErrorCode: errInvalidPath, HTTPStatusCode: http.StatusNotFound, Description: "The file path is not valid"}
 	ErrInvalidDelete     = &APIError{ErrorCode: errInvalidDelete, HTTPStatusCode: http.StatusBadRequest, Description: "There are files in the folder and cannot be deleted recursively"}
 	ErrIllegalObjectName = &APIError{ErrorCode: errIllegalObjectName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal object name"}
-	ErrIllegalSetName    = &APIError{ErrorCode: errIllegalSetName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal set name"}
+	ErrIllegalBucketName = &APIError{ErrorCode: errIllegalBucketName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal bucket name"}
 	ErrRouter            = &APIError{ErrorCode: errRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
 	ErrObjectNotExist    = &APIError{ErrorCode: errObjectNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Object not exist"}
 	ErrContentEncoding   = &APIError{ErrorCode: errContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
 	// 500
-	ErrKvSever                 = &APIError{ErrorCode: errKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
-	ErrNonApiErr               = &APIError{ErrorCode: errNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}
-	ErrProto                   = &APIError{ErrorCode: errProto, HTTPStatusCode: http.StatusInternalServerError, Description: "ProtoBuf error"}
-	ErrSeaweedFSMaster         = &APIError{ErrorCode: errSeaweedFSMaster, HTTPStatusCode: http.StatusInternalServerError, Description: "SeaweedFS master server error"}
-	ErrSeaweedFSVolume         = &APIError{ErrorCode: errSeaweedFSVolume, HTTPStatusCode: http.StatusInternalServerError, Description: "SeaweedFS volume server error"}
-	ErrRedisSync               = &APIError{ErrorCode: errRedisSync, HTTPStatusCode: http.StatusInternalServerError, Description: "Redis lock server error"}
-	ErrServer                  = &APIError{ErrorCode: errServer, HTTPStatusCode: http.StatusInternalServerError, Description: "youngfs server error"}
-	ErrNotSupportChunkTransfer = &APIError{ErrorCode: errNotSupportChunkTransfer, HTTPStatusCode: http.StatusNotImplemented, Description: "Not Support Chunk Transfer"}
-	ErrChunkMisalignment       = &APIError{ErrorCode: errChunkMisalignment, HTTPStatusCode: http.StatusInternalServerError, Description: "Chunk offset misalignment"}
+	ErrKvSever           = &APIError{ErrorCode: errKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
+	ErrNonApiErr         = &APIError{ErrorCode: errNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}
+	ErrProto             = &APIError{ErrorCode: errProto, HTTPStatusCode: http.StatusInternalServerError, Description: "ProtoBuf error"}
+	ErrSeaweedFSMaster   = &APIError{ErrorCode: errSeaweedFSMaster, HTTPStatusCode: http.StatusInternalServerError, Description: "SeaweedFS master server error"}
+	ErrSeaweedFSVolume   = &APIError{ErrorCode: errSeaweedFSVolume, HTTPStatusCode: http.StatusInternalServerError, Description: "SeaweedFS volume server error"}
+	ErrRedisSync         = &APIError{ErrorCode: errRedisSync, HTTPStatusCode: http.StatusInternalServerError, Description: "Redis lock server error"}
+	ErrServer            = &APIError{ErrorCode: errServer, HTTPStatusCode: http.StatusInternalServerError, Description: "YoungFS server error"}
+	ErrChunkMisalignment = &APIError{ErrorCode: errChunkMisalignment, HTTPStatusCode: http.StatusInternalServerError, Description: "Chunk offset misalignment"}
 )
 
 func (e *APIError) Wrap(msg string) error {

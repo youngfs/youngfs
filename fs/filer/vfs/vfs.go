@@ -4,19 +4,19 @@ import (
 	"context"
 	"time"
 	"youngfs/errors"
+	"youngfs/fs/bucket"
 	"youngfs/fs/entry"
-	"youngfs/fs/full_path"
-	"youngfs/fs/set"
-	"youngfs/fs/storage_engine"
+	"youngfs/fs/fullpath"
+	"youngfs/fs/storageengine"
 	"youngfs/kv"
 )
 
 type VFS struct {
 	kvStore       kv.KvSetStoreWithRedisMutex
-	storageEngine storage_engine.StorageEngine
+	storageEngine storageengine.StorageEngine
 }
 
-func NewVFS(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storage_engine.StorageEngine) *VFS {
+func NewVFS(kvStore kv.KvSetStoreWithRedisMutex, storageEngine storageengine.StorageEngine) *VFS {
 	return &VFS{
 		kvStore:       kvStore,
 		storageEngine: storageEngine,
@@ -39,7 +39,7 @@ func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) 
 			isUpdateMtime = true
 			//only dir.dir == /
 			if dir.Dir() != inodeRoot {
-				err := vfs.updateMtime(ctx, ent.Set, dir.Dir(), ent.Mtime)
+				err := vfs.updateMtime(ctx, ent.Bucket, dir.Dir(), ent.Mtime)
 				if err != nil {
 					return err
 				}
@@ -49,8 +49,8 @@ func (vfs *VFS) InsertObject(ctx context.Context, ent *entry.Entry, cover bool) 
 	return nil
 }
 
-func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
-	ent, err := vfs.getEntry(ctx, set, fp)
+func (vfs *VFS) GetObject(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) (*entry.Entry, error) {
+	ent, err := vfs.getEntry(ctx, bkt, fp)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return nil, errors.ErrInvalidPath
@@ -62,14 +62,14 @@ func (vfs *VFS) GetObject(ctx context.Context, set set.Set, fp full_path.FullPat
 }
 
 // after delete entry, delete inode
-func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.FullPath, recursive bool, mtime time.Time) error {
+func (vfs *VFS) DeleteObject(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath, recursive bool, mtime time.Time) error {
 	// if fp == / think fp is a folder
 	if fp == inodeRoot {
 		if recursive == false {
 			return errors.ErrInvalidDelete
 		}
 	} else {
-		ent, err := vfs.getEntry(ctx, set, fp)
+		ent, err := vfs.getEntry(ctx, bkt, fp)
 		if err != nil {
 			if errors.IsKvNotFound(err) {
 				return errors.ErrInvalidPath
@@ -77,7 +77,7 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 			return err
 		}
 
-		inodeCnt, err := vfs.inodeCnt(ctx, set, fp)
+		inodeCnt, err := vfs.inodeCnt(ctx, bkt, fp)
 		if err != nil {
 			return err
 		}
@@ -87,14 +87,14 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 		}
 	}
 
-	err := vfs.deleteInodeAndEntry(ctx, set, fp, true)
+	err := vfs.deleteInodeAndEntry(ctx, bkt, fp, true)
 	if err != nil {
 		return err
 	}
 
 	//include fp == / and fp.dir = /
 	if fp.Dir() != inodeRoot {
-		err := vfs.updateMtime(ctx, set, fp.Dir(), mtime)
+		err := vfs.updateMtime(ctx, bkt, fp.Dir(), mtime)
 		if err != nil {
 			return err
 		}
@@ -103,10 +103,10 @@ func (vfs *VFS) DeleteObject(ctx context.Context, set set.Set, fp full_path.Full
 	return nil
 }
 
-func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
+func (vfs *VFS) ListObjects(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) ([]entry.ListEntry, error) {
 	//if fp != / check fp is dir
 	if fp != inodeRoot {
-		ent, err := vfs.getEntry(ctx, set, fp)
+		ent, err := vfs.getEntry(ctx, bkt, fp)
 		if err != nil {
 			if errors.IsKvNotFound(err) {
 				return []entry.ListEntry{}, errors.ErrInvalidPath
@@ -119,7 +119,7 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 		}
 	}
 
-	inodes, err := vfs.getInodeChs(ctx, set, fp)
+	inodes, err := vfs.getInodeChs(ctx, bkt, fp)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return []entry.ListEntry{}, nil //not found return not err
@@ -129,7 +129,7 @@ func (vfs *VFS) ListObjects(ctx context.Context, set set.Set, fp full_path.FullP
 
 	ret := make([]entry.Entry, len(inodes))
 	for i, v := range inodes {
-		ent, err := vfs.getEntry(ctx, set, v)
+		ent, err := vfs.getEntry(ctx, bkt, v)
 		if err != nil {
 			return []entry.ListEntry{}, err
 		}

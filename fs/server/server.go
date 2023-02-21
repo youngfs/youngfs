@@ -13,24 +13,25 @@ import (
 	"path/filepath"
 	"time"
 	"youngfs/errors"
+	"youngfs/fs/bucket"
 	"youngfs/fs/entry"
 	"youngfs/fs/filer"
-	"youngfs/fs/full_path"
-	fs_set "youngfs/fs/set"
-	"youngfs/fs/storage_engine"
+	"youngfs/fs/fullpath"
+	"youngfs/fs/storageengine"
 	"youngfs/util"
-	"youngfs/util/bytes_pool"
+	"youngfs/util/httputil"
+	"youngfs/util/mem"
 )
 
 type Server struct {
 	filerStore    filer.FilerStore
-	storageEngine storage_engine.StorageEngine
+	storageEngine storageengine.StorageEngine
 	hostCnt       int
 }
 
 var svr *Server
 
-func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngine) *Server {
+func NewServer(filer filer.FilerStore, storageEngine storageengine.StorageEngine) *Server {
 	cnt := 0
 	hosts, err := storageEngine.GetHosts(context.Background())
 	if err == nil {
@@ -44,7 +45,7 @@ func NewServer(filer filer.FilerStore, storageEngine storage_engine.StorageEngin
 	}
 }
 
-func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, reader io.Reader) error {
+func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, reader io.Reader) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	size := uint64(0)
@@ -53,8 +54,8 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, reade
 	md5Hash := md5.New()
 	reader = io.TeeReader(reader, md5Hash)
 
-	buf := bytes_pool.Allocate(partSize)
-	defer bytes_pool.Free(buf)
+	buf := mem.Allocate(partSize)
+	defer mem.Free(buf)
 	var uploadErr error
 	for {
 		n, err := reader.Read(buf)
@@ -95,7 +96,7 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, reade
 		err := svr.filerStore.InsertObject(ctx,
 			&entry.Entry{
 				FullPath: fp,
-				Set:      set,
+				Bucket:   bucket,
 				Mtime:    ctime,
 				Ctime:    ctime,
 				Mode:     os.ModeDir,
@@ -110,12 +111,12 @@ func PutObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, reade
 	ext := filepath.Ext(string(fp))
 	mimeType := mime.TypeByExtension(ext)
 	if mimeType == "" {
-		mimeType, reader = util.FileMimeDetect(reader)
+		mimeType, reader = httputil.FileMimeDetect(reader)
 	}
 
 	ent := &entry.Entry{
 		FullPath: fp,
-		Set:      set,
+		Bucket:   bucket,
 		Mtime:    ctime,
 		Ctime:    ctime,
 		Mode:     os.ModePerm,
@@ -218,8 +219,8 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	if len(data) < (shards * perShard) {
 		// calculate maximum number of full shards in `data` slice
 		fullShards := len(data) / perShard
-		buf := bytes_pool.Allocate(perShard * (shards - fullShards))
-		defer bytes_pool.Free(buf)
+		buf := mem.Allocate(perShard * (shards - fullShards))
+		defer mem.Free(buf)
 		padding = buf
 		copy(padding, data[perShard*fullShards:])
 		data = data[0 : perShard*fullShards]
@@ -301,8 +302,8 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	}, nil
 }
 
-func GetEntry(ctx context.Context, set fs_set.Set, fp full_path.FullPath) (*entry.Entry, error) {
-	return svr.filerStore.GetObject(ctx, set, fp)
+func GetEntry(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath) (*entry.Entry, error) {
+	return svr.filerStore.GetObject(ctx, bucket, fp)
 }
 
 func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
@@ -331,13 +332,13 @@ func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
 	return nil
 }
 
-func ListObjects(ctx context.Context, set fs_set.Set, fp full_path.FullPath) ([]entry.ListEntry, error) {
-	return svr.filerStore.ListObjects(ctx, set, fp)
+func ListObjects(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) ([]entry.ListEntry, error) {
+	return svr.filerStore.ListObjects(ctx, bkt, fp)
 }
 
-func DeleteObject(ctx context.Context, set fs_set.Set, fp full_path.FullPath, recursive bool) error {
+func DeleteObject(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath, recursive bool) error {
 	mtime := time.Unix(time.Now().Unix(), 0)
-	return svr.filerStore.DeleteObject(ctx, set, fp, recursive, mtime)
+	return svr.filerStore.DeleteObject(ctx, bkt, fp, recursive, mtime)
 }
 
 func getDifferentHosts(ctx context.Context, size int) ([]string, error) {

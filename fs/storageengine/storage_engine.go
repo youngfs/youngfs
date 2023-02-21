@@ -1,4 +1,4 @@
-package storage_engine
+package storageengine
 
 import (
 	"context"

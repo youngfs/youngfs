@@ -4,9 +4,9 @@ import (
 	"context"
 	"go.uber.org/multierr"
 	"youngfs/errors"
+	"youngfs/fs/bucket"
 	"youngfs/fs/entry"
-	"youngfs/fs/full_path"
-	"youngfs/fs/set"
+	"youngfs/fs/fullpath"
 )
 
 func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
@@ -18,8 +18,8 @@ func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {
 	return vfs.kvStore.KvPut(ctx, ent.Key(), b)
 }
 
-func (vfs *VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath) (*entry.Entry, error) {
-	key := entry.EntryKey(set, fp)
+func (vfs *VFS) getEntry(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) (*entry.Entry, error) {
+	key := entry.EntryKey(bkt, fp)
 
 	b, err := vfs.kvStore.KvGet(ctx, key)
 	if err != nil {
@@ -29,10 +29,10 @@ func (vfs *VFS) getEntry(ctx context.Context, set set.Set, fp full_path.FullPath
 	return entry.DecodeEntryProto(b)
 }
 
-func (vfs *VFS) deleteEntry(ctx context.Context, set set.Set, fp full_path.FullPath) error {
-	key := entry.EntryKey(set, fp)
+func (vfs *VFS) deleteEntry(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) error {
+	key := entry.EntryKey(bkt, fp)
 
-	ent, err := vfs.getEntry(ctx, set, fp)
+	ent, err := vfs.getEntry(ctx, bkt, fp)
 	if err != nil {
 		if errors.IsKvNotFound(err) {
 			return nil
