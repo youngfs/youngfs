@@ -2,10 +2,10 @@ package log
 
 import (
 	"github.com/natefinch/lumberjack"
+	"github.com/youngfs/youngfs/vars"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
-	"youngfs/vars"
 )
 
 var logger *zap.SugaredLogger

@@ -2,12 +2,12 @@ package vfs
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/entry"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"os"
 	"time"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/entry"
-	"youngfs/fs/fullpath"
 )
 
 func inodeBelongKey(bkt bucket.Bucket, fp fullpath.FullPath) string {

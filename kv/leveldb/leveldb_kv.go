@@ -3,7 +3,7 @@ package leveldb
 import (
 	"context"
 	"github.com/syndtr/goleveldb/leveldb"
-	"youngfs/errors"
+	"github.com/youngfs/youngfs/errors"
 )
 
 func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {

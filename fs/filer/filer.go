@@ -2,10 +2,10 @@ package filer
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/entry"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"time"
-	"youngfs/fs/bucket"
-	"youngfs/fs/entry"
-	"youngfs/fs/fullpath"
 )
 
 type FilerStore interface {

@@ -3,14 +3,14 @@ package api
 import (
 	"encoding/hex"
 	"github.com/gin-gonic/gin"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/fullpath"
+	"github.com/youngfs/youngfs/fs/server"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/fullpath"
-	"youngfs/fs/server"
 )
 
 func HeadObjectHandler(c *gin.Context) {

@@ -2,12 +2,12 @@ package entry
 
 import (
 	"github.com/golang/protobuf/proto"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/entry/entry_pb"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"os"
 	"time"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/entry/entry_pb"
-	"youngfs/fs/fullpath"
 )
 
 func (ent *Entry) toPb() *entry_pb.Entry {

@@ -2,13 +2,13 @@ package vfs
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/entry"
+	"github.com/youngfs/youngfs/fs/fullpath"
+	"github.com/youngfs/youngfs/fs/storageengine"
+	"github.com/youngfs/youngfs/kv"
 	"time"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/entry"
-	"youngfs/fs/fullpath"
-	"youngfs/fs/storageengine"
-	"youngfs/kv"
 )
 
 type VFS struct {

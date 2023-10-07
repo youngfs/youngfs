@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/youngfs/youngfs/log"
+	"github.com/youngfs/youngfs/vars"
 	"net/http"
 	"strconv"
-	"youngfs/log"
-	"youngfs/vars"
 )
 
 func authorizationHeader(user, pw string) string {

@@ -1,10 +1,10 @@
 package entry
 
 import (
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"os"
 	"time"
-	"youngfs/fs/bucket"
-	"youngfs/fs/fullpath"
 )
 
 type Entry struct {

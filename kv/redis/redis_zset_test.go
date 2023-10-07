@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/vars"
 	"math/rand"
 	"testing"
-	"youngfs/errors"
-	"youngfs/vars"
 )
 
 func TestRedis_ZSet(t *testing.T) {

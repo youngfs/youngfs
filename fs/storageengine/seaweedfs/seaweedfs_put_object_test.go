@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"context"
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/util"
+	"github.com/youngfs/youngfs/util/randutil"
+	"github.com/youngfs/youngfs/vars"
 	"io"
 	"math/rand"
 	"net/http"
 	"sync"
 	"testing"
 	"time"
-	"youngfs/errors"
-	"youngfs/util"
-	"youngfs/util/randutil"
-	"youngfs/vars"
 )
 
 func TestSeaweedFS_PutObject(t *testing.T) {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"youngfs/cmd"
+	"github.com/youngfs/youngfs/cmd"
 )
 
 func main() {

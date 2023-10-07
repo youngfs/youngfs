@@ -4,9 +4,9 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	"github.com/youngfs/youngfs/errors"
 	"io"
 	"net/http"
-	"youngfs/errors"
 )
 
 func (se *StorageEngine) GetObject(ctx context.Context, fid string, writer io.Writer) error {

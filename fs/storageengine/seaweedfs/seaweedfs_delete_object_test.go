@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/util/randutil"
+	"github.com/youngfs/youngfs/vars"
 	"io"
 	"net/http"
 	"testing"
 	"time"
-	"youngfs/errors"
-	"youngfs/util/randutil"
-	"youngfs/vars"
 )
 
 func TestSeaweedFS_DeleteObject(t *testing.T) {

@@ -1,4 +1,4 @@
-package leveldb
+package ledisdb
 
 import (
 	"context"
@@ -9,13 +9,14 @@ import (
 	"testing"
 )
 
-func TestLeveldb_Kv(t *testing.T) {
-	client, err := NewKvStore(".kv")
+func TestLedis_Kv(t *testing.T) {
+	client, err := NewKvStore(".kv", "")
 	assert.Equal(t, err, nil)
 	defer func() {
 		_ = os.RemoveAll(".kv")
 	}()
-	key := "test_leveldb_kv"
+
+	key := "test_ledis_kv"
 	ctx := context.Background()
 
 	b, err := client.KvGet(ctx, key)

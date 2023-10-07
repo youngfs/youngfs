@@ -2,9 +2,9 @@ package seaweedfs
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/errors"
 	"io"
 	"net/http"
-	"youngfs/errors"
 )
 
 type PutObjectInfo struct {

@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/util/randutil"
+	"github.com/youngfs/youngfs/vars"
 	"testing"
-	"youngfs/errors"
-	"youngfs/util/randutil"
-	"youngfs/vars"
 )
 
 func TestRedis_Kv(t *testing.T) {

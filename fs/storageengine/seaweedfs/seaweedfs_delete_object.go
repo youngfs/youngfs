@@ -3,13 +3,13 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/util"
 	"io"
 	"net/http"
 	"strconv"
 	"sync/atomic"
 	"time"
-	"youngfs/errors"
-	"youngfs/util"
 )
 
 type deleteObjectInfo struct {

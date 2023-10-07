@@ -2,9 +2,9 @@ package seaweedfs
 
 import (
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/vars"
 	"testing"
-	"youngfs/errors"
-	"youngfs/vars"
 )
 
 func TestSeaweedFS_assignObject(t *testing.T) {

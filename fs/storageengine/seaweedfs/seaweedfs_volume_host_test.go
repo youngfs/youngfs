@@ -3,9 +3,9 @@ package seaweedfs
 import (
 	"context"
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/vars"
 	"testing"
-	"youngfs/errors"
-	"youngfs/vars"
 )
 
 func TestSeaweedFS_GetVolumeHost(t *testing.T) {

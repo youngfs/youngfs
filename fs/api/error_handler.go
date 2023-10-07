@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"youngfs/errors"
-	"youngfs/log"
-	"youngfs/vars"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/log"
+	"github.com/youngfs/youngfs/vars"
 )
 
 func errorHandler(c *gin.Context, err error) {

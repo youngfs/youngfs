@@ -2,12 +2,12 @@ package seaweedfs
 
 import (
 	jsoniter "github.com/json-iterator/go"
+	"github.com/youngfs/youngfs/errors"
 	"io"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
-	"youngfs/errors"
 )
 
 type assignObjectInfo struct {

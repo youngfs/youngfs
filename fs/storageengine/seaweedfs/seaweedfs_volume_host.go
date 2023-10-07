@@ -2,10 +2,10 @@ package seaweedfs
 
 import (
 	jsoniter "github.com/json-iterator/go"
+	"github.com/youngfs/youngfs/errors"
 	"io"
 	"net/http"
 	"strconv"
-	"youngfs/errors"
 )
 
 type volumeUrl struct {

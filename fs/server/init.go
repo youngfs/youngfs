@@ -1,10 +1,10 @@
 package server
 
 import (
-	"youngfs/fs/filer/vfs"
-	"youngfs/fs/storageengine/seaweedfs"
-	"youngfs/kv/redis"
-	"youngfs/vars"
+	"github.com/youngfs/youngfs/fs/filer/vfs"
+	"github.com/youngfs/youngfs/fs/storageengine/seaweedfs"
+	"github.com/youngfs/youngfs/kv/redis"
+	"github.com/youngfs/youngfs/vars"
 )
 
 func InitServer() {

@@ -2,9 +2,9 @@ package seaweedfs
 
 import (
 	"github.com/oxtoacart/bpool"
+	"github.com/youngfs/youngfs/util"
+	"github.com/youngfs/youngfs/util/gzippool"
 	"sync"
-	"youngfs/util"
-	"youngfs/util/gzippool"
 )
 
 type StorageEngine struct {

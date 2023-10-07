@@ -1,13 +1,12 @@
-package redis
+package ledisdb
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"github.com/youngfs/youngfs/errors"
 )
 
 func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {
-	_, err := store.client.Set(ctx, key, val, 0).Result()
+	err := store.db.Set([]byte(key), val)
 	if err != nil {
 		return errors.ErrKvSever.Wrap("redis kv put error")
 	}
@@ -15,19 +14,18 @@ func (store *KvStore) KvPut(ctx context.Context, key string, val []byte) error {
 }
 
 func (store *KvStore) KvGet(ctx context.Context, key string) ([]byte, error) {
-	val, err := store.client.Get(ctx, key).Result()
+	val, err := store.db.Get([]byte(key))
 	if err != nil {
-		if err == redis.Nil {
-			return nil, errors.ErrKvNotFound
-		} else {
-			return nil, errors.ErrKvSever.Wrap("redis kv get error")
-		}
+		return nil, errors.ErrKvSever.Wrap("redis kv get error")
 	}
-	return []byte(val), nil
+	if val == nil {
+		return nil, errors.ErrKvNotFound
+	}
+	return val, nil
 }
 
 func (store *KvStore) KvDelete(ctx context.Context, key string) (bool, error) {
-	ret, err := store.client.Del(ctx, key).Result()
+	ret, err := store.db.Del([]byte(key))
 	if err != nil {
 		err = errors.ErrKvSever.Wrap("redis kv delete error")
 	}

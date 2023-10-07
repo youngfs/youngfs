@@ -5,12 +5,12 @@ import (
 	"compress/gzip"
 	"github.com/andybalholm/brotli"
 	"github.com/gin-gonic/gin"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/fullpath"
+	"github.com/youngfs/youngfs/fs/server"
 	"io"
 	"net/http"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/fullpath"
-	"youngfs/fs/server"
 )
 
 func PutObjectHandler(c *gin.Context) {

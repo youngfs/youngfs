@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"youngfs/errors"
+	"github.com/youngfs/youngfs/errors"
 )
 
 func (store *KvStore) ZAdd(ctx context.Context, key, member string) error {

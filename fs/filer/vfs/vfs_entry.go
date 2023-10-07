@@ -2,11 +2,11 @@ package vfs
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/entry"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"go.uber.org/multierr"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/entry"
-	"youngfs/fs/fullpath"
 )
 
 func (vfs *VFS) insertEntry(ctx context.Context, ent *entry.Entry) error {

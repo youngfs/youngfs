@@ -3,10 +3,10 @@ package seaweedfs
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/youngfs/youngfs/log"
 	"io"
 	"net/http"
 	"time"
-	"youngfs/log"
 )
 
 type dataNode struct {

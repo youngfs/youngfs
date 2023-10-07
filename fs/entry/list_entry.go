@@ -2,8 +2,8 @@ package entry
 
 import (
 	"encoding/hex"
+	"github.com/youngfs/youngfs/fs/fullpath"
 	"os"
-	"youngfs/fs/fullpath"
 )
 
 type ListEntry struct {

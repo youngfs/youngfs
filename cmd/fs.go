@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"youngfs/fs/routers"
-	"youngfs/fs/server"
-	"youngfs/log"
-	"youngfs/vars"
+	"github.com/youngfs/youngfs/fs/routers"
+	"github.com/youngfs/youngfs/fs/server"
+	"github.com/youngfs/youngfs/log"
+	"github.com/youngfs/youngfs/vars"
 )
 
 var fsCmd = &cobra.Command{

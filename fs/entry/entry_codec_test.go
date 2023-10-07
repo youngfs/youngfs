@@ -2,11 +2,11 @@ package entry
 
 import (
 	"github.com/go-playground/assert/v2"
+	"github.com/youngfs/youngfs/util/randutil"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
-	"youngfs/util/randutil"
 )
 
 func TestEntry_EnDecodeProto(t *testing.T) {

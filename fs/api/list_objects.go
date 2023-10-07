@@ -2,13 +2,13 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/youngfs/youngfs/errors"
+	"github.com/youngfs/youngfs/fs/bucket"
+	"github.com/youngfs/youngfs/fs/fullpath"
+	"github.com/youngfs/youngfs/fs/server"
+	"github.com/youngfs/youngfs/fs/ui"
+	"github.com/youngfs/youngfs/vars"
 	"net/http"
-	"youngfs/errors"
-	"youngfs/fs/bucket"
-	"youngfs/fs/fullpath"
-	"youngfs/fs/server"
-	"youngfs/fs/ui"
-	"youngfs/vars"
 )
 
 func ListObjectsHandler(c *gin.Context) {

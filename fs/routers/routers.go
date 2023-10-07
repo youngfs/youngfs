@@ -2,13 +2,13 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/youngfs/youngfs/fs/api"
+	"github.com/youngfs/youngfs/fs/ui"
+	"github.com/youngfs/youngfs/log"
+	"github.com/youngfs/youngfs/vars"
 	"io"
 	"io/fs"
 	"net/http"
-	"youngfs/fs/api"
-	"youngfs/fs/ui"
-	"youngfs/log"
-	"youngfs/vars"
 )
 
 var router *gin.Engine
