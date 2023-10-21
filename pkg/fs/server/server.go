@@ -256,7 +256,7 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 		i := i_
 		size := perShard
 		if i < dataShards {
-			size = util.Min(len(d[i]), remainSize)
+			size = min(len(d[i]), remainSize)
 			remainSize -= size
 		}
 		obj := d[i][:size]
@@ -349,7 +349,7 @@ func getDifferentHosts(ctx context.Context, size int) ([]string, error) {
 	rand.Shuffle(len(hosts), func(i, j int) {
 		hosts[i], hosts[j] = hosts[j], hosts[i]
 	})
-	return hosts[:util.Min(size, len(hosts))], nil
+	return hosts[:min(size, len(hosts))], nil
 }
 
 func (svr *Server) updateHostCnt() {
