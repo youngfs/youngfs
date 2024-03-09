@@ -1,9 +1,9 @@
 package s3
 
-import "github.com/youngfs/youngfs/pkg/idgenerator"
+import "github.com/youngfs/youngfs/pkg/idmint"
 
 type config struct {
-	idGen idgenerator.IDGenerator
+	idGen idmint.Mint
 }
 
 type Option interface {
@@ -16,7 +16,7 @@ func (f optionFunc) apply(cfg *config) {
 	f(cfg)
 }
 
-func WithIDGenerator(idGen idgenerator.IDGenerator) Option {
+func WithIDGenerator(idGen idmint.Mint) Option {
 	return optionFunc(func(cfg *config) {
 		cfg.idGen = idGen
 	})

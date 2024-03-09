@@ -1,8 +1,8 @@
-package idgenerator
+package idmint
 
 import "context"
 
-type IDGenerator interface {
+type Mint interface {
 	String(ctx context.Context) (string, error)
 	Bytes(ctx context.Context) ([]byte, error)
 }

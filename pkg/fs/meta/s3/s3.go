@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"github.com/youngfs/youngfs/pkg/fs/entry"
-	"github.com/youngfs/youngfs/pkg/idgenerator"
-	"github.com/youngfs/youngfs/pkg/idgenerator/uuid"
+	"github.com/youngfs/youngfs/pkg/idmint"
+	"github.com/youngfs/youngfs/pkg/idmint/uuid"
 	"github.com/youngfs/youngfs/pkg/kv"
 	"github.com/youngfs/youngfs/pkg/util"
 	"os"
@@ -19,7 +19,7 @@ const (
 type S3 struct {
 	kv         kv.TransactionStore
 	continueKv kv.TransactionStore
-	idGen      idgenerator.IDGenerator
+	idGen      idmint.Mint
 }
 
 func New(kv, continueKv kv.TransactionStore, options ...Option) *S3 {

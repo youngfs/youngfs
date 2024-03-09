@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/youngfs/youngfs/pkg/errors"
-	"github.com/youngfs/youngfs/pkg/idgenerator"
-	"github.com/youngfs/youngfs/pkg/idgenerator/uuid"
+	"github.com/youngfs/youngfs/pkg/idmint"
+	"github.com/youngfs/youngfs/pkg/idmint/uuid"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,7 +13,7 @@ import (
 
 type Engine struct {
 	dir   string
-	idGen idgenerator.IDGenerator
+	idGen idmint.Mint
 }
 
 func New(dir string, options ...Option) (*Engine, error) {
