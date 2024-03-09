@@ -19,12 +19,20 @@ type Entry struct {
 	Chunks                        // chunks
 }
 
+func New(key string) *Entry {
+	bkt, fp := fullpath.Split(key)
+	return &Entry{
+		Bucket:   bkt,
+		FullPath: fp,
+	}
+}
+
 func (ent *Entry) Key() string {
-	return string(ent.Bucket) + string(ent.FullPath) + entryKv
+	return string(ent.Bucket) + string(ent.FullPath)
 }
 
 func EntryKey(bkt bucket.Bucket, fp fullpath.FullPath) string {
-	return string(bkt) + string(fp) + entryKv
+	return string(bkt) + string(fp)
 }
 
 func (ent *Entry) IsDirectory() bool {

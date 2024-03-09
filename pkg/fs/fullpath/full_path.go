@@ -1,6 +1,7 @@
 package fullpath
 
 import (
+	"github.com/youngfs/youngfs/pkg/fs/bucket"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
@@ -186,4 +187,9 @@ func (fp FullPath) SplitList() []FullPath {
 	}
 	list[0] = "/"
 	return list
+}
+
+func Split(fp string) (bucket.Bucket, FullPath) {
+	list := strings.Split(fp, "/")
+	return bucket.Bucket(list[0]), FullPath("/" + strings.Join(list[1:], "/"))
 }

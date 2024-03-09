@@ -20,11 +20,16 @@ func (ent *Entry) toPb() *entry_pb.Entry {
 		chunks[i] = u.toPb()
 	}
 
+	mtime, ctime := int64(0), int64(0)
+	if !ent.IsDirectory() {
+		mtime, ctime = ent.Mtime.UnixNano(), ent.Ctime.UnixNano()
+	}
+
 	return &entry_pb.Entry{
 		FullPath: string(ent.FullPath),
 		Bucket:   string(ent.Bucket),
-		Mtime:    ent.Mtime.Unix(),
-		Ctime:    ent.Ctime.Unix(),
+		Mtime:    mtime,
+		Ctime:    ctime,
 		Mode:     uint32(ent.Mode),
 		Mine:     ent.Mime,
 		Md5:      ent.Md5,
@@ -83,12 +88,19 @@ func entryPbToInstance(pb *entry_pb.Entry) *Entry {
 		chunks = nil
 	}
 
+	var mtime, ctime time.Time
+	mode := os.FileMode(pb.Mode)
+	if !mode.IsDir() {
+		mtime = time.Unix(pb.Mtime/int64(time.Second), pb.Mtime%int64(time.Second))
+		ctime = time.Unix(pb.Ctime/int64(time.Second), pb.Ctime%int64(time.Second))
+	}
+
 	return &Entry{
 		FullPath: fullpath.FullPath(pb.FullPath),
 		Bucket:   bucket.Bucket(pb.Bucket),
-		Mtime:    time.Unix(pb.Mtime, 0),
-		Ctime:    time.Unix(pb.Ctime, 0),
-		Mode:     os.FileMode(pb.Mode),
+		Mtime:    mtime,
+		Ctime:    ctime,
+		Mode:     mode,
 		Mime:     pb.Mine,
 		Md5:      pb.Md5,
 		FileSize: pb.FileSize,
@@ -140,7 +152,7 @@ func (ent *Entry) EncodeProto() ([]byte, error) {
 	message := ent.toPb()
 	b, err := proto.Marshal(message)
 	if err != nil {
-		err = errors.ErrProto.WithStack()
+		err = errors.ErrProto.WarpErr(err)
 	}
 	return b, err
 }
@@ -148,7 +160,7 @@ func (ent *Entry) EncodeProto() ([]byte, error) {
 func DecodeEntryProto(b []byte) (*Entry, error) {
 	message := &entry_pb.Entry{}
 	if err := proto.Unmarshal(b, message); err != nil {
-		return nil, errors.ErrProto.WithStack()
+		return nil, errors.ErrProto.WarpErr(err)
 	}
 	return entryPbToInstance(message), nil
 }

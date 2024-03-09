@@ -7,10 +7,10 @@ import (
 	"github.com/klauspost/reedsolomon"
 	"github.com/youngfs/youngfs/pkg/errors"
 	"github.com/youngfs/youngfs/pkg/fs/bucket"
+	"github.com/youngfs/youngfs/pkg/fs/engine"
 	"github.com/youngfs/youngfs/pkg/fs/entry"
-	"github.com/youngfs/youngfs/pkg/fs/filer"
 	"github.com/youngfs/youngfs/pkg/fs/fullpath"
-	"github.com/youngfs/youngfs/pkg/fs/storageengine"
+	"github.com/youngfs/youngfs/pkg/fs/meta"
 	"github.com/youngfs/youngfs/pkg/util"
 	"github.com/youngfs/youngfs/pkg/util/httputil"
 	"github.com/youngfs/youngfs/pkg/util/mem"
@@ -24,28 +24,28 @@ import (
 )
 
 type Server struct {
-	filerStore    filer.FilerStore
-	storageEngine storageengine.StorageEngine
-	hostCnt       int
+	metaStore      meta.Store
+	chunkStore     engine.Engine
+	endpointsCount int
 }
 
-var svr *Server
-
-func NewServer(filer filer.FilerStore, storageEngine storageengine.StorageEngine) *Server {
+func NewServer(meta meta.Store, chunk engine.Engine) *Server {
 	cnt := 0
-	hosts, err := storageEngine.GetHosts(context.Background())
+	endpoints, err := chunk.GetEndpoints(context.Background())
 	if err == nil {
-		cnt = len(hosts)
+		cnt = len(endpoints)
 	}
 
-	return &Server{
-		filerStore:    filer,
-		storageEngine: storageEngine,
-		hostCnt:       cnt,
+	svr := &Server{
+		metaStore:      meta,
+		chunkStore:     chunk,
+		endpointsCount: cnt,
 	}
+	go svr.updateEndpointsCount()
+	return svr
 }
 
-func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, reader io.Reader) error {
+func (svr *Server) PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, reader io.Reader) error {
 	ctime := time.Unix(time.Now().Unix(), 0)
 
 	size := uint64(0)
@@ -64,10 +64,10 @@ func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, 
 			break
 		}
 		var uploadFunc func(ctx context.Context, data []byte) (*entry.Chunk, error)
-		if n <= smallObjectSize || svr.hostCnt <= 2 {
-			uploadFunc = replicationUpload
+		if n <= smallObjectSize || svr.endpointsCount <= 2 {
+			uploadFunc = svr.replicationUpload
 		} else {
-			uploadFunc = reedSolomonUpload
+			uploadFunc = svr.reedSolomonUpload
 		}
 		if n > 0 {
 			chunk, err := uploadFunc(ctx, buf[:n])
@@ -86,14 +86,14 @@ func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, 
 	if uploadErr != nil {
 		for _, chunk := range chunks {
 			if chunk != nil {
-				clearFailedObject(ctx, chunk.Frags)
+				svr.clearFailedObject(ctx, chunk.Frags)
 			}
 		}
 		return uploadErr
 	}
 
 	if size == 0 {
-		err := svr.filerStore.InsertObject(ctx,
+		err := svr.metaStore.InsertObject(ctx,
 			&entry.Entry{
 				FullPath: fp,
 				Bucket:   bucket,
@@ -101,7 +101,7 @@ func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, 
 				Ctime:    ctime,
 				Mode:     os.ModeDir,
 				FileSize: size,
-			}, true)
+			})
 		if err != nil {
 			return err
 		}
@@ -126,11 +126,11 @@ func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, 
 		Chunks:   chunks,
 	}
 
-	err := svr.filerStore.InsertObject(ctx, ent, true)
+	err := svr.metaStore.InsertObject(ctx, ent)
 	if err != nil {
 		for _, chunk := range chunks {
 			if chunk != nil {
-				clearFailedObject(ctx, chunk.Frags)
+				svr.clearFailedObject(ctx, chunk.Frags)
 			}
 		}
 		return err
@@ -139,8 +139,8 @@ func PutObject(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath, 
 	return nil
 }
 
-func replicationUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
-	hosts, err := getDifferentHosts(ctx, replicationNum)
+func (svr *Server) replicationUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
+	hosts, err := svr.getDifferentHosts(ctx, replicationNum)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func replicationUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 			reader = bytes.NewReader(data)
 			md5Hash := md5.New()
 			reader = io.TeeReader(reader, md5Hash)
-			fid, err := svr.storageEngine.PutObject(ctx, uint64(len(data)), reader, host)
+			fid, err := svr.chunkStore.PutChunk(ctx, reader, host)
 			if err != nil {
 				errChan <- err
 				return
@@ -180,7 +180,7 @@ func replicationUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	}
 
 	if merr != nil {
-		clearFailedObject(ctx, frags)
+		svr.clearFailedObject(ctx, frags)
 		return nil, merr
 	}
 
@@ -192,8 +192,8 @@ func replicationUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	}, nil
 }
 
-func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
-	hosts, err := getDifferentHosts(ctx, reedSolomonMaxShard)
+func (svr *Server) reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
+	hosts, err := svr.getDifferentHosts(ctx, reedSolomonMaxShard)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 
 	err = encoder.Encode(d)
 	if err != nil {
-		return nil, errors.ErrServer.WithMessagef("reed solomon encode faild: %v\n", err)
+		return nil, errors.ErrFSServer.WithMessagef("reed solomon encode faild: %v\n", err)
 	}
 
 	lce := util.NewLimitedConcurrentExecutor(8)
@@ -265,7 +265,7 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 			reader = bytes.NewReader(obj)
 			md5Hash := md5.New()
 			reader = io.TeeReader(reader, md5Hash)
-			fid, err := svr.storageEngine.PutObject(ctx, uint64(size), reader, hosts[i])
+			fid, err := svr.chunkStore.PutChunk(ctx, reader, hosts[i])
 			if err != nil {
 				errChan <- err
 				return
@@ -290,7 +290,7 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	}
 
 	if merr != nil {
-		clearFailedObject(ctx, frags)
+		svr.clearFailedObject(ctx, frags)
 		return nil, merr
 	}
 
@@ -302,11 +302,11 @@ func reedSolomonUpload(ctx context.Context, data []byte) (*entry.Chunk, error) {
 	}, nil
 }
 
-func GetEntry(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath) (*entry.Entry, error) {
-	return svr.filerStore.GetObject(ctx, bucket, fp)
+func (svr *Server) GetEntry(ctx context.Context, bucket bucket.Bucket, fp fullpath.FullPath) (*entry.Entry, error) {
+	return svr.metaStore.GetObject(ctx, bucket, fp)
 }
 
-func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
+func (svr *Server) GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
 	if !ent.Chunks.Verify() {
 		return errors.ErrChunkMisalignment.WithMessagef("damaged file: %s", string(ent.FullPath))
 	}
@@ -314,17 +314,29 @@ func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
 	for _, chunk := range ent.Chunks {
 		if chunk.IsReplication {
 			idx := rand.Intn(len(chunk.Frags))
-			err := svr.storageEngine.GetObject(ctx, chunk.Frags[idx].Fid, writer)
+			reader, err := svr.chunkStore.GetChunk(ctx, chunk.Frags[idx].Fid)
 			if err != nil {
 				return err
 			}
+			_, err = io.Copy(writer, reader)
+			if err != nil {
+				_ = reader.Close()
+				return errors.ErrFSServer.WarpErr(err)
+			}
+			_ = reader.Close()
 		} else {
 			for _, frag := range chunk.Frags {
 				if frag.IsDataShard {
-					err := svr.storageEngine.GetObject(ctx, frag.Fid, writer)
+					reader, err := svr.chunkStore.GetChunk(ctx, frag.Fid)
 					if err != nil {
 						return err
 					}
+					_, err = io.Copy(writer, reader)
+					if err != nil {
+						_ = reader.Close()
+						return errors.ErrFSServer.WarpErr(err)
+					}
+					_ = reader.Close()
 				}
 			}
 		}
@@ -332,17 +344,16 @@ func GetObject(ctx context.Context, ent *entry.Entry, writer io.Writer) error {
 	return nil
 }
 
-func ListObjects(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) ([]entry.ListEntry, error) {
-	return svr.filerStore.ListObjects(ctx, bkt, fp)
+func (svr *Server) ListObjects(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) ([]*entry.Entry, error) {
+	return svr.metaStore.ListObjects(ctx, bkt, fp, false)
 }
 
-func DeleteObject(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath, recursive bool) error {
-	mtime := time.Unix(time.Now().Unix(), 0)
-	return svr.filerStore.DeleteObject(ctx, bkt, fp, recursive, mtime)
+func (svr *Server) DeleteObject(ctx context.Context, bkt bucket.Bucket, fp fullpath.FullPath) error {
+	return svr.metaStore.DeleteObjects(ctx, bkt, fp)
 }
 
-func getDifferentHosts(ctx context.Context, size int) ([]string, error) {
-	hosts, err := svr.storageEngine.GetHosts(ctx)
+func (svr *Server) getDifferentHosts(ctx context.Context, size int) ([]string, error) {
+	hosts, err := svr.chunkStore.GetEndpoints(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -352,23 +363,23 @@ func getDifferentHosts(ctx context.Context, size int) ([]string, error) {
 	return hosts[:min(size, len(hosts))], nil
 }
 
-func (svr *Server) updateHostCnt() {
-	ticker := time.NewTicker(5 * time.Second)
+func (svr *Server) updateEndpointsCount() {
+	ticker := time.NewTicker(1 * time.Minute)
 	ctx := context.Background()
 	for range ticker.C {
-		hosts, err := svr.storageEngine.GetHosts(ctx)
+		hosts, err := svr.chunkStore.GetEndpoints(ctx)
 		if err != nil {
-			svr.hostCnt = 0
+			svr.endpointsCount = 0
 		} else {
-			svr.hostCnt = len(hosts)
+			svr.endpointsCount = len(hosts)
 		}
 	}
 }
 
-func clearFailedObject(ctx context.Context, frags entry.Frags) {
+func (svr *Server) clearFailedObject(ctx context.Context, frags entry.Frags) {
 	for _, frag := range frags {
 		if frag != nil && frag.Fid != "" {
-			_ = svr.storageEngine.DeleteObject(ctx, frag.Fid)
+			_ = svr.chunkStore.DeleteChunk(ctx, frag.Fid)
 		}
 	}
 }
