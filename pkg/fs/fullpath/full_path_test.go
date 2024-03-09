@@ -1,7 +1,7 @@
 package fullpath
 
 import (
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 

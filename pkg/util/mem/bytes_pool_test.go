@@ -2,8 +2,8 @@ package mem
 
 import (
 	"bytes"
-	"github.com/go-playground/assert/v2"
 	"github.com/oxtoacart/bpool"
+	"github.com/stretchr/testify/assert"
 	"github.com/youngfs/youngfs/pkg/util/randutil"
 	"math/rand"
 	"testing"

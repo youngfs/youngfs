@@ -1,7 +1,7 @@
 package entry
 
 import (
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/youngfs/youngfs/pkg/util/randutil"
 	"math/rand"
 	"os"
