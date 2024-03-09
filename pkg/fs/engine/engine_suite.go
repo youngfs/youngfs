@@ -35,6 +35,7 @@ func (s *EngineSuite) TestEngine() {
 			id, err := s.Engine.PutChunk(ctx, bytes.NewReader(b))
 			s.Nil(err)
 			chunks[i] = chunk{id, b}
+			wg.Done()
 		}()
 	}
 	wg.Wait()
@@ -48,6 +49,7 @@ func (s *EngineSuite) TestEngine() {
 			b, err := io.ReadAll(reader)
 			s.Nil(err)
 			s.Equal(chunks[i].body, b)
+			wg.Done()
 		}()
 	}
 	wg.Wait()
@@ -57,6 +59,7 @@ func (s *EngineSuite) TestEngine() {
 		go func() {
 			err := s.Engine.DeleteChunk(ctx, chunks[i].key)
 			s.Nil(err)
+			wg.Done()
 		}()
 	}
 	wg.Wait()
@@ -67,6 +70,7 @@ func (s *EngineSuite) TestEngine() {
 			reader, err := s.Engine.GetChunk(ctx, chunks[i].key)
 			s.NotNil(err)
 			s.Nil(reader)
+			wg.Done()
 		}()
 	}
 	wg.Wait()

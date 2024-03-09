@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/youngfs/youngfs/pkg/fs/engine/simple"
 	"github.com/youngfs/youngfs/pkg/fs/handler"
 	"github.com/youngfs/youngfs/pkg/fs/meta/s3"
 	"github.com/youngfs/youngfs/pkg/fs/router"
@@ -87,30 +88,30 @@ var Cmd = &cobra.Command{
 		var s3cnkv kv.TransactionStore
 		switch strings.ToLower(viper.GetString(meta)) {
 		case "badger":
-			s3kv, err = badger.New(path.Join(viper.GetString(dir), "s3kv"))
+			s3kv, err = badger.New(path.Join(viper.GetString(dir), "meta", "s3kv"))
 			if err != nil {
 				return err
 			}
-			s3cnkv, err = badger.New(path.Join(viper.GetString(dir), "s3continuekv"))
+			s3cnkv, err = badger.New(path.Join(viper.GetString(dir), "meta", "s3continuekv"))
 			if err != nil {
 				return err
 			}
 		case "bboltdb":
 			// need a file
-			s3kv, err = bbolt.New(path.Join(viper.GetString(dir), "s3kv.db"), []byte("s3kv"))
+			s3kv, err = bbolt.New(path.Join(viper.GetString(dir), "meta", "s3kv.db"), []byte("s3kv"))
 			if err != nil {
 				return err
 			}
-			s3cnkv, err = bbolt.New(path.Join(viper.GetString(dir), "s3continuekv.db"), []byte("s3continuekv"))
+			s3cnkv, err = bbolt.New(path.Join(viper.GetString(dir), "meta", "s3continuekv.db"), []byte("s3continuekv"))
 			if err != nil {
 				return err
 			}
 		case "leveldb":
-			s3kv, err = leveldb.New(path.Join(viper.GetString(dir), "s3kv"))
+			s3kv, err = leveldb.New(path.Join(viper.GetString(dir), "meta", "s3kv"))
 			if err != nil {
 				return err
 			}
-			s3cnkv, err = leveldb.New(path.Join(viper.GetString(dir), "s3continuekv"))
+			s3cnkv, err = leveldb.New(path.Join(viper.GetString(dir), "meta", "s3continuekv"))
 			if err != nil {
 				return err
 			}
@@ -132,10 +133,18 @@ var Cmd = &cobra.Command{
 		}
 		closers = append(closers, s3kv, s3cnkv)
 
+		// engine
+		if err := os.MkdirAll(path.Join(viper.GetString(dir), "data"), 0755); err != nil {
+			return err
+		}
+		e, err := simple.New(path.Join(viper.GetString(dir), "data"))
+		if err != nil {
+			return err
+		}
 		// meta
 		metaStore := s3.New(s3kv, s3cnkv)
 		// server
-		svr := server.NewServer(metaStore, nil)
+		svr := server.NewServer(metaStore, e)
 		// handler
 		h := handler.New(logger, svr)
 		// router
