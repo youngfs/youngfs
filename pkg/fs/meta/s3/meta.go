@@ -24,7 +24,7 @@ func (s *S3) ListObjects(ctx context.Context, bkt bucket.Bucket, fp fullpath.Ful
 	if recursive {
 		delimiter = ""
 	}
-	for nextContinueToken, isTruncated := "", false; isTruncated; {
+	for nextContinueToken, isTruncated := "", true; isTruncated; {
 		lret, err := s.S3ListObjects(ctx, &ListObjectsOptions{
 			Prefix:        entry.EntryKey(bkt, fp),
 			ContinueToken: nextContinueToken,
