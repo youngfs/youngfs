@@ -31,6 +31,9 @@ type Server struct {
 func (s *Server) RegisterVolume(ctx context.Context, in *master_pb.RegisterVolumeRequest) (*master_pb.RegisterVolumeResponse, error) {
 	s.volumeLock.Lock()
 	defer s.volumeLock.Unlock()
+	if len(in.Magic) == 0 {
+		return nil, status.Errorf(codes.Code(ecode.ErrVolumeMagic), errors.ErrVolumeMagic.WithMessage("magic is empty").Error())
+	}
 	val, err := s.volumeKv.Get(ctx, in.Magic)
 	if errors.Is(err, kv.ErrKeyNotFound) {
 		s.maxId++

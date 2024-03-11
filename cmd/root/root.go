@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/youngfs/youngfs/cmd/fs"
 	"github.com/youngfs/youngfs/cmd/master"
+	"github.com/youngfs/youngfs/cmd/volume"
 	"os"
 )
 
@@ -22,6 +23,7 @@ var cmd = &cobra.Command{
 func init() {
 	cmd.AddCommand(master.Cmd)
 	cmd.AddCommand(fs.Cmd)
+	cmd.AddCommand(volume.Cmd)
 	cmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		_ = cmd.Usage()
 		return err

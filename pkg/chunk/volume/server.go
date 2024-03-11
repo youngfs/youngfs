@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"net"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -67,6 +68,9 @@ func (s *Server) Run(port int) error {
 	}()
 	s.client = master_pb.NewMasterServiceClient(conn)
 	go s.SendHeartbeat()
+	if err := s.load(); err != nil {
+		return err
+	}
 	lis, err := net.Listen("tcp", strconv.Itoa(port))
 	if err != nil {
 		return err
@@ -255,6 +259,44 @@ func (s *Server) deleteChunk(id string) error {
 		return err
 	}
 	return v.Delete(needleID)
+}
+
+func (s *Server) load() error {
+	cnt, err := s.volumeCount.ReadNumber()
+	if err != nil {
+		return err
+	}
+	writableCnt := 0
+	for i := uint64(1); i <= cnt; i++ {
+		dstat, _ := os.Stat(path.Join(s.dir, fmt.Sprintf("%d.data", i)))
+		nstat, _ := os.Stat(path.Join(s.dir, fmt.Sprintf("%d.idx", i)))
+		if dstat != nil && nstat != nil {
+			v, err := NewVolume(s.dir, i, s.creator)
+			if err != nil {
+				return err
+			}
+			_, err = s.client.RegisterVolume(context.Background(), &master_pb.RegisterVolumeRequest{
+				Endpoint: s.localEndpoint,
+				Id:       i,
+				Magic:    v.Magic(),
+			})
+			if err != nil {
+				return err
+			}
+			s.volumeMap.Store(i, v)
+			if dstat.Size() < maxVolumeSize && writableCnt < maxWritableVolume {
+				_ = s.queue.Put(v)
+				writableCnt++
+			}
+		}
+	}
+	for ; writableCnt < maxWritableVolume; writableCnt++ {
+		_, err := s.CreateVolume()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func splitVolumeID(id string) (uint64, needle.Id, error) {

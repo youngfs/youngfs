@@ -47,7 +47,6 @@ func (s *KvNeedleStore) Delete(id Id) error {
 	if err != nil {
 		return err
 	}
-	atomic.AddUint64(&s.size, -1)
 	return nil
 }
 

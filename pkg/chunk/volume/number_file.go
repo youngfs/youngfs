@@ -23,6 +23,9 @@ func (nf *NumberFile) WriteNumber(num uint64) error {
 func (nf *NumberFile) ReadNumber() (uint64, error) {
 	data, err := os.ReadFile(nf.Path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
 		return 0, err
 	}
 	if len(data) == 0 {
