@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/suite"
+	"github.com/youngfs/youngfs/pkg/errors"
 	"github.com/youngfs/youngfs/pkg/fs/bucket"
 	"github.com/youngfs/youngfs/pkg/fs/entry"
 	"github.com/youngfs/youngfs/pkg/fs/fullpath"
@@ -81,7 +82,7 @@ func (s *s3Suite) TestSimpleObject() {
 	ret, err := s.s3.S3ListObjects(ctx, &ListObjectsOptions{
 		ContinueToken: randutil.RandString(16),
 	})
-	s.ErrorIs(err, ErrS3ListObjectsInvalidContinueToken)
+	s.ErrorIs(err, errors.ErrInvalidContinueToken)
 	s.Nil(ret)
 
 	ret, err = s.s3.S3ListObjects(ctx, &ListObjectsOptions{
@@ -248,7 +249,7 @@ func (s *s3Suite) TestSimpleObject() {
 
 	for i, _ := range ents {
 		ent, err := s.s3.S3GetObject(ctx, entry.EntryKey(bkt, ents[i].FullPath))
-		s.ErrorIs(err, ErrS3ObjectNotFound)
+		s.ErrorIs(err, errors.ErrObjectNotFound)
 		s.Nil(ent)
 	}
 }
@@ -293,7 +294,7 @@ func (s *s3Suite) TestDirObject() {
 		Prefix:        entry.EntryKey(bkt, "/"),
 		ContinueToken: randutil.RandString(16),
 	})
-	s.ErrorIs(err, ErrS3ListObjectsInvalidContinueToken)
+	s.ErrorIs(err, errors.ErrInvalidContinueToken)
 	s.Nil(ret)
 
 	ret, err = s.s3.S3ListObjects(ctx, &ListObjectsOptions{})
@@ -440,7 +441,7 @@ func (s *s3Suite) TestDirObject() {
 
 	for i, _ := range ents {
 		ent, err := s.s3.S3GetObject(ctx, entry.EntryKey(bkt, ents[i].FullPath))
-		s.ErrorIs(err, ErrS3ObjectNotFound)
+		s.ErrorIs(err, errors.ErrObjectNotFound)
 		s.Nil(ent)
 	}
 }
@@ -534,7 +535,7 @@ func (s *s3Suite) TestLargeObjects() {
 
 	for i, _ := range ents {
 		ent, err := s.s3.S3GetObject(ctx, entry.EntryKey(bkt, ents[i].FullPath))
-		s.ErrorIs(err, ErrS3ObjectNotFound)
+		s.ErrorIs(err, errors.ErrObjectNotFound)
 		s.Nil(ent)
 	}
 }

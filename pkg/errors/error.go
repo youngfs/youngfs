@@ -45,15 +45,15 @@ var (
 	ErrNone    = &Error{Code: ecode.ErrNone, HTTPStatusCode: http.StatusOK, Description: "Request succeeded"}
 	ErrCreated = &Error{Code: ecode.ErrCreated, HTTPStatusCode: http.StatusCreated, Description: "Created succeeded"}
 	// 400
-	ErrInvalidPath                  = &Error{Code: ecode.ErrInvalidPath, HTTPStatusCode: http.StatusNotFound, Description: "The file path is not valid"}
-	ErrInvalidDelete                = &Error{Code: ecode.ErrInvalidDelete, HTTPStatusCode: http.StatusBadRequest, Description: "There are files in the folder and cannot be deleted recursively"}
-	ErrIllegalObjectName            = &Error{Code: ecode.ErrIllegalObjectName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal object name"}
-	ErrIllegalBucketName            = &Error{Code: ecode.ErrIllegalBucketName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal bucket name"}
-	ErrRouter                       = &Error{Code: ecode.ErrRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
-	ErrChunkNotExist                = &Error{Code: ecode.ErrChunkNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Chunk not exist"}
-	ErrContentEncoding              = &Error{Code: ecode.ErrContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
-	ErrObjectNotFound               = &Error{Code: ecode.ErrObjectNotFound, HTTPStatusCode: http.StatusNotFound, Description: "Object not found"}
-	ListObjectsInvalidContinueToken = &Error{Code: ecode.ListObjectsInvalidContinueToken, HTTPStatusCode: http.StatusBadRequest, Description: "Invalid continue token"}
+	ErrInvalidPath          = &Error{Code: ecode.ErrInvalidPath, HTTPStatusCode: http.StatusNotFound, Description: "The file path is not valid"}
+	ErrInvalidDelete        = &Error{Code: ecode.ErrInvalidDelete, HTTPStatusCode: http.StatusBadRequest, Description: "There are files in the folder and cannot be deleted recursively"}
+	ErrIllegalObjectName    = &Error{Code: ecode.ErrIllegalObjectName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal object name"}
+	ErrIllegalBucketName    = &Error{Code: ecode.ErrIllegalBucketName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal bucket name"}
+	ErrRouter               = &Error{Code: ecode.ErrRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
+	ErrChunkNotExist        = &Error{Code: ecode.ErrChunkNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Chunk not exist"}
+	ErrContentEncoding      = &Error{Code: ecode.ErrContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
+	ErrObjectNotFound       = &Error{Code: ecode.ErrObjectNotFound, HTTPStatusCode: http.StatusNotFound, Description: "Object not found"}
+	ErrInvalidContinueToken = &Error{Code: ecode.ErrInvalidContinueToken, HTTPStatusCode: http.StatusBadRequest, Description: "Invalid continue token"}
 
 	// 500
 	ErrKvSever              = &Error{Code: ecode.ErrKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}

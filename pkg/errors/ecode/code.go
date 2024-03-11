@@ -23,7 +23,7 @@ const (
 	ErrChunkNotExist
 	ErrContentEncoding
 	ErrObjectNotFound
-	ListObjectsInvalidContinueToken
+	ErrInvalidContinueToken
 )
 
 // 500  error code

@@ -23,7 +23,7 @@ func (s *S3) GetContinueToken(ctx context.Context, prefix, continueToken string)
 	val, err := s.continueKv.Get(ctx, []byte(fmt.Sprintf("%s-%s", prefix, continueToken)))
 	if err != nil {
 		if errors.Is(err, kv.ErrKeyNotFound) {
-			return "", errors.ListObjectsInvalidContinueToken
+			return "", errors.ErrInvalidContinueToken
 		}
 		return "", err
 	}
