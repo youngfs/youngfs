@@ -32,6 +32,7 @@ require (
 
 require (
 	github.com/Workiva/go-datastructures v1.1.1 // indirect
+	github.com/appleboy/gofight/v2 v2.1.2 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.2 // indirect
