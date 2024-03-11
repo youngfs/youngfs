@@ -22,7 +22,6 @@ func (s *TransactionSuite) TestTransaction() {
 	ctx := context.Background()
 	wg := &sync.WaitGroup{}
 	for i := 1; i < 1024; i++ {
-		i := i
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

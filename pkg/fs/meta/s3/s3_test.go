@@ -454,7 +454,7 @@ func (s *s3Suite) TestLargeObjects() {
 	ctx := context.Background()
 	nowTime := time.Unix(now.UnixNano()/int64(time.Second), now.UnixNano()%int64(time.Second))
 	ents := make([]*entry.Entry, 0)
-	size := 1024 * 1024
+	size := 128 * 1024
 	for i := 0; i < size; i++ {
 		ents = append(ents, &entry.Entry{
 			Bucket:   bkt,

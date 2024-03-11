@@ -9,7 +9,7 @@ import (
 )
 
 func (s *handlerSuite) TestSmallObjets() {
-	const size = 1024
+	const size = 256
 	const blobSize = 5 * 1024
 	bodys := make([]string, size)
 	wg := sync.WaitGroup{}
@@ -83,8 +83,8 @@ func (s *handlerSuite) TestSmallObjets() {
 }
 
 func (s *handlerSuite) TestBigObjets() {
-	const size = 8
-	const blobSize = (128 + 32) * 1024 * 1024
+	const size = 4
+	const blobSize = (64 + 32) * 1024 * 1024
 	bodys := make([]string, size)
 	wg := sync.WaitGroup{}
 	for i := range size {

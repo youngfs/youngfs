@@ -252,8 +252,7 @@ func (svr *Server) reedSolomonUpload(ctx context.Context, data []byte) (*entry.C
 	errChan := make(chan error, 1)
 	remainSize := dataLen
 	frags := make([]*entry.Frag, len(hosts))
-	for i_ := 0; i_ < shards; i_++ {
-		i := i_
+	for i := 0; i < shards; i++ {
 		size := perShard
 		if i < dataShards {
 			size = min(len(d[i]), remainSize)
