@@ -1,0 +1,19 @@
+syntax = "proto3";
+package volume_pb;
+option go_package = "./volume_pb";
+import "google/protobuf/empty.proto";
+
+
+service VolumeService {
+  rpc PutChunk(stream ChunkData) returns (ChunkID) {}
+  rpc GetChunk(ChunkID) returns (stream ChunkData) {}
+  rpc DeleteChunk(ChunkID) returns (google.protobuf.Empty) {}
+}
+
+message ChunkData {
+  bytes data = 1;
+}
+
+message ChunkID {
+  string id = 1;
+}

@@ -3,12 +3,12 @@ package kv
 import (
 	"context"
 	"github.com/youngfs/youngfs/pkg/errors"
+	"github.com/youngfs/youngfs/pkg/errors/ecode"
 	"net/http"
 )
 
 var (
-	errKeyNotFound errors.Code = 1000
-	ErrKeyNotFound             = &errors.Error{Code: errKeyNotFound, HTTPStatusCode: http.StatusContinue, Description: "Kv not found"}
+	ErrKeyNotFound = &errors.Error{Code: ecode.ErrKvNotFound, HTTPStatusCode: http.StatusContinue, Description: "Kv not found"}
 )
 
 type Store interface {

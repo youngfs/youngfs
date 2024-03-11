@@ -1,0 +1,37 @@
+syntax = "proto3";
+package master_pb;
+option go_package = "./master_pb";
+import "google/protobuf/empty.proto";
+
+service MasterService {
+  rpc RegisterVolume (RegisterVolumeRequest) returns (RegisterVolumeResponse) {}
+  rpc SendHeartbeat (HeartbeatRequest) returns (google.protobuf.Empty) {}
+  rpc QueryEndpoints (google.protobuf.Empty) returns (QueryResponse) {}
+}
+
+enum ID {
+  CreateId = 0;
+}
+
+message RegisterVolumeRequest {
+  string endpoint = 1;
+  uint64 id = 2; // 0 for new volume
+  bytes magic = 3;
+}
+
+message RegisterVolumeResponse {
+  uint64 id = 1;
+}
+
+message HeartbeatRequest {
+  string endpoint = 1;
+}
+
+message QueryResponse {
+  repeated VolumeInfo volumes = 1;
+}
+
+message VolumeInfo{
+  string endpoint = 1;
+  repeated uint64 id = 2;
+}

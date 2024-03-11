@@ -3,13 +3,14 @@ package errors
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/youngfs/youngfs/pkg/errors/ecode"
 	"go.uber.org/multierr"
 	"io"
 	"net/http"
 )
 
 type Error struct {
-	Code
+	ecode.Code
 	HTTPStatusCode int
 	Description    string
 }
@@ -33,28 +34,40 @@ func (e *Error) Format(s fmt.State, verb rune) {
 	}
 }
 
+func (e *Error) ErrorCode() ecode.Code {
+	return e.Code
+}
+
 var (
 	// 100
 	// ErrKVNotFound
 	// 200
-	ErrNone    = &Error{Code: errNone, HTTPStatusCode: http.StatusOK, Description: "Request succeeded"}
-	ErrCreated = &Error{Code: errCreated, HTTPStatusCode: http.StatusCreated, Description: "Created succeeded"}
+	ErrNone    = &Error{Code: ecode.ErrNone, HTTPStatusCode: http.StatusOK, Description: "Request succeeded"}
+	ErrCreated = &Error{Code: ecode.ErrCreated, HTTPStatusCode: http.StatusCreated, Description: "Created succeeded"}
 	// 400
-	ErrInvalidPath       = &Error{Code: errInvalidPath, HTTPStatusCode: http.StatusNotFound, Description: "The file path is not valid"}
-	ErrInvalidDelete     = &Error{Code: errInvalidDelete, HTTPStatusCode: http.StatusBadRequest, Description: "There are files in the folder and cannot be deleted recursively"}
-	ErrIllegalObjectName = &Error{Code: errIllegalObjectName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal object name"}
-	ErrIllegalBucketName = &Error{Code: errIllegalBucketName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal bucket name"}
-	ErrRouter            = &Error{Code: errRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
-	ErrChunkNotExist     = &Error{Code: errChunkNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Chunk not exist"}
-	ErrContentEncoding   = &Error{Code: errContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
+	ErrInvalidPath       = &Error{Code: ecode.ErrInvalidPath, HTTPStatusCode: http.StatusNotFound, Description: "The file path is not valid"}
+	ErrInvalidDelete     = &Error{Code: ecode.ErrInvalidDelete, HTTPStatusCode: http.StatusBadRequest, Description: "There are files in the folder and cannot be deleted recursively"}
+	ErrIllegalObjectName = &Error{Code: ecode.ErrIllegalObjectName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal object name"}
+	ErrIllegalBucketName = &Error{Code: ecode.ErrIllegalBucketName, HTTPStatusCode: http.StatusBadRequest, Description: "Illegal bucket name"}
+	ErrRouter            = &Error{Code: ecode.ErrRouter, HTTPStatusCode: http.StatusBadRequest, Description: "Router problem"}
+	ErrChunkNotExist     = &Error{Code: ecode.ErrChunkNotExist, HTTPStatusCode: http.StatusNotFound, Description: "Chunk not exist"}
+	ErrContentEncoding   = &Error{Code: ecode.ErrContentEncoding, HTTPStatusCode: http.StatusBadRequest, Description: "Content Encoding read error"}
 	// 500
-	ErrKvSever           = &Error{Code: errKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
-	ErrNonApiErr         = &Error{Code: errNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}
-	ErrFSServer          = &Error{Code: errFSServer, HTTPStatusCode: http.StatusInternalServerError, Description: "File system server error"}
-	ErrProto             = &Error{Code: errProto, HTTPStatusCode: http.StatusInternalServerError, Description: "ProtoBuf error"}
-	ErrEngineMaster      = &Error{Code: errEngineMaster, HTTPStatusCode: http.StatusInternalServerError, Description: "Engine master server error"}
-	ErrEngineChunk       = &Error{Code: errEngineChunk, HTTPStatusCode: http.StatusInternalServerError, Description: "Engine chunk server error"}
-	ErrChunkMisalignment = &Error{Code: errChunkMisalignment, HTTPStatusCode: http.StatusInternalServerError, Description: "Chunk offset misalignment"}
+	ErrKvSever              = &Error{Code: ecode.ErrKvSever, HTTPStatusCode: http.StatusInternalServerError, Description: "Key-value database error"}
+	ErrNonApiErr            = &Error{Code: ecode.ErrNonApiError, HTTPStatusCode: http.StatusInternalServerError, Description: "Non api error return"}
+	ErrFSServer             = &Error{Code: ecode.ErrFSServer, HTTPStatusCode: http.StatusInternalServerError, Description: "File system server error"}
+	ErrProto                = &Error{Code: ecode.ErrProto, HTTPStatusCode: http.StatusInternalServerError, Description: "ProtoBuf error"}
+	ErrEngineMaster         = &Error{Code: ecode.ErrEngineMaster, HTTPStatusCode: http.StatusInternalServerError, Description: "Engine master server error"}
+	ErrEngineChunk          = &Error{Code: ecode.ErrEngineChunk, HTTPStatusCode: http.StatusInternalServerError, Description: "Engine chunk server error"}
+	ErrChunkMisalignment    = &Error{Code: ecode.ErrChunkMisalignment, HTTPStatusCode: http.StatusInternalServerError, Description: "Chunk offset misalignment"}
+	ErrMaster               = &Error{Code: ecode.ErrMaster, HTTPStatusCode: http.StatusInternalServerError, Description: "Master server error"}
+	ErrVolumeMagic          = &Error{Code: ecode.ErrVolumeMagic, HTTPStatusCode: http.StatusInternalServerError, Description: "Volume check code error"}
+	ErrVolumeCreateConflict = &Error{Code: ecode.ErrVolumeCreateConflict, HTTPStatusCode: http.StatusInternalServerError, Description: "Volume create error"}
+	ErrVolumeNotFound       = &Error{Code: ecode.ErrVolumeNotFound, HTTPStatusCode: http.StatusNotFound, Description: "Volume not found"}
+	ErrVolumeWrite          = &Error{Code: ecode.ErrVolumeWrite, HTTPStatusCode: http.StatusInternalServerError, Description: "Volume write error"}
+	ErrVolumeRead           = &Error{Code: ecode.ErrVolumeRead, HTTPStatusCode: http.StatusInternalServerError, Description: "Volume read error"}
+	ErrInvalidNeedle        = &Error{Code: ecode.ErrInvalidNeedle, HTTPStatusCode: http.StatusInternalServerError, Description: "Invalid needle"}
+	ErrVolumeIDInvalid      = &Error{Code: ecode.ErrVolumeIDInvalid, HTTPStatusCode: http.StatusInternalServerError, Description: "Invalid volume id"}
 )
 
 func (e *Error) WithMessage(msg string) error {
