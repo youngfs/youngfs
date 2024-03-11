@@ -12,7 +12,7 @@ type Handler struct {
 	svr    *server.Server
 }
 
-func New(logger log.Logger, svr *server.Server) *Handler {
+func New(svr *server.Server, logger log.Logger) *Handler {
 	return &Handler{
 		logger: logger,
 		svr:    svr,

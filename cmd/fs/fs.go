@@ -146,7 +146,7 @@ var Cmd = &cobra.Command{
 		// server
 		svr := server.NewServer(metaStore, e)
 		// handler
-		h := handler.New(logger, svr)
+		h := handler.New(svr, logger)
 		// router
 		r := router.New(h, router.WithMiddlewares(router.Logger(logger)))
 		errChan := make(chan error, 1)
