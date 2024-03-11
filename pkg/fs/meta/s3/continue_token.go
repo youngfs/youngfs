@@ -2,8 +2,8 @@ package s3
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/youngfs/youngfs/pkg/errors"
 	"github.com/youngfs/youngfs/pkg/kv"
 )
 
@@ -23,7 +23,7 @@ func (s *S3) GetContinueToken(ctx context.Context, prefix, continueToken string)
 	val, err := s.continueKv.Get(ctx, []byte(fmt.Sprintf("%s-%s", prefix, continueToken)))
 	if err != nil {
 		if errors.Is(err, kv.ErrKeyNotFound) {
-			return "", ErrS3ListObjectsInvalidContinueToken
+			return "", errors.ListObjectsInvalidContinueToken
 		}
 		return "", err
 	}

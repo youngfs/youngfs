@@ -22,6 +22,8 @@ const (
 	ErrRouter
 	ErrChunkNotExist
 	ErrContentEncoding
+	ErrObjectNotFound
+	ListObjectsInvalidContinueToken
 )
 
 // 500  error code

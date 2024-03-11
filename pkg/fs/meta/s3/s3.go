@@ -3,7 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
-	"errors"
+	"github.com/youngfs/youngfs/pkg/errors"
 	"github.com/youngfs/youngfs/pkg/fs/entry"
 	"github.com/youngfs/youngfs/pkg/idmint"
 	"github.com/youngfs/youngfs/pkg/idmint/uuid"
@@ -72,7 +72,7 @@ func (s *S3) S3GetObject(ctx context.Context, obj string) (*entry.Entry, error) 
 	val, err := s.kv.Get(ctx, []byte(obj))
 	if err != nil {
 		if errors.Is(err, kv.ErrKeyNotFound) {
-			return nil, ErrS3ObjectNotFound
+			return nil, errors.ErrObjectNotFound
 		} else {
 			return nil, err
 		}
