@@ -41,6 +41,8 @@ func (e *Error) ErrorCode() ecode.Code {
 var (
 	// 100
 	// ErrKVNotFound
+	ErrChunkNotFound  = &Error{Code: ecode.ErrChunkNotFound, HTTPStatusCode: http.StatusContinue, Description: "Chunk not found"}
+	ErrNeedleNotFound = &Error{Code: ecode.ErrNeedleNotFound, HTTPStatusCode: http.StatusContinue, Description: "Needle not found"}
 	// 200
 	ErrNone    = &Error{Code: ecode.ErrNone, HTTPStatusCode: http.StatusOK, Description: "Request succeeded"}
 	ErrCreated = &Error{Code: ecode.ErrCreated, HTTPStatusCode: http.StatusCreated, Description: "Created succeeded"}

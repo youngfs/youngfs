@@ -22,12 +22,12 @@ type Volume struct {
 }
 
 func NewVolume(dir string, id uint64, creator needle.StoreCreator) (*Volume, error) {
-	writer, err := os.OpenFile(path.Join(dir, fmt.Sprintf("%d.data")), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	writer, err := os.OpenFile(path.Join(dir, fmt.Sprintf("%d.data", id)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, err
 	}
-	reader := NewFilePool(path.Join(dir, fmt.Sprintf("%d.data")))
-	needleStore, err := creator(path.Join(dir, fmt.Sprintf("%d.idx")))
+	reader := NewFilePool(path.Join(dir, fmt.Sprintf("%d.data", id)))
+	needleStore, err := creator(path.Join(dir, fmt.Sprintf("%d.idx", id)))
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +94,9 @@ func (v *Volume) WriteMagic(magic []byte) error {
 func (v *Volume) Read(id needle.Id, writer io.Writer) error {
 	nd, err := v.needleStore.Get(id)
 	if err != nil {
+		if errors.Is(err, errors.ErrNeedleNotFound) {
+			return errors.ErrChunkNotFound
+		}
 		return err
 	}
 	f := v.reader.Get()

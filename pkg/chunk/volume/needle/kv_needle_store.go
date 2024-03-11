@@ -2,6 +2,7 @@ package needle
 
 import (
 	"context"
+	"github.com/youngfs/youngfs/pkg/errors"
 	"github.com/youngfs/youngfs/pkg/kv"
 	"sync/atomic"
 )
@@ -37,6 +38,9 @@ func (s *KvNeedleStore) Put(n *Needle) error {
 func (s *KvNeedleStore) Get(id Id) (*Needle, error) {
 	b, err := s.kv.Get(s.ctx, id.Bytes())
 	if err != nil {
+		if errors.Is(err, kv.ErrKeyNotFound) {
+			return nil, errors.ErrNeedleNotFound
+		}
 		return nil, err
 	}
 	return FromBytes(b)

@@ -5,6 +5,8 @@ type Code int
 // 100 error code
 const (
 	ErrKvNotFound Code = 1000 + iota
+	ErrChunkNotFound
+	ErrNeedleNotFound
 )
 
 // 200  error code
