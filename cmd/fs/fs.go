@@ -66,6 +66,11 @@ var Cmd = &cobra.Command{
 		_ = viper.ReadInConfig()
 		viper.SetEnvPrefix("YOUNGFS")
 		viper.AutomaticEnv()
+		for _, flag := range markRequired {
+			if !viper.IsSet(flag) {
+				return fmt.Errorf("flag %s is not set", flag)
+			}
+		}
 
 		var closers []io.Closer
 		var syncer []interface{ Sync() error }
@@ -75,7 +80,7 @@ var Cmd = &cobra.Command{
 		logOptions = append(logOptions, zap.WithLogPath(path.Join(viper.GetString(dir), "log")))
 		logOptions = append(logOptions, zap.WithLogFileAge(int(viper.GetUint64(logAge))))
 		logOptions = append(logOptions, zap.WithLogFileSize(int(viper.GetUint64(logFileSize))))
-		level, err := parserLogLevel(viper.GetString(logLevel))
+		level, err := log.ParserLogLevel(viper.GetString(logLevel))
 		if err != nil {
 			return err
 		}
@@ -151,7 +156,7 @@ var Cmd = &cobra.Command{
 		r := router.New(h, router.WithMiddlewares(router.Logger(logger)))
 		errChan := make(chan error, 1)
 		go func(errChan chan<- error) {
-			err := http.ListenAndServe(":"+viper.GetString(port), r)
+			err := http.ListenAndServe(fmt.Sprintf(":%d", viper.GetInt(port)), r)
 			if err != nil {
 				errChan <- err
 			}
@@ -179,12 +184,12 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.Flags().String(cmdPort, "9432", "port")
+	Cmd.Flags().Int(cmdPort, 9432, "port")
 	Cmd.Flags().String(cmdLogLevel, "info", "log level (debug, info, warn, error, dpanic, panic)")
 	Cmd.Flags().Uint64(cmdLogAge, 31, "log age (day)")
 	Cmd.Flags().Uint64(cmdLogFileSize, 32, "log file max size (MiB)")
 
-	Cmd.Flags().String(cmdDir, "", "data dir")
+	Cmd.Flags().String(cmdDir, ".", "data dir")
 	Cmd.Flags().String(cmdMeta, "badger", "kv store type [badger, bboltdb, leveldb, tikv]")
 	Cmd.Flags().StringSlice(cmdTikvEndpoins, nil, "tikv endpoints")
 
@@ -197,23 +202,4 @@ func init() {
 
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-}
-
-func parserLogLevel(lvl string) (log.Level, error) {
-	switch strings.ToLower(lvl) {
-	case "debug":
-		return log.DebugLevel, nil
-	case "info":
-		return log.InfoLevel, nil
-	case "warn":
-		return log.WarnLevel, nil
-	case "error":
-		return log.ErrorLevel, nil
-	case "dpanic":
-		return log.DPanicLevel, nil
-	case "panic":
-		return log.PanicLevel, nil
-	default:
-		return log.DebugLevel, fmt.Errorf("log level cannot be parsed")
-	}
 }

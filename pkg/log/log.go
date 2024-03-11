@@ -1,5 +1,10 @@
 package log
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Logger interface {
 	Debug(args ...any)
 	Debugf(template string, args ...any)
@@ -23,4 +28,23 @@ type Logger interface {
 	Fatalf(template string, args ...any)
 	Fatalw(msg string, keysAndValues ...any)
 	Sync() error
+}
+
+func ParserLogLevel(lvl string) (Level, error) {
+	switch strings.ToLower(lvl) {
+	case "debug":
+		return DebugLevel, nil
+	case "info":
+		return InfoLevel, nil
+	case "warn":
+		return WarnLevel, nil
+	case "error":
+		return ErrorLevel, nil
+	case "dpanic":
+		return DPanicLevel, nil
+	case "panic":
+		return PanicLevel, nil
+	default:
+		return DebugLevel, fmt.Errorf("log level cannot be parsed")
+	}
 }
