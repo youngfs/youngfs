@@ -10,31 +10,43 @@ import (
 	"github.com/youngfs/youngfs/pkg/fs/fullpath"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func (h *Handler) PutObjectHandler(c *gin.Context) {
 	var file io.ReadCloser
 	var filename string
-	file, head, err := c.Request.FormFile("file")
-	if head != nil && err == nil {
-		filename = head.Filename
-		switch head.Header.Get("Content-Encoding") {
-		case "gzip":
-			file, err = gzip.NewReader(file)
+	multipart, err := c.Request.MultipartReader()
+	if err == nil {
+		for {
+			part, err := multipart.NextPart()
 			if err != nil {
-				h.errorHandler(c, errors.ErrContentEncoding.WarpErr(err))
+				h.errorHandler(c, errors.ErrRouter.WarpErr(err))
 				return
 			}
-		case "deflate":
-			file = flate.NewReader(file)
-		case "br":
-			file = io.NopCloser(brotli.NewReader(file))
+			if strings.EqualFold(part.FormName(), "file") {
+				file = part
+				switch part.Header.Get("Content-Encoding") {
+				case "gzip":
+					file, err = gzip.NewReader(file)
+					if err != nil {
+						h.errorHandler(c, errors.ErrContentEncoding.WarpErr(err))
+						return
+					}
+				case "deflate":
+					file = flate.NewReader(file)
+				case "br":
+					file = io.NopCloser(brotli.NewReader(file))
+				}
+				filename = part.FileName()
+				break
+			}
 		}
 	}
 	if err != nil {
 		file = c.Request.Body
 		filename = ""
-		switch head.Header.Get("Content-Encoding") {
+		switch c.Request.Header.Get("Content-Encoding") {
 		case "gzip":
 			file, err = gzip.NewReader(file)
 			if err != nil {
