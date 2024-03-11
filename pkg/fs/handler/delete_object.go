@@ -26,6 +26,6 @@ func (h *Handler) DeleteObjectHandler(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 	return
 }
