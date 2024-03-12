@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/json-iterator/go v1.1.12
-	github.com/klauspost/reedsolomon v1.9.16
+	github.com/klauspost/reedsolomon v1.12.1
 	github.com/linxGnu/grocksdb v1.8.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
