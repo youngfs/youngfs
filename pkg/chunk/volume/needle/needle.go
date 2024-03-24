@@ -16,13 +16,14 @@ func (n *Needle) ToBytes() []byte {
 	util.Uint64toBytes(ret[0:idLen], uint64(n.Id))
 	util.Uint64toBytes(ret[idLen:idLen+offsetLen], n.Offset)
 	util.Uint64toBytes(ret[idLen+offsetLen:idLen+offsetLen+sizeLen], n.Size)
-	return []byte{}
+	return ret
 }
 
 func FromBytes(b []byte) (n *Needle, err error) {
 	if len(b) != idLen+offsetLen+sizeLen {
 		return nil, errors.ErrInvalidNeedle
 	}
+	n = new(Needle)
 	n.Id = Id(util.BytesToUint64(b[0:idLen]))
 	n.Offset = util.BytesToUint64(b[idLen : idLen+offsetLen])
 	n.Size = util.BytesToUint64(b[idLen+offsetLen : idLen+offsetLen+sizeLen])

@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/youngfs/youngfs/pkg/fs/engine"
+	"github.com/youngfs/youngfs/pkg/fs/engine/chunk"
 	"github.com/youngfs/youngfs/pkg/fs/engine/simple"
 	"github.com/youngfs/youngfs/pkg/fs/handler"
 	"github.com/youngfs/youngfs/pkg/fs/meta/s3"
@@ -32,6 +34,7 @@ const (
 	logAge       = "LOG_AGE"
 	logFileSize  = "LOG_FILE_SIZE"
 	dir          = "DIR"
+	master       = "MASTER"
 	meta         = "META"
 	tikvEndpoins = "TIKV_ENDPOINTS"
 )
@@ -42,6 +45,7 @@ const (
 	cmdLogAge       = "logAge"
 	cmdLogFileSize  = "logFileSize"
 	cmdDir          = "dir"
+	cmdMaster       = "master"
 	cmdMeta         = "meta"
 	cmdTikvEndpoins = "tikvEndpoints"
 )
@@ -52,6 +56,7 @@ var cmdM = map[string]string{
 	cmdLogAge:       logAge,
 	cmdLogFileSize:  logFileSize,
 	cmdDir:          dir,
+	cmdMaster:       cmdMaster,
 	cmdMeta:         meta,
 	cmdTikvEndpoins: tikvEndpoins,
 }
@@ -139,12 +144,20 @@ var Cmd = &cobra.Command{
 		closers = append(closers, s3kv, s3cnkv)
 
 		// engine
-		if err := os.MkdirAll(path.Join(viper.GetString(dir), "data"), 0755); err != nil {
-			return err
-		}
-		e, err := simple.New(path.Join(viper.GetString(dir), "data"))
-		if err != nil {
-			return err
+		var e engine.Engine
+		if viper.GetString(master) != "" {
+			e, err = chunk.New(viper.GetString(master))
+			if err != nil {
+				return err
+			}
+		} else {
+			if err := os.MkdirAll(path.Join(viper.GetString(dir), "data"), 0755); err != nil {
+				return err
+			}
+			e, err = simple.New(path.Join(viper.GetString(dir), "data"))
+			if err != nil {
+				return err
+			}
 		}
 		// meta
 		metaStore := s3.New(s3kv, s3cnkv)
@@ -190,6 +203,7 @@ func init() {
 	Cmd.Flags().Uint64(cmdLogFileSize, 32, "log file max size (MiB)")
 
 	Cmd.Flags().String(cmdDir, ".", "data dir")
+	Cmd.Flags().String(cmdMaster, "", "master endpoint")
 	Cmd.Flags().String(cmdMeta, "badger", "kv store type [badger, bboltdb, leveldb, tikv]")
 	Cmd.Flags().StringSlice(cmdTikvEndpoins, nil, "tikv endpoints")
 

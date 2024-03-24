@@ -19,14 +19,14 @@ type assignChunkInfo struct {
 	Count     int64  `json:"count"`
 }
 
-func (e *Engine) assignChunk(ctx context.Context, hosts ...string) (*assignChunkInfo, error) {
-	hostReq, host := "", ""
-	if len(hosts) > 0 {
-		host = hosts[rand.Intn(len(hosts))]
-		hostReq = "dataCenter=DefaultDataCenter&rack=DefaultRack&dataNode=" + host
+func (e *Engine) assignChunk(ctx context.Context, endpoints ...string) (*assignChunkInfo, error) {
+	endpointReq, endpoint := "", ""
+	if len(endpoints) > 0 {
+		endpoint = endpoints[rand.Intn(len(endpoints))]
+		endpointReq = "dataCenter=DefaultDataCenter&rack=DefaultRack&dataNode=" + endpoint
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/dir/assign?%s", e.masterEndpoint, hostReq), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/dir/assign?%s", e.masterEndpoint, endpointReq), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +49,9 @@ func (e *Engine) assignChunk(ctx context.Context, hosts ...string) (*assignChunk
 		return nil, errors.ErrEngineMaster.WarpErr(err)
 	}
 
-	if host != "" {
-		if host != assignFileInfo.Url && host != assignFileInfo.PublicUrl {
-			return nil, errors.ErrEngineMaster.WithMessagef("seaweedfs assign object: host not match, want %s, got %s", host, assignFileInfo.Url)
+	if endpoint != "" {
+		if endpoint != assignFileInfo.Url && endpoint != assignFileInfo.PublicUrl {
+			return nil, errors.ErrEngineMaster.WithMessagef("seaweedfs assign object: endpoint not match, want %s, got %s", endpoint, assignFileInfo.Url)
 		}
 	}
 

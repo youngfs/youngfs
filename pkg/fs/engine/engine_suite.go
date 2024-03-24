@@ -19,7 +19,7 @@ func (s *EngineSuite) TestEngine() {
 	ctx := context.Background()
 	const (
 		size      = 1024
-		chunkSize = 5 * 1024
+		chunkSize = (256 + 64) * 1024
 	)
 
 	type chunk struct {

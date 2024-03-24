@@ -25,6 +25,7 @@ const (
 	logFileSize    = "LOG_FILE_SIZE"
 	dir            = "DIR"
 	masterEndpoint = "MASTER"
+	localIP        = "LOCAL_IP"
 )
 
 const (
@@ -34,6 +35,7 @@ const (
 	cmdLogFileSize    = "logFileSize"
 	cmdDir            = "dir"
 	cmdMasterEndpoint = "master"
+	cmdLocalIP        = "localIP"
 )
 
 var cmdM = map[string]string{
@@ -43,6 +45,7 @@ var cmdM = map[string]string{
 	cmdLogFileSize:    logFileSize,
 	cmdDir:            dir,
 	cmdMasterEndpoint: masterEndpoint,
+	cmdLocalIP:        localIP,
 }
 
 var markRequired = []string{masterEndpoint}
@@ -80,7 +83,11 @@ var Cmd = &cobra.Command{
 		creator := needle.KvNeedleStoreCreator(func(path string) (kv.Store, error) {
 			return badger.New(path)
 		})
-		svr := volume.New(viper.GetString(dir), viper.GetString(masterEndpoint), logger, creator)
+		var options []volume.Option
+		if viper.GetString(localIP) != "" {
+			options = append(options, volume.WithLocalIP(viper.GetString(localIP)))
+		}
+		svr := volume.New(viper.GetString(dir), viper.GetString(masterEndpoint), logger, creator, options...)
 
 		errChan := make(chan error, 1)
 		go func(errChan chan<- error) {
@@ -112,7 +119,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.Flags().Int(cmdPort, 9433, "port")
+	Cmd.Flags().Int(cmdPort, 9434, "port")
 	Cmd.Flags().String(cmdLogLevel, "info", "log level (debug, info, warn, error, dpanic, panic)")
 	Cmd.Flags().Uint64(cmdLogAge, 31, "log age (day)")
 	Cmd.Flags().Uint64(cmdLogFileSize, 32, "log file max size (MiB)")
@@ -120,6 +127,7 @@ func init() {
 	Cmd.Flags().String(cmdDir, ".", "data dir")
 
 	Cmd.Flags().String(cmdMasterEndpoint, "", "master endpoint")
+	Cmd.Flags().String(cmdLocalIP, "", "local ip")
 
 	Cmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
 		_ = viper.BindPFlag(cmdM[flag.Name], Cmd.PersistentFlags().Lookup(flag.Name))

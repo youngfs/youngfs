@@ -42,6 +42,7 @@ func (s *Server) RegisterVolume(ctx context.Context, in *master_pb.RegisterVolum
 			return nil, status.Errorf(codes.Code(ecode.ErrMaster), errors.ErrMaster.WarpErr(err).Error())
 		}
 		s.volume[in.Endpoint] = append(s.volume[in.Endpoint], s.maxId)
+		s.endpoints.Store(in.Endpoint, time.Now())
 		return &master_pb.RegisterVolumeResponse{Id: s.maxId}, nil
 	} else if err != nil {
 		return nil, status.Errorf(codes.Code(ecode.ErrMaster), errors.ErrMaster.WarpErr(err).Error())
@@ -128,7 +129,7 @@ func (s *Server) Run(port int) error {
 		}
 	}
 	it.Close()
-	lis, err := net.Listen("tcp", strconv.Itoa(port))
+	lis, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return err
 	}

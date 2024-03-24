@@ -27,14 +27,13 @@ func New(path string, bucket []byte, opts ...Option) (*Store, error) {
 			if !strings.HasSuffix(path, string(os.PathSeparator)) {
 				name = pathutil.Base(path)
 			}
-			if err := os.MkdirAll(pathutil.Dir(path), 0600); err != nil {
+			if err := os.MkdirAll(pathutil.Dir(path), 0755); err != nil {
 				return nil, err
 			}
 		} else {
 			return nil, err
 		}
-	}
-	if pathInfo.IsDir() {
+	} else if pathInfo.IsDir() {
 		path = pathutil.Join(path, name)
 	}
 

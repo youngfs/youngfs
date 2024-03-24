@@ -12,7 +12,10 @@ type NumberFile struct {
 }
 
 func NewNumberFile(path string) *NumberFile {
-	return &NumberFile{Path: path}
+	return &NumberFile{
+		Path: path,
+		mux:  &sync.Mutex{},
+	}
 }
 
 func (nf *NumberFile) WriteNumber(num uint64) error {

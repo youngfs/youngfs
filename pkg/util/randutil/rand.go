@@ -22,7 +22,7 @@ func NewRandPool() *RandPool {
 	return &RandPool{
 		Pool: sync.Pool{
 			New: func() interface{} {
-				w := rand.New(rand.NewSource(time.Now().Unix()))
+				w := rand.New(rand.NewSource(time.Now().UnixNano()))
 				return w
 			},
 		},

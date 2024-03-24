@@ -2,6 +2,7 @@ package volume
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"github.com/Workiva/go-datastructures/queue"
 	"github.com/youngfs/youngfs/pkg/chunk/pb/master_pb"
@@ -12,7 +13,6 @@ import (
 	"github.com/youngfs/youngfs/pkg/log"
 	"github.com/youngfs/youngfs/pkg/util/mem"
 	"github.com/youngfs/youngfs/pkg/util/netutil"
-	"github.com/youngfs/youngfs/pkg/util/randutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -32,6 +32,7 @@ type Server struct {
 	volume_pb.UnimplementedVolumeServiceServer
 	dir           string
 	master        string
+	localIP       string
 	client        master_pb.MasterServiceClient
 	localEndpoint string
 	logger        log.Logger
@@ -41,23 +42,34 @@ type Server struct {
 	volumeMap     *sync.Map
 }
 
-func New(dir, master string, logger log.Logger, creator needle.StoreCreator) *Server {
+func New(dir, master string, logger log.Logger, creator needle.StoreCreator, opts ...Option) *Server {
+	cfg := &config{}
+	for _, opt := range opts {
+		opt.apply(cfg)
+	}
+
 	return &Server{
 		dir:         dir,
 		master:      master,
+		localIP:     cfg.localIP,
 		logger:      logger,
 		queue:       queue.NewRingBuffer(maxWritableVolume),
 		creator:     creator,
 		volumeCount: NewNumberFile(path.Join(dir, numFileName)),
+		volumeMap:   &sync.Map{},
 	}
 }
 
 func (s *Server) Run(port int) error {
-	ip, err := netutil.LocalIP()
-	if err != nil {
-		return err
+	if s.localIP == "" {
+		ip, err := netutil.LocalIP()
+		if err != nil {
+			return err
+		}
+		s.localEndpoint = fmt.Sprintf("%s:%d", ip[0], port)
+	} else {
+		s.localEndpoint = fmt.Sprintf("%s:%d", s.localIP, port)
 	}
-	s.localEndpoint = fmt.Sprintf("%s:%d", ip[0], port)
 
 	conn, err := grpc.Dial(s.master, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
@@ -71,7 +83,7 @@ func (s *Server) Run(port int) error {
 	if err := s.load(); err != nil {
 		return err
 	}
-	lis, err := net.Listen("tcp", strconv.Itoa(port))
+	lis, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return err
 	}
@@ -130,7 +142,7 @@ func (s *Server) GetChunk(in *volume_pb.ChunkID, stream volume_pb.VolumeService_
 	go func() {
 		err = s.getChunk(in.Id, writer)
 	}()
-	buf := mem.Allocate(64 * 1024)
+	buf := mem.Allocate(128 * 1024)
 	defer mem.Free(buf)
 	for {
 		n, err := reader.Read(buf)
@@ -146,6 +158,9 @@ func (s *Server) GetChunk(in *volume_pb.ChunkID, stream volume_pb.VolumeService_
 		}
 	}
 	if err != nil {
+		if errors.Is(err, errors.ErrChunkNotFound) {
+			return status.Error(codes.NotFound, err.Error())
+		}
 		return err
 	}
 	return nil
@@ -162,8 +177,10 @@ func (s *Server) DeleteChunk(ctx context.Context, in *volume_pb.ChunkID) (*empty
 func (s *Server) CreateVolume() (*Volume, error) {
 	var id uint64
 	var magic []byte
+	waitTime := 100 * time.Millisecond
 	for i := 0; i < 3; i++ {
-		magic = randutil.RandByte(magicLen)
+		magic := make([]byte, magicLen)
+		_, _ = rand.Read(magic)
 		resp, err := s.client.RegisterVolume(context.Background(), &master_pb.RegisterVolumeRequest{
 			Endpoint: s.localEndpoint,
 			Id:       uint64(master_pb.ID_CreateId),
@@ -174,6 +191,8 @@ func (s *Server) CreateVolume() (*Volume, error) {
 			if !ok || st.Code() != codes.Code(ecode.ErrVolumeCreateConflict) {
 				return nil, err
 			}
+			time.Sleep(waitTime)
+			waitTime *= 2
 		} else {
 			id = resp.Id
 			break
@@ -238,7 +257,7 @@ func (s *Server) getChunk(id string, writer io.WriteCloser) error {
 	defer func() {
 		_ = writer.Close()
 	}()
-	volumeID, needleID, err := splitVolumeID(id)
+	volumeID, needleID, err := SplitVolumeID(id)
 	if err != nil {
 		return err
 	}
@@ -250,7 +269,7 @@ func (s *Server) getChunk(id string, writer io.WriteCloser) error {
 }
 
 func (s *Server) deleteChunk(id string) error {
-	volumeID, needleID, err := splitVolumeID(id)
+	volumeID, needleID, err := SplitVolumeID(id)
 	if err != nil {
 		return err
 	}
@@ -291,15 +310,16 @@ func (s *Server) load() error {
 		}
 	}
 	for ; writableCnt < maxWritableVolume; writableCnt++ {
-		_, err := s.CreateVolume()
+		v, err := s.CreateVolume()
 		if err != nil {
 			return err
 		}
+		_ = s.queue.Put(v)
 	}
 	return nil
 }
 
-func splitVolumeID(id string) (uint64, needle.Id, error) {
+func SplitVolumeID(id string) (uint64, needle.Id, error) {
 	part := strings.SplitN(id, "-", 2)
 	if len(part) != 2 {
 		return 0, 0, errors.ErrVolumeIDInvalid
