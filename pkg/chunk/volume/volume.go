@@ -62,14 +62,20 @@ func (v *Volume) Write(reader io.Reader) (string, error) {
 
 func (v *Volume) Close() error {
 	var merr error
-	if err := v.reader.Close(); err != nil {
-		merr = multierr.Append(merr, err)
+	if v.writer != nil {
+		if err := v.writer.Close(); err != nil {
+			merr = multierr.Append(merr, err)
+		}
 	}
-	if err := v.writer.Close(); err != nil {
-		merr = multierr.Append(merr, err)
+	if v.reader != nil {
+		if err := v.reader.Close(); err != nil {
+			merr = multierr.Append(merr, err)
+		}
 	}
-	if err := v.needleStore.Close(); err != nil {
-		merr = multierr.Append(merr, err)
+	if v.needleStore != nil {
+		if err := v.needleStore.Close(); err != nil {
+			merr = multierr.Append(merr, err)
+		}
 	}
 	return merr
 }

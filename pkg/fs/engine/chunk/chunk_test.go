@@ -52,6 +52,7 @@ func (s *chunkSuite) SetupTest() {
 	err = os.MkdirAll(path.Join(dir, "volume1"), 0755)
 	s.Nil(err)
 	volume1 := volume.New(path.Join(dir, "volume1"), fmt.Sprintf("localhost:%d", masterPort), logger, creator)
+	s.closers = append(s.closers, volume1)
 	go func() {
 		_ = volume1.Run(slave1Port)
 	}()
@@ -59,6 +60,7 @@ func (s *chunkSuite) SetupTest() {
 	err = os.MkdirAll(path.Join(dir, "volume2"), 0755)
 	s.Nil(err)
 	volume2 := volume.New(path.Join(dir, "volume2"), fmt.Sprintf("localhost:%d", masterPort), logger, creator)
+	s.closers = append(s.closers, volume2)
 	go func() {
 		_ = volume2.Run(slave2Port)
 	}()
@@ -66,4 +68,13 @@ func (s *chunkSuite) SetupTest() {
 	time.Sleep(1 * time.Second)
 	s.Engine, err = New(fmt.Sprintf("localhost:%d", masterPort))
 	s.Nil(err)
+}
+
+func (s *chunkSuite) TearDownTest() {
+	for _, closer := range s.closers {
+		if closer != nil {
+			err := closer.Close()
+			s.Nil(err)
+		}
+	}
 }

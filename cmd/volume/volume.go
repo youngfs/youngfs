@@ -88,6 +88,7 @@ var Cmd = &cobra.Command{
 			options = append(options, volume.WithLocalIP(viper.GetString(localIP)))
 		}
 		svr := volume.New(viper.GetString(dir), viper.GetString(masterEndpoint), logger, creator, options...)
+		closers = append(closers, svr)
 
 		errChan := make(chan error, 1)
 		go func(errChan chan<- error) {

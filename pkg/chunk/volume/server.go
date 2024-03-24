@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/hashicorp/go-multierror"
 	"github.com/youngfs/youngfs/pkg/chunk/pb/master_pb"
 	"github.com/youngfs/youngfs/pkg/chunk/pb/volume_pb"
 	"github.com/youngfs/youngfs/pkg/chunk/volume/needle"
@@ -317,6 +318,19 @@ func (s *Server) load() error {
 		_ = s.queue.Put(v)
 	}
 	return nil
+}
+
+func (s *Server) Close() error {
+	var merr error
+	s.volumeMap.Range(func(key, value interface{}) bool {
+		v := value.(*Volume)
+		err := v.Close()
+		if err != nil {
+			merr = multierror.Append(merr, err)
+		}
+		return true
+	})
+	return merr
 }
 
 func SplitVolumeID(id string) (uint64, needle.Id, error) {
